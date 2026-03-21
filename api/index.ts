@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-export const app = express();
+const app = express();
 const PORT = 3000;
 
 app.use(express.json());
@@ -104,3 +104,5 @@ if (process.env.NODE_ENV !== 'production') {
     console.log(`Server running on http://localhost:${PORT}`);
   });
 }
+
+export default app;
