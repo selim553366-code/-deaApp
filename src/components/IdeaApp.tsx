@@ -5,7 +5,7 @@ import { collection, query, where, orderBy, onSnapshot, doc, setDoc, updateDoc }
 import { Sidebar } from "./Sidebar";
 import { Preview } from "./Preview";
 import { PremiumModal } from "./PremiumModal";
-import { Send, Sparkles, LogOut, Code, Loader2, Check } from "lucide-react";
+import { Send, Sparkles, LogOut, Code, Loader2, Check, Eye, EyeOff } from "lucide-react";
 import { GoogleGenAI, Type } from "@google/genai";
 import { signOut } from "firebase/auth";
 
@@ -23,6 +23,7 @@ export function IdeaApp({ user }: { user: User }) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [showReviews, setShowReviews] = useState(true);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(true);
   const [analysisQuestions, setAnalysisQuestions] = useState<AnalysisQuestion[] | null>(null);
   const [analysisAnswers, setAnalysisAnswers] = useState<string[]>([]);
   const [originalIdea, setOriginalIdea] = useState("");
@@ -186,6 +187,13 @@ export function IdeaApp({ user }: { user: User }) {
             <span className="font-semibold tracking-tight">IdeaApp</span>
           </div>
           <div className="flex items-center gap-4">
+            <button 
+              onClick={() => setIsPreviewOpen(!isPreviewOpen)}
+              className="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors"
+              title={isPreviewOpen ? "Önizlemeyi Kapat" : "Önizlemeyi Aç"}
+            >
+              {isPreviewOpen ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
             {!user.isPremium && (
               <div className="text-sm font-medium bg-zinc-800 px-3 py-1.5 rounded-full flex items-center gap-2">
                 <span className="text-zinc-400">Krediler:</span>
@@ -208,7 +216,7 @@ export function IdeaApp({ user }: { user: User }) {
         </header>
 
         <div className="flex-1 flex overflow-hidden">
-          <div className="w-[400px] flex flex-col border-r border-zinc-800 bg-zinc-900/30">
+          <div className={isPreviewOpen ? "w-[400px] flex flex-col border-r border-zinc-800 bg-zinc-900/30" : "flex-1 flex flex-col"}>
             <div className="flex-1 overflow-y-auto p-6 flex flex-col justify-end">
               {!currentProject && !analysisQuestions && (
                 <div className="text-center mb-8">
@@ -302,9 +310,11 @@ export function IdeaApp({ user }: { user: User }) {
             )}
           </div>
 
-          <div className="flex-1 bg-zinc-950 relative">
-            <Preview code={currentProject?.code} isGenerating={isGenerating} isPremium={user.isPremium} />
-          </div>
+          {isPreviewOpen && (
+            <div className="flex-1 bg-zinc-950 relative">
+              <Preview code={currentProject?.code} isGenerating={isGenerating} isPremium={user.isPremium} />
+            </div>
+          )}
         </div>
       </main>
 
