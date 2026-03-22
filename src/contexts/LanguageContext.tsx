@@ -450,6 +450,11 @@ const translations: Translations = {
     'en-uk': 'You can manage API keys and secret variables from here. (This feature will be added soon)',
   },
   welcomeTitle: {
+    tr: "İdea Ai",
+    'en-us': "İdea Ai",
+    'en-uk': "İdea Ai",
+  },
+  welcomeSubTitle: {
     tr: "Türkiye'nin Tek Güvenilir Web Sitesi Oluşturucusu",
     'en-us': "Turkey's Only Reliable Website Builder",
     'en-uk': "Turkey's Only Reliable Website Builder",

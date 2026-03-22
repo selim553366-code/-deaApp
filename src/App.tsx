@@ -210,7 +210,10 @@ function Builder() {
             ) : (
               <div className="space-y-10 max-w-5xl mx-auto">
                 <div className="text-center space-y-4 pt-8">
-                  <h2 className="text-4xl font-extrabold tracking-tight text-zinc-900">
+                  <span className="text-sm font-bold uppercase tracking-widest text-indigo-600 bg-indigo-50 px-4 py-1.5 rounded-full inline-block mb-2">
+                    {t('welcomeSubTitle')}
+                  </span>
+                  <h2 className="text-5xl md:text-6xl font-extrabold tracking-tight text-zinc-900">
                     {t('welcomeTitle')}
                   </h2>
                   <p className="text-lg text-zinc-500 max-w-2xl mx-auto">
