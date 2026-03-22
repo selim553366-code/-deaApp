@@ -14,12 +14,21 @@ app.post("/api/ai/generate", async (req, res) => {
   try {
     const { contents, systemInstruction, model = "gemini-3-flash-preview" } = req.body;
     
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey || apiKey === "MY_GEMINI_API_KEY" || apiKey === "YOUR_GEMINI_API_KEY" || apiKey === "undefined" || apiKey === "") {
-      return res.status(500).json({ error: "API Anahtarı sunucuda yapılandırılmamış. (Hata: API_KEY_MISSING)" });
+    const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
+    
+    const isPlaceholder = (key: string | undefined) => 
+      !key || 
+      key === "MY_GEMINI_API_KEY" || 
+      key === "YOUR_GEMINI_API_KEY" || 
+      key === "undefined" || 
+      key === "";
+
+    if (isPlaceholder(apiKey)) {
+      console.error("API Key Missing. Available env keys:", Object.keys(process.env).filter(k => k.includes("KEY") || k.includes("API")));
+      return res.status(500).json({ error: "API Anahtarı sunucuda yapılandırılmamış. Lütfen AI Studio Secrets panelinden GEMINI_API_KEY değişkenini tanımlayın. (Hata: API_KEY_MISSING)" });
     }
 
-    const ai = new GoogleGenAI({ apiKey });
+    const ai = new GoogleGenAI({ apiKey: apiKey! });
     const response = await ai.models.generateContent({
       model,
       contents,
