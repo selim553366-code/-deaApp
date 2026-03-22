@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Project, User } from '../types';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-import { Loader2, Globe, RefreshCw, Edit2, Check, Settings, Maximize2, Minimize2, Circle, CheckCircle2, Bot, Send } from 'lucide-react';
+import { Loader2, Globe, RefreshCw, Edit2, Check, Settings, Maximize2, Minimize2, Circle, CheckCircle2, Bot, Send, Paperclip, X, FileText, Image as ImageIcon, File } from 'lucide-react';
 import { ProjectSettingsModal } from './ProjectSettingsModal';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -24,6 +24,8 @@ export const ProjectPreview = ({
   const [isChatLoading, setIsChatLoading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<{ name: string; type: string; data: string } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -62,54 +64,84 @@ export const ProjectPreview = ({
     alert('Projeniz başarıyla yayınlandı!');
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64Data = event.target?.result as string;
+      const base64Content = base64Data.split(',')[1];
+      setSelectedFile({
+        name: file.name,
+        type: file.type,
+        data: base64Content
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleSendMessage = async () => {
-    if (!chatInput.trim() || isChatLoading) return;
+    if ((!chatInput.trim() && !selectedFile) || isChatLoading) return;
 
     if (user && !user.isPremium && (user.updateCredits || 0) < 10) {
       window.dispatchEvent(new CustomEvent('show-premium-modal'));
       return;
     }
 
-    const newUserMsg = { role: 'user' as const, text: chatInput };
+    const newUserMsg = { 
+      role: 'user' as const, 
+      text: chatInput + (selectedFile ? `\n[Dosya eklendi: ${selectedFile.name}]` : '') 
+    };
     const updatedMessages = [...chatMessages, newUserMsg];
     
-    // Use functional state update to ensure we have the latest messages
     setChatMessages(updatedMessages);
     
-    // Update database asynchronously without blocking UI
     updateDoc(doc(db, 'projects', project.id), { 
       chatHistory: updatedMessages,
       updatedAt: new Date().toISOString() 
     }).catch(console.error);
     
+    const currentInput = chatInput;
+    const currentFile = selectedFile;
+    
     setChatInput('');
+    setSelectedFile(null);
     setIsChatLoading(true);
 
     try {
-      // Deduct credits if not premium
       if (user && !user.isPremium) {
-        try {
-          const userRef = doc(db, 'users', user.uid);
-          await updateDoc(userRef, {
-            updateCredits: Math.max(0, (user.updateCredits || 0) - 10)
-          });
-        } catch (creditErr) {
-          console.error("Credit deduction failed:", creditErr);
-          throw new Error("Kredi düşme işlemi başarısız oldu. Lütfen bağlantınızı kontrol edin.");
-        }
+        const userRef = doc(db, 'users', user.uid);
+        await updateDoc(userRef, {
+          updateCredits: Math.max(0, (user.updateCredits || 0) - 10)
+        });
       }
 
-      const contents = updatedMessages.map(msg => ({
-        role: msg.role,
-        parts: [{ text: msg.text }]
-      }));
+      const contents = updatedMessages.map((msg, idx) => {
+        const parts: any[] = [{ text: msg.text }];
+        
+        // If this is the last message and there's a file, add it to parts
+        if (idx === updatedMessages.length - 1 && currentFile) {
+          parts.push({
+            inlineData: {
+              mimeType: currentFile.type,
+              data: currentFile.data
+            }
+          });
+        }
+        
+        return {
+          role: msg.role,
+          parts
+        };
+      });
 
       // Inject the current HTML code into the last message context
       const lastMsg = contents[contents.length - 1];
       const currentCode = project.code || "";
-      lastMsg.parts[0].text = `Mevcut HTML Kodu:\n\`\`\`html\n${currentCode}\n\`\`\`\n\nKullanıcı Mesajı: ${newUserMsg.text}`;
+      lastMsg.parts[0].text = `Mevcut HTML Kodu:\n\`\`\`html\n${currentCode}\n\`\`\`\n\nKullanıcı Mesajı: ${currentInput}`;
 
-      const systemInstruction = "Sen uzman bir Frontend Geliştiricisi ve UI/UX Tasarımcısısın. Kullanıcının web sitesini güncellemesine yardımcı oluyorsun.\n\nÖNEMLİ KURAL: Cevapların her zaman ÇOK KISA, ÖZ ve NET olmalı. Uzun açıklamalar yapma.\n\nKullanıcı bir değişiklik istediğinde, değişikliği yap ve güncellenmiş çalışabilir HTML kodunun TAMAMINI ```html ve ``` etiketleri arasına yazarak cevap ver. Kodun dışında sadece çok kısa bir açıklama yap. Türkçe konuş.";
+      const systemInstruction = "Sen uzman bir Frontend Geliştiricisi ve UI/UX Tasarımcısısın. Kullanıcının web sitesini güncellemesine yardımcı oluyorsun. Eğer kullanıcı bir dosya (resim, döküman vb.) gönderdiyse onu analiz et ve değişiklikleri ona göre yap.\n\nÖNEMLİ KURAL: Cevapların her zaman ÇOK KISA, ÖZ ve NET olmalı. Uzun açıklamalar yapma.\n\nKullanıcı bir değişiklik istediğinde, değişikliği yap ve güncellenmiş çalışabilir HTML kodunun TAMAMINI ```html ve ``` etiketleri arasına yazarak cevap ver. Kodun dışında sadece çok kısa bir açıklama yap. Türkçe konuş.";
 
       const aiResponse = await fetch("/api/ai/generate", {
         method: "POST",
@@ -328,26 +360,57 @@ export const ProjectPreview = ({
           </div>
 
           <div className="p-3 border-t border-zinc-100 bg-white">
+            {selectedFile && (
+              <div className="mb-3 flex items-center justify-between p-2 bg-indigo-50 border border-indigo-100 rounded-xl animate-in fade-in slide-in-from-bottom-2">
+                <div className="flex items-center gap-2 text-indigo-700 overflow-hidden">
+                  {selectedFile.type.startsWith('image/') ? <ImageIcon size={14} /> : <FileText size={14} />}
+                  <span className="text-xs font-medium truncate">{selectedFile.name}</span>
+                </div>
+                <button
+                  onClick={() => setSelectedFile(null)}
+                  className="p-1 text-indigo-400 hover:text-indigo-600 rounded-full hover:bg-indigo-100"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            )}
             <div className="flex items-end gap-2">
-              <textarea
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSendMessage();
-                  }
-                }}
-                placeholder="Mesajınızı yazın..."
-                className="w-full max-h-32 min-h-[44px] p-3 text-sm border border-zinc-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none resize-none"
-                disabled={isChatLoading}
-                rows={1}
-              />
+              <div className="relative flex-1">
+                <textarea
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }
+                  }}
+                  placeholder="Mesajınızı yazın..."
+                  className="w-full max-h-32 min-h-[44px] p-3 pr-10 text-sm border border-zinc-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none resize-none"
+                  disabled={isChatLoading}
+                  rows={1}
+                />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="absolute right-2 bottom-2 p-1.5 text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                  title="Dosya ekle"
+                  disabled={isChatLoading}
+                >
+                  <Paperclip size={18} />
+                </button>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  className="hidden"
+                  accept="image/*,application/pdf,text/*"
+                />
+              </div>
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleSendMessage}
-                disabled={isChatLoading || !chatInput.trim()}
+                disabled={isChatLoading || (!chatInput.trim() && !selectedFile)}
                 className="p-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center justify-center shrink-0"
               >
                 {isChatLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
