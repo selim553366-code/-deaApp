@@ -12,7 +12,7 @@ app.use(express.json());
 // AI Generation Endpoint
 app.post("/api/ai/generate", async (req, res) => {
   try {
-    const { contents, systemInstruction, model = "gemini-3-flash-preview" } = req.body;
+    const { contents, systemInstruction, model = "gemini-3-flash-preview", config = {} } = req.body;
     
     const keysToTry = [
       { name: "GEMINI_API_KEY", value: process.env.GEMINI_API_KEY },
@@ -71,6 +71,7 @@ app.post("/api/ai/generate", async (req, res) => {
       model,
       contents,
       config: {
+        ...config,
         systemInstruction,
       },
     });
