@@ -102,6 +102,8 @@ export const IdeaInput = ({ user, onProjectCreated }: { user: User | null, onPro
         setLoadingStep(i);
         await new Promise(resolve => setTimeout(resolve, 1500));
       }
+      // Set to final step after loop
+      setLoadingStep(loadingMessages.length - 1);
 
       // Deduct credits if not premium
       if (user && !user.isPremium) {
