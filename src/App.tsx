@@ -29,6 +29,7 @@ function Builder() {
   const [showAI, setShowAI] = useState(false);
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const pendingProjectIdRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -138,6 +139,8 @@ function Builder() {
         onToggleAI={() => { setShowAI(!showAI); setIsMobileMenuOpen(false); }}
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
       />
       <div className="flex-1 overflow-y-auto w-full">
         <Header 

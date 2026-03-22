@@ -19,7 +19,7 @@ export const AIHelper = ({ user }: { user: User | null }) => {
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
       const result = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: "gemini-3.1-pro-preview",
         contents: prompt,
       });
       setResponse(result.text || 'Cevap alınamadı.');

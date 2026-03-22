@@ -18,7 +18,7 @@ export const AIChatPage = ({ onOpenPremium }: { onOpenPremium: () => void }) => 
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
       const result = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: "gemini-3.1-pro-preview",
         contents: input,
       });
       setMessages([...newMessages, { role: 'ai' as const, text: result.text || 'Cevap alınamadı.' }]);

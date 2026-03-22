@@ -24,6 +24,15 @@ export const IdeaInput = ({ user, onProjectCreated }: { user: User | null, onPro
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [currentAnswer, setCurrentAnswer] = useState('');
   const [isFetchingQuestions, setIsFetchingQuestions] = useState(false);
+  const [showGeminiImport, setShowGeminiImport] = useState(false);
+  const [geminiHistory, setGeminiHistory] = useState('');
+
+  const handleGeminiImport = () => {
+    if (!geminiHistory.trim()) return;
+    setIdea(`Aşağıdaki Gemini konuşma geçmişine dayanarak bir web sitesi oluştur:\n\n${geminiHistory}`);
+    setShowGeminiImport(false);
+    setGeminiHistory('');
+  };
 
   const handleStart = async () => {
     if (!idea.trim() || isFetchingQuestions || isGenerating) return;
@@ -121,8 +130,13 @@ export const IdeaInput = ({ user, onProjectCreated }: { user: User | null, onPro
       }
       const ai = new GoogleGenAI({ apiKey });
       const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: `Kullanıcının fikri ve detayları: "${finalPrompt}". Bu fikir için tek sayfalık, modern, Tailwind CSS kullanan, işlevsel bir HTML kodu oluştur. Sadece HTML kodunu döndür, markdown işaretleri kullanma.`
+        model: "gemini-3.1-pro-preview",
+        contents: `Sen uzman bir Frontend Geliştiricisi ve UI/UX Tasarımcısısın. Kullanıcının fikri ve detayları: "${finalPrompt}". 
+Bu fikir için tek sayfalık, son derece modern, estetik, çok hızlı çalışan ve responsive (mobil uyumlu) bir HTML kodu oluştur. 
+Tailwind CSS (CDN üzerinden) ve gerekiyorsa FontAwesome veya Lucide ikonları (CDN üzerinden) kullan. 
+Modern UI trendlerini (glassmorphism, soft shadow, modern tipografi, gradientler) uygula. 
+Kullanıcı deneyimi (UX) en üst düzeyde olmalı. 
+Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`\`html vb.) KULLANMA. Kod <html> ile başlayıp </html> ile bitmeli.`
       });
       
       let code = response.text || '<h1>Hata oluştu</h1>';
@@ -188,8 +202,60 @@ export const IdeaInput = ({ user, onProjectCreated }: { user: User | null, onPro
               </>
             )}
           </button>
+          <button 
+            onClick={() => setShowGeminiImport(true)}
+            disabled={isGenerating || isFetchingQuestions || showPreview}
+            className="w-full sm:w-auto p-4 text-sm text-indigo-600 bg-indigo-50 border border-indigo-200 rounded-2xl hover:bg-indigo-100 font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 whitespace-nowrap"
+            title="Gemini geçmişinizi yapıştırarak proje oluşturun"
+          >
+            <Sparkles className="w-5 h-5" />
+            Gemini'dan Aktar
+          </button>
         </div>
       </div>
+
+      {/* Gemini Import Modal */}
+      {showGeminiImport && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl p-6 md:p-8 w-full max-w-2xl shadow-2xl relative">
+            <button 
+              onClick={() => setShowGeminiImport(false)}
+              className="absolute top-6 right-6 text-zinc-400 hover:text-zinc-600 transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            <h3 className="text-2xl font-bold text-zinc-900 mb-2 flex items-center gap-2">
+              <Sparkles className="w-6 h-6 text-indigo-600" />
+              Gemini Geçmişinden İçe Aktar
+            </h3>
+            <p className="text-zinc-500 mb-6">Gemini.google.com'daki konuşma geçmişinizi kopyalayıp buraya yapıştırın. Yapay zeka, bu geçmişi analiz ederek istediğiniz web sitesini oluşturacaktır.</p>
+            
+            <textarea
+              value={geminiHistory}
+              onChange={(e) => setGeminiHistory(e.target.value)}
+              className="w-full p-4 mb-6 text-sm border border-zinc-200 rounded-2xl focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all resize-none bg-zinc-50 h-64"
+              placeholder="Gemini konuşma geçmişinizi buraya yapıştırın..."
+            />
+            
+            <div className="flex justify-end gap-3">
+              <button 
+                onClick={() => setShowGeminiImport(false)}
+                className="px-6 py-3 text-zinc-600 font-medium hover:bg-zinc-100 rounded-xl transition-colors"
+              >
+                İptal
+              </button>
+              <button 
+                onClick={handleGeminiImport}
+                disabled={!geminiHistory.trim()}
+                className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                <CheckCircle2 className="w-5 h-5" />
+                İçe Aktar ve Devam Et
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Right Panel - Preview */}
       {showPreview && (

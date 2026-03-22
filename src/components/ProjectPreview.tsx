@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Project, User } from '../types';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-import { Loader2, Globe, RefreshCw, Edit2, Check, Settings } from 'lucide-react';
+import { Loader2, Globe, RefreshCw, Edit2, Check, Settings, Maximize2, Minimize2 } from 'lucide-react';
 import { GoogleGenAI } from '@google/genai';
 import { ProjectSettingsModal } from './ProjectSettingsModal';
 
@@ -12,6 +12,7 @@ export const ProjectPreview = ({ project, user }: { project: Project, user: User
   const [updatePrompt, setUpdatePrompt] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
@@ -49,8 +50,8 @@ export const ProjectPreview = ({ project, user }: { project: Project, user: User
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
       const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: `Mevcut HTML kodu:\n\`\`\`html\n${project.code}\n\`\`\`\n\nKullanıcının güncelleme isteği: "${updatePrompt}".\nBu isteğe göre HTML kodunu güncelle. Sadece güncellenmiş HTML kodunu döndür, markdown işaretleri kullanma.`
+        model: "gemini-3.1-pro-preview",
+        contents: `Sen uzman bir Frontend Geliştiricisi ve UI/UX Tasarımcısısın. Mevcut HTML kodu:\n\`\`\`html\n${project.code}\n\`\`\`\n\nKullanıcının güncelleme isteği: "${updatePrompt}".\nBu isteğe göre HTML kodunu en iyi pratikleri kullanarak, tasarımı bozmadan ve modern görünümü koruyarak güncelle. Sadece ve sadece güncellenmiş çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`\`html vb.) KULLANMA.`
       });
       
       let newCode = response.text || '';
@@ -70,7 +71,7 @@ export const ProjectPreview = ({ project, user }: { project: Project, user: User
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)] gap-4">
+    <div className={`flex flex-col gap-4 ${isFullscreen ? 'fixed inset-0 z-50 bg-zinc-50 p-4 md:p-6 h-screen' : 'h-[calc(100vh-8rem)]'}`}>
       <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm">
         <div className="flex items-center gap-3">
           {isEditingTitle ? (
@@ -109,11 +110,19 @@ export const ProjectPreview = ({ project, user }: { project: Project, user: User
 
         <div className="flex items-center gap-3">
           <button 
+            onClick={() => setIsFullscreen(!isFullscreen)}
+            className="flex items-center gap-2 px-3 py-2 bg-zinc-100 text-zinc-700 text-sm font-medium rounded-xl hover:bg-zinc-200 transition-all shadow-sm"
+            title={isFullscreen ? "Küçült" : "Tam Ekran"}
+          >
+            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+            <span className="hidden sm:inline">{isFullscreen ? "Küçült" : "Tam Ekran"}</span>
+          </button>
+          <button 
             onClick={() => setShowSettings(true)}
             className="flex items-center gap-2 px-4 py-2 bg-zinc-100 text-zinc-700 text-sm font-medium rounded-xl hover:bg-zinc-200 transition-all shadow-sm"
           >
             <Settings className="w-4 h-4" />
-            Ayarlar & Analiz
+            <span className="hidden sm:inline">Ayarlar & Analiz</span>
           </button>
           {!project.isPublished && (
             <button 
@@ -121,7 +130,7 @@ export const ProjectPreview = ({ project, user }: { project: Project, user: User
               className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-sm font-medium rounded-xl hover:from-indigo-600 hover:to-purple-600 transition-all shadow-sm"
             >
               <Globe className="w-4 h-4" />
-              Yayınla
+              <span className="hidden sm:inline">Yayınla</span>
             </button>
           )}
         </div>
