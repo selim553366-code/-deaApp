@@ -114,7 +114,11 @@ export const IdeaInput = ({ user, onProjectCreated }: { user: User | null, onPro
       }
 
       // Generate code
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+      const apiKey = process.env.GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        throw new Error("API Key is missing");
+      }
+      const ai = new GoogleGenAI({ apiKey });
       const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
         contents: `Kullanıcının fikri ve detayları: "${finalPrompt}". Bu fikir için tek sayfalık, modern, Tailwind CSS kullanan, işlevsel bir HTML kodu oluştur. Sadece HTML kodunu döndür, markdown işaretleri kullanma.`
