@@ -114,9 +114,10 @@ export const IdeaInput = ({ user, onProjectCreated }: { user: User | null, onPro
       }
 
       // Generate code
-      const apiKey = process.env.GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;
-      if (!apiKey) {
-        throw new Error("API Key is missing");
+      const apiKey = process.env.GEMINI_API_KEY;
+      
+      if (!apiKey || apiKey === "MY_GEMINI_API_KEY" || apiKey === "YOUR_GEMINI_API_KEY") {
+        throw new Error("API Key is missing or invalid. Please check your environment configuration.");
       }
       const ai = new GoogleGenAI({ apiKey });
       const response = await ai.models.generateContent({
