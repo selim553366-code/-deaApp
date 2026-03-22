@@ -87,8 +87,15 @@ export const ProjectPreview = ({
     setIsChatLoading(true);
 
     try {
-      const apiKey = process.env.GEMINI_API_KEY;
+      // Use the provided API key as a fallback if the environment variable is not set
+      let apiKey = process.env.GEMINI_API_KEY;
+      const fallbackKey = "a3c030f57f10e87a54e1a8c2e6fd3f9c5ec8da8e";
+      
       if (!apiKey || apiKey === "MY_GEMINI_API_KEY" || apiKey === "YOUR_GEMINI_API_KEY" || apiKey === "undefined" || apiKey === "") {
+        apiKey = fallbackKey;
+      }
+
+      if (!apiKey) {
         throw new Error("API Anahtarı bulunamadı! Lütfen sistem yöneticisiyle iletişime geçin. (Hata: API_KEY_MISSING)");
       }
 
