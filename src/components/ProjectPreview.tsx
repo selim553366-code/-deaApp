@@ -2,14 +2,16 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Project, User } from '../types';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-import { Loader2, Globe, RefreshCw, Edit2, Check } from 'lucide-react';
+import { Loader2, Globe, RefreshCw, Edit2, Check, Settings } from 'lucide-react';
 import { GoogleGenAI } from '@google/genai';
+import { ProjectSettingsModal } from './ProjectSettingsModal';
 
 export const ProjectPreview = ({ project, user }: { project: Project, user: User | null }) => {
   const [title, setTitle] = useState(project.title || 'İsimsiz Proje');
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [updatePrompt, setUpdatePrompt] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
@@ -98,6 +100,13 @@ export const ProjectPreview = ({ project, user }: { project: Project, user: User
         </div>
 
         <div className="flex items-center gap-3">
+          <button 
+            onClick={() => setShowSettings(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-zinc-100 text-zinc-700 text-sm font-medium rounded-xl hover:bg-zinc-200 transition-all shadow-sm"
+          >
+            <Settings className="w-4 h-4" />
+            Ayarlar & Analiz
+          </button>
           {!project.isPublished && (
             <button 
               onClick={handlePublish}
@@ -155,6 +164,7 @@ export const ProjectPreview = ({ project, user }: { project: Project, user: User
           )}
         </div>
       </div>
+      {showSettings && <ProjectSettingsModal project={project} onClose={() => setShowSettings(false)} />}
     </div>
   );
 };

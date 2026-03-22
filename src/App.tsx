@@ -15,7 +15,10 @@ import { HelpModal } from "./components/HelpModal";
 import { AIHelperModal } from "./components/AIHelperModal";
 import { ProjectPreview } from "./components/ProjectPreview";
 
-export default function App() {
+import { Routes, Route } from "react-router-dom";
+import { PublishedSite } from "./pages/PublishedSite";
+
+function Builder() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [prompt, setPrompt] = useState('');
@@ -204,5 +207,14 @@ export default function App() {
         </main>
       </div>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Builder />} />
+      <Route path="/p/:projectId" element={<PublishedSite />} />
+    </Routes>
   );
 }

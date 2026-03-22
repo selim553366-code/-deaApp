@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, db } from '../firebase';
-import { collection, addDoc, doc, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc, setDoc } from 'firebase/firestore';
 import { GoogleGenAI } from '@google/genai';
 import { Loader2 } from 'lucide-react';
 
@@ -39,7 +39,9 @@ export const AuthForm = ({ prompt, onProjectCreated }: Props) => {
         let code = response.text || '<h1>Hata oluştu</h1>';
         code = code.replace(/```html/g, '').replace(/```/g, '').trim();
 
+        const newProjectRef = doc(collection(db, 'projects'));
         const newProject = {
+          id: newProjectRef.id,
           userId: userCredential.user.uid,
           title: prompt.substring(0, 30) + (prompt.length > 30 ? "..." : ""),
           idea: prompt,
@@ -49,9 +51,9 @@ export const AuthForm = ({ prompt, onProjectCreated }: Props) => {
           updatedAt: new Date().toISOString(),
         };
 
-        const docRef = await addDoc(collection(db, 'projects'), newProject);
+        await setDoc(newProjectRef, newProject);
         if (onProjectCreated) {
-          onProjectCreated(docRef.id);
+          onProjectCreated(newProjectRef.id);
         }
       }
     } catch (err: any) {

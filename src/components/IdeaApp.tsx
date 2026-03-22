@@ -44,7 +44,7 @@ export function IdeaApp({ user }: { user: User }) {
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const projs = snapshot.docs.map(doc => doc.data() as Project);
+      const projs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project));
       setProjects(projs);
       if (projs.length > 0 && !currentProject) {
         setCurrentProject(projs[0]);
@@ -118,14 +118,15 @@ export function IdeaApp({ user }: { user: User }) {
         code = code.replace(/^```\n/, "").replace(/\n```$/, "");
       }
 
-      if (currentProject) {
+      if (currentProject && currentProject.id) {
         const projRef = doc(db, "projects", currentProject.id);
         await updateDoc(projRef, {
           code,
           updatedAt: new Date().toISOString()
         });
       } else {
-        const newId = crypto.randomUUID();
+        const newProjectRef = doc(collection(db, "projects"));
+        const newId = newProjectRef.id;
         const newProject: Project = {
           id: newId,
           userId: user.uid,

@@ -13,6 +13,7 @@ export interface Project {
   idea: string;
   code: string;
   isPublished?: boolean;
+  hasPaidForNameChange?: boolean;
   createdAt: string;
   updatedAt: string;
 }

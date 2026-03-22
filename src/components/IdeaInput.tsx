@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { db, auth } from '../firebase';
-import { collection, addDoc, doc, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc, setDoc } from 'firebase/firestore';
 import { Loader2, Sparkles, X, CheckCircle2, Circle, Wand2 } from 'lucide-react';
 import { User } from '../types';
 import { GoogleGenAI, Type } from "@google/genai";
@@ -122,7 +122,9 @@ export const IdeaInput = ({ user, onProjectCreated }: { user: User | null, onPro
           let code = response.text || '<h1>Hata oluştu</h1>';
           code = code.replace(/```html/g, '').replace(/```/g, '').trim();
 
+          const newProjectRef = doc(collection(db, 'projects'));
           const newProject = {
+            id: newProjectRef.id,
             userId: auth.currentUser?.uid,
             title: idea.substring(0, 30) + (idea.length > 30 ? "..." : ""),
             idea: finalPrompt,
@@ -132,14 +134,14 @@ export const IdeaInput = ({ user, onProjectCreated }: { user: User | null, onPro
             updatedAt: new Date().toISOString(),
           };
 
-          const docRef = await addDoc(collection(db, 'projects'), newProject);
+          await setDoc(newProjectRef, newProject);
           
           setIdea('');
           setShowPreview(false);
           setIsGenerating(false);
           
           if (onProjectCreated) {
-            onProjectCreated(docRef.id);
+            onProjectCreated(newProjectRef.id);
           }
         } catch (err) {
           console.error(err);

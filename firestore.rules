@@ -78,11 +78,14 @@ service cloud.firestore {
     }
 
     function isValidProject(data) {
-      return hasOnlyAllowedFields(['id', 'userId', 'idea', 'code', 'createdAt', 'updatedAt']) &&
+      return hasOnlyAllowedFields(['id', 'userId', 'title', 'idea', 'code', 'isPublished', 'hasPaidForNameChange', 'createdAt', 'updatedAt']) &&
              data.id is string && data.id.size() > 0 &&
              data.userId is string && data.userId.size() > 0 &&
+             (!('title' in data) || (data.title is string && data.title.size() <= 100)) &&
              data.idea is string && data.idea.size() > 0 && data.idea.size() < 10000 &&
              data.code is string && data.code.size() > 0 && data.code.size() < 1000000 &&
+             (!('isPublished' in data) || data.isPublished is bool) &&
+             (!('hasPaidForNameChange' in data) || data.hasPaidForNameChange is bool) &&
              data.createdAt is string &&
              data.updatedAt is string;
     }
@@ -98,10 +101,15 @@ service cloud.firestore {
     }
 
     match /projects/{projectId} {
-      allow read: if isOwner(resource.data.userId);
+      allow read: if isOwner(resource.data.userId) || resource.data.isPublished == true;
       allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid && isValidProject(request.resource.data);
       allow update: if isDocOwner() && isValidProject(request.resource.data) && areImmutableFieldsUnchanged(['id', 'userId', 'createdAt']);
       allow delete: if isDocOwner();
+      
+      match /pageViews/{viewId} {
+        allow read: if isOwner(get(/databases/$(database)/documents/projects/$(projectId)).data.userId);
+        allow create: if true; // Anyone can create a page view
+      }
     }
   }
 }
