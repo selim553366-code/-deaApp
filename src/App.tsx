@@ -45,7 +45,7 @@ function Builder() {
             const userData = docSnap.data() as User;
             
             // Auto-grant premium to the creator account
-            const isCreatorEmail = userData.email === "selim@gmail.com" || userData.email === "selim553366@gmail.com";
+            const isCreatorEmail = userData.email === "selim@gmail.com" || userData.email === "selim553366@gmail.com" || userData.email === "tamtamyilyil@gmail.com";
             const isCreatorName = userData.name?.toLowerCase() === "selim" || userData.name?.toLowerCase() === "adadda";
             
             if ((isCreatorEmail || isCreatorName) && !userData.isPremium) {
@@ -56,7 +56,7 @@ function Builder() {
             setUser(userData);
           } else {
             // Create new user
-            const isCreatorEmail = firebaseUser.email === "selim@gmail.com" || firebaseUser.email === "selim553366@gmail.com";
+            const isCreatorEmail = firebaseUser.email === "selim@gmail.com" || firebaseUser.email === "selim553366@gmail.com" || firebaseUser.email === "tamtamyilyil@gmail.com";
             const isCreatorName = firebaseUser.displayName?.toLowerCase() === "selim" || firebaseUser.displayName?.toLowerCase() === "adadda";
             const isCreator = isCreatorEmail || isCreatorName;
             

@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { X, Globe, Eye, Lock, Unlock, Copy, Check, Trash2, Edit2 } from 'lucide-react';
-import { Project } from '../types';
+import { Project, User } from '../types';
 import { doc, updateDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 
 interface Props {
   project: Project;
+  user: User | null;
   onClose: () => void;
 }
 
-export const ProjectSettingsModal = ({ project, onClose }: Props) => {
+export const ProjectSettingsModal = ({ project, user, onClose }: Props) => {
   const [isPublished, setIsPublished] = useState(project.isPublished || false);
   const [hasPaid, setHasPaid] = useState(project.hasPaidForNameChange || false);
   const [newName, setNewName] = useState(project.title || '');
@@ -131,9 +132,9 @@ export const ProjectSettingsModal = ({ project, onClose }: Props) => {
               <Edit2 className="w-5 h-5 text-amber-500" />
               Proje İsmini Değiştir
             </h3>
-            {!hasPaid ? (
+            {(!hasPaid && !user?.isPremium) ? (
               <div className="bg-amber-50 p-4 rounded-2xl border border-amber-200 flex items-center justify-between gap-4">
-                <p className="text-sm text-amber-800">Proje ismini değiştirmek için 50.99 TL ödemeniz gerekmektedir.</p>
+                <p className="text-sm text-amber-800">Proje ismini değiştirmek için 50.99 TL ödemeniz gerekmektedir. (Premium üyeler için ücretsizdir)</p>
                 <a
                   href={import.meta.env.VITE_LEMON_SQUEEZY_NAME_CHANGE_CHECKOUT_URL}
                   target="_blank"

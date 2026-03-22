@@ -89,9 +89,17 @@ export const ProjectPreview = ({ project, user }: { project: Project, user: User
               </button>
             </div>
           ) : (
-            <div className="flex items-center gap-2 group cursor-pointer" onClick={() => setIsEditingTitle(true)}>
+            <div className={`flex items-center gap-2 ${(user?.isPremium || project.hasPaidForNameChange) ? 'group cursor-pointer' : ''}`} onClick={() => {
+              if (user?.isPremium || project.hasPaidForNameChange) {
+                setIsEditingTitle(true);
+              } else {
+                setShowSettings(true); // Open settings to show payment option
+              }
+            }}>
               <h2 className="text-xl font-bold text-zinc-800">{title}</h2>
-              <Edit2 className="w-4 h-4 text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+              {(user?.isPremium || project.hasPaidForNameChange) && (
+                <Edit2 className="w-4 h-4 text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+              )}
             </div>
           )}
           {project.isPublished && (
@@ -164,7 +172,7 @@ export const ProjectPreview = ({ project, user }: { project: Project, user: User
           )}
         </div>
       </div>
-      {showSettings && <ProjectSettingsModal project={project} onClose={() => setShowSettings(false)} />}
+      {showSettings && <ProjectSettingsModal project={project} user={user} onClose={() => setShowSettings(false)} />}
     </div>
   );
 };

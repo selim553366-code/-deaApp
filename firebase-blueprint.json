@@ -63,9 +63,27 @@
         }
       },
       "required": ["id", "userId", "idea", "code", "createdAt", "updatedAt"]
+    },
+    "Settings": {
+      "title": "Settings",
+      "description": "Global application settings.",
+      "type": "object",
+      "properties": {
+        "siteName": {
+          "type": "string",
+          "description": "The name of the site."
+        }
+      },
+      "required": ["siteName"]
     }
   },
   "firestore": {
+    "/settings/{settingId}": {
+      "schema": {
+        "$ref": "#/entities/Settings"
+      },
+      "description": "Stores global application settings."
+    },
     "/users/{userId}": {
       "schema": {
         "$ref": "#/entities/User"
