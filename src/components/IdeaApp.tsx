@@ -210,12 +210,10 @@ export function IdeaApp({ user }: { user: User }) {
             >
               {isPreviewOpen ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
-            {!user.isPremium && (
-              <div className="text-sm font-medium bg-zinc-800 px-3 py-1.5 rounded-full flex items-center gap-2">
-                <span className="text-zinc-400">Krediler:</span>
-                <span className="text-indigo-400">{user.credits}</span>
-              </div>
-            )}
+            <div className="text-sm font-medium bg-zinc-800 px-3 py-1.5 rounded-full flex items-center gap-2">
+              <span className="text-zinc-400">Krediler:</span>
+              <span className="text-indigo-400">{user.isPremium ? '∞' : user.credits}</span>
+            </div>
             {user.isPremium && (
               <div className="text-sm font-medium bg-indigo-500/20 text-indigo-300 px-3 py-1.5 rounded-full border border-indigo-500/30">
                 Premium Aktif

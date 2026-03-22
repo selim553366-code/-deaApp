@@ -31,7 +31,7 @@ export const Header = ({ user, onLogin, onSignup, onHelp, onPremium, onMenuClick
           <div className="flex items-center gap-3 pl-2 md:pl-3 border-l border-zinc-200">
             <div className="hidden sm:flex flex-col items-end">
               <span className="text-sm font-medium text-zinc-900">{user.email?.split('@')[0]}</span>
-              <span className="text-xs text-zinc-500">{user.credits} Kredi</span>
+              <span className="text-xs text-zinc-500">{user.isPremium ? '∞' : user.credits} Kredi</span>
             </div>
             <button onClick={() => signOut(auth)} className="p-2 text-zinc-500 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors" title="Çıkış Yap">
               <LogOut className="w-5 h-5" />
