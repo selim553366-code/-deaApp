@@ -116,8 +116,8 @@ export const IdeaInput = ({ user, onProjectCreated }: { user: User | null, onPro
       // Generate code
       const apiKey = process.env.GEMINI_API_KEY;
       
-      if (!apiKey || apiKey === "MY_GEMINI_API_KEY" || apiKey === "YOUR_GEMINI_API_KEY") {
-        throw new Error("API Key is missing or invalid. Please check your environment configuration.");
+      if (!apiKey || apiKey === "MY_GEMINI_API_KEY" || apiKey === "YOUR_GEMINI_API_KEY" || apiKey === "undefined") {
+        throw new Error("API Anahtarı bulunamadı! Lütfen Vercel'de 'Environment Variables' kısmına GEMINI_API_KEY eklediğinizden emin olun ve projeyi yeniden deploy (build) edin.");
       }
       const ai = new GoogleGenAI({ apiKey });
       const response = await ai.models.generateContent({
