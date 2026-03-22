@@ -72,59 +72,63 @@ export const ProjectPreview = ({
     }
 
     const newUserMsg = { role: 'user' as const, text: chatInput };
+    const updatedMessages = [...chatMessages, newUserMsg];
     
     // Use functional state update to ensure we have the latest messages
-    setChatMessages(prevMessages => {
-      const updatedMessages = [...prevMessages, newUserMsg];
-      
-      // Update database asynchronously without blocking UI
-      updateDoc(doc(db, 'projects', project.id), { 
-        chatHistory: updatedMessages,
-        updatedAt: new Date().toISOString() 
-      }).catch(console.error);
-
-      return updatedMessages;
-    });
+    setChatMessages(updatedMessages);
+    
+    // Update database asynchronously without blocking UI
+    updateDoc(doc(db, 'projects', project.id), { 
+      chatHistory: updatedMessages,
+      updatedAt: new Date().toISOString() 
+    }).catch(console.error);
     
     setChatInput('');
     setIsChatLoading(true);
 
     try {
       const apiKey = process.env.GEMINI_API_KEY;
-      if (!apiKey || apiKey === "MY_GEMINI_API_KEY" || apiKey === "YOUR_GEMINI_API_KEY" || apiKey === "undefined") {
-        throw new Error("API Anahtarı bulunamadı! Lütfen ayarlardan API anahtarınızı kontrol edin.");
+      if (!apiKey || apiKey === "MY_GEMINI_API_KEY" || apiKey === "YOUR_GEMINI_API_KEY" || apiKey === "undefined" || apiKey === "") {
+        throw new Error("API Anahtarı bulunamadı! Lütfen sistem yöneticisiyle iletişime geçin. (Hata: API_KEY_MISSING)");
       }
 
       // Deduct credits if not premium
       if (user && !user.isPremium) {
-        const userRef = doc(db, 'users', user.uid);
-        await updateDoc(userRef, {
-          updateCredits: Math.max(0, (user.updateCredits || 0) - 10)
-        });
+        try {
+          const userRef = doc(db, 'users', user.uid);
+          await updateDoc(userRef, {
+            updateCredits: Math.max(0, (user.updateCredits || 0) - 10)
+          });
+        } catch (creditErr) {
+          console.error("Credit deduction failed:", creditErr);
+          throw new Error("Kredi düşme işlemi başarısız oldu. Lütfen bağlantınızı kontrol edin.");
+        }
       }
 
       const ai = new GoogleGenAI({ apiKey });
       
-      // Use the updated messages list to ensure AI has full context
-      const updatedMessages = [...chatMessages, newUserMsg];
       const contents = updatedMessages.map(msg => ({
         role: msg.role,
         parts: [{ text: msg.text }]
       }));
 
       // Inject the current HTML code into the last message context
-      contents[contents.length - 1].parts[0].text = `Mevcut HTML Kodu:\n\`\`\`html\n${project.code}\n\`\`\`\n\nKullanıcı Mesajı: ${newUserMsg.text}`;
+      const lastMsg = contents[contents.length - 1];
+      const currentCode = project.code || "";
+      lastMsg.parts[0].text = `Mevcut HTML Kodu:\n\`\`\`html\n${currentCode}\n\`\`\`\n\nKullanıcı Mesajı: ${newUserMsg.text}`;
 
       const response = await ai.models.generateContent({
-        model: "gemini-3.1-pro-preview",
+        model: "gemini-3-flash-preview",
         contents: contents,
         config: {
-          systemInstruction: "Sen uzman bir Frontend Geliştiricisi ve UI/UX Tasarımcısısın. Kullanıcının web sitesini güncellemesine yardımcı oluyorsun. Gerekirse web'de araştırma yapabilirsin.\n\nÖNEMLİ KURAL: Cevapların her zaman ÇOK KISA, ÖZ ve NET olmalı. Uzun açıklamalar yapma.\n\nKullanıcı bir değişiklik istediğinde, değişikliği yap ve güncellenmiş çalışabilir HTML kodunun TAMAMINI ```html ve ``` etiketleri arasına yazarak cevap ver. Kodun dışında sadece çok kısa bir açıklama yap. Türkçe konuş.",
-          tools: [{ googleSearch: {} }]
+          systemInstruction: "Sen uzman bir Frontend Geliştiricisi ve UI/UX Tasarımcısısın. Kullanıcının web sitesini güncellemesine yardımcı oluyorsun.\n\nÖNEMLİ KURAL: Cevapların her zaman ÇOK KISA, ÖZ ve NET olmalı. Uzun açıklamalar yapma.\n\nKullanıcı bir değişiklik istediğinde, değişikliği yap ve güncellenmiş çalışabilir HTML kodunun TAMAMINI ```html ve ``` etiketleri arasına yazarak cevap ver. Kodun dışında sadece çok kısa bir açıklama yap. Türkçe konuş.",
         }
       });
       
       let responseText = response.text || '';
+      if (!responseText) {
+        throw new Error("Yapay zekadan boş cevap döndü. Lütfen tekrar deneyin.");
+      }
       const htmlMatch = responseText.match(/```html([\s\S]*?)```/);
       
       let newCode = project.code;
@@ -142,22 +146,29 @@ export const ProjectPreview = ({
       }
 
       const newAiMsg = { role: 'model' as const, text: aiMessageText };
+      const finalMessages = [...updatedMessages, newAiMsg];
       
-      setChatMessages(prevMessages => {
-        const finalMessages = [...prevMessages, newAiMsg];
-        
-        updateDoc(doc(db, 'projects', project.id), { 
-          code: newCode,
-          chatHistory: finalMessages,
-          updatedAt: new Date().toISOString() 
-        }).catch(console.error);
-
-        return finalMessages;
+      setChatMessages(finalMessages);
+      
+      await updateDoc(doc(db, 'projects', project.id), { 
+        code: newCode,
+        chatHistory: finalMessages,
+        updatedAt: new Date().toISOString() 
       });
       
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      const errorMsg = { role: 'model' as const, text: 'Üzgünüm, bir hata oluştu. Lütfen tekrar deneyin.' };
+      let errorMessage = 'Üzgünüm, bir hata oluştu. Lütfen tekrar deneyin.';
+      
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      } else if (err && typeof err === 'object' && err.message) {
+        errorMessage = err.message;
+      } else if (typeof err === 'string') {
+        errorMessage = err;
+      }
+      
+      const errorMsg = { role: 'model' as const, text: errorMessage };
       
       setChatMessages(prevMessages => {
         const finalMessages = [...prevMessages, errorMsg];
