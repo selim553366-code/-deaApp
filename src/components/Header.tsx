@@ -68,7 +68,10 @@ export const Header = ({ user, onLogin, onSignup, onHelp, onPremium, onMenuClick
           <div className="flex items-center gap-3 pl-2 md:pl-3 border-l border-zinc-200">
             <div className="hidden sm:flex flex-col items-end">
               <span className="text-sm font-medium text-zinc-900">{user.email?.split('@')[0]}</span>
-              <span className="text-xs text-zinc-500">{user.isPremium ? '∞' : user.credits} {t('credits')}</span>
+              <div className="flex gap-2 text-[10px] text-zinc-500">
+                <span>{t('siteCredits')}: {user.isPremium ? '∞' : (user.siteCreationCredits || 0)}</span>
+                <span>{t('updateCredits')}: {user.isPremium ? '∞' : (user.updateCredits || 0)}</span>
+              </div>
             </div>
             <motion.button 
               whileHover={{ scale: 1.1 }}

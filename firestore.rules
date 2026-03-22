@@ -69,10 +69,12 @@ service cloud.firestore {
     // Domain Validators
     // ===============================================================
     function isValidUser(data) {
-      return hasOnlyAllowedFields(['uid', 'email', 'credits', 'isPremium', 'createdAt']) &&
+      return hasOnlyAllowedFields(['uid', 'email', 'credits', 'updateCredits', 'siteCreationCredits', 'isPremium', 'createdAt']) &&
              data.uid is string && data.uid.size() > 0 &&
              data.email is string && isValidEmail(data.email) &&
              data.credits is number && data.credits >= 0 &&
+             (!('updateCredits' in data) || (data.updateCredits is number && data.updateCredits >= 0)) &&
+             (!('siteCreationCredits' in data) || (data.siteCreationCredits is number && data.siteCreationCredits >= 0)) &&
              data.isPremium is bool &&
              data.createdAt is string;
     }

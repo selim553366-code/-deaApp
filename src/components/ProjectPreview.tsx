@@ -64,15 +64,12 @@ export const ProjectPreview = ({
   };
 
   const handleSendMessage = async () => {
-    if (!project.isPublished) {
-      alert('Güncelleme yapabilmek için önce projenizi yayınlamalısınız. Yayınlamak Premium bir özelliktir.');
-      if (!user?.isPremium) {
-        window.dispatchEvent(new CustomEvent('show-premium-modal'));
-      }
+    if (!chatInput.trim() || isChatLoading) return;
+
+    if (user && !user.isPremium && (user.updateCredits || 0) < 10) {
+      window.dispatchEvent(new CustomEvent('show-premium-modal'));
       return;
     }
-    
-    if (!chatInput.trim() || isChatLoading) return;
 
     const newUserMsg = { role: 'user' as const, text: chatInput };
     
@@ -93,11 +90,24 @@ export const ProjectPreview = ({
     setIsChatLoading(true);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey || apiKey === "MY_GEMINI_API_KEY" || apiKey === "YOUR_GEMINI_API_KEY" || apiKey === "undefined") {
+        throw new Error("API Anahtarı bulunamadı! Lütfen ayarlardan API anahtarınızı kontrol edin.");
+      }
+
+      // Deduct credits if not premium
+      if (user && !user.isPremium) {
+        const userRef = doc(db, 'users', user.uid);
+        await updateDoc(userRef, {
+          updateCredits: Math.max(0, (user.updateCredits || 0) - 10)
+        });
+      }
+
+      const ai = new GoogleGenAI({ apiKey });
       
-      // We need to build contents from the latest state, so we construct it here
-      const currentMessages = [...chatMessages, newUserMsg];
-      const contents = currentMessages.map(msg => ({
+      // Use the updated messages list to ensure AI has full context
+      const updatedMessages = [...chatMessages, newUserMsg];
+      const contents = updatedMessages.map(msg => ({
         role: msg.role,
         parts: [{ text: msg.text }]
       }));
@@ -109,7 +119,7 @@ export const ProjectPreview = ({
         model: "gemini-3.1-pro-preview",
         contents: contents,
         config: {
-          systemInstruction: "Sen uzman bir Frontend Geliştiricisi ve UI/UX Tasarımcısısın. Kullanıcıyla sohbet ederek web sitesini nasıl güncelleyeceğinizi tartışın. Gerekirse web'de araştırma yapabilirsin.\n\nÖNEMLİ KURAL: Cevapların her zaman ÇOK KISA, ÖZ ve NET olmalı. Uzun açıklamalar yapma, en fazla 1-2 cümle kullan.\n\nKullanıcı bir değişiklik istediğinde kısaca ne yapacağını söyle ve 'Uygulamamı ister misin?' diye sor. Kullanıcı kesin bir şekilde 'evet', 'güncelle', 'kodu yaz', 'uygula', 'yap' gibi net bir onay vermeden KESİNLİKLE HTML kodu üretme! Sadece sohbet et, fikir ver, plan yap.\n\nKullanıcı onay verdiğinde ve anlaştığınızda, tüm güncellenmiş çalışabilir HTML kodunu ```html ve ``` etiketleri arasına yazarak cevap ver. Sohbet ediyorsan normal metin yaz, kod bloğu kullanma. Türkçe konuş.",
+          systemInstruction: "Sen uzman bir Frontend Geliştiricisi ve UI/UX Tasarımcısısın. Kullanıcının web sitesini güncellemesine yardımcı oluyorsun. Gerekirse web'de araştırma yapabilirsin.\n\nÖNEMLİ KURAL: Cevapların her zaman ÇOK KISA, ÖZ ve NET olmalı. Uzun açıklamalar yapma.\n\nKullanıcı bir değişiklik istediğinde, değişikliği yap ve güncellenmiş çalışabilir HTML kodunun TAMAMINI ```html ve ``` etiketleri arasına yazarak cevap ver. Kodun dışında sadece çok kısa bir açıklama yap. Türkçe konuş.",
           tools: [{ googleSearch: {} }]
         }
       });
@@ -304,12 +314,6 @@ export const ProjectPreview = ({
           </div>
 
           <div className="p-3 border-t border-zinc-100 bg-white">
-            {!project.isPublished && (
-              <div className="mb-3 text-xs text-amber-600 bg-amber-50 p-2 rounded-lg border border-amber-200 flex items-center gap-2">
-                <Globe className="w-4 h-4 shrink-0" />
-                <span>Güncelleme yapabilmek için önce projeyi yayınlamanız gerekmektedir (Premium).</span>
-              </div>
-            )}
             <div className="flex items-end gap-2">
               <textarea
                 value={chatInput}

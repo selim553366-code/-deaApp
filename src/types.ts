@@ -3,6 +3,8 @@ export interface User {
   email: string;
   name?: string;
   credits: number;
+  updateCredits: number;
+  siteCreationCredits: number;
   isPremium: boolean;
   createdAt: string;
 }

@@ -55,8 +55,22 @@ function Builder() {
             const isCreatorName = userData.name?.toLowerCase() === "selim" || userData.name?.toLowerCase() === "adadda";
             
             if ((isCreatorEmail || isCreatorName) && !userData.isPremium) {
-              await updateDoc(userRef, { isPremium: true });
+              await updateDoc(userRef, { 
+                isPremium: true,
+                updateCredits: 999999,
+                siteCreationCredits: 999999
+              });
               userData.isPremium = true;
+              userData.updateCredits = 999999;
+              userData.siteCreationCredits = 999999;
+            } else if (!isCreatorEmail && !isCreatorName && userData.updateCredits === undefined) {
+              // Migration for existing non-creator users
+              await updateDoc(userRef, { 
+                updateCredits: 500,
+                siteCreationCredits: 50
+              });
+              userData.updateCredits = 500;
+              userData.siteCreationCredits = 50;
             }
             
             setUser(userData);
@@ -70,6 +84,8 @@ function Builder() {
               uid: firebaseUser.uid,
               email: firebaseUser.email || "",
               credits: 10,
+              updateCredits: isCreator ? 999999 : 500,
+              siteCreationCredits: isCreator ? 999999 : 50,
               isPremium: isCreator,
               createdAt: new Date().toISOString(),
             };

@@ -450,9 +450,9 @@ const translations: Translations = {
     'en-uk': 'You can manage API keys and secret variables from here. (This feature will be added soon)',
   },
   welcomeTitle: {
-    tr: "İdea Ai'ye Hoş Geldiniz",
-    'en-us': 'Welcome to Idea AI',
-    'en-uk': 'Welcome to Idea AI',
+    tr: "Türkiye'nin Tek Güvenilir Web Sitesi Oluşturucusu",
+    'en-us': "Turkey's Only Reliable Website Builder",
+    'en-uk': "Turkey's Only Reliable Website Builder",
   },
   welcomeDesc: {
     tr: 'Fikirlerinizi saniyeler içinde çalışan prototiplere dönüştürün. Yapay zeka destekli geliştirme asistanınızla hemen üretmeye başlayın.',
@@ -548,6 +548,16 @@ const translations: Translations = {
     tr: 'Mesajınız gönderildi!',
     'en-us': 'Your message has been sent!',
     'en-uk': 'Your message has been sent!',
+  },
+  siteCredits: {
+    tr: 'Site',
+    'en-us': 'Site',
+    'en-uk': 'Site',
+  },
+  updateCredits: {
+    tr: 'Güncelleme',
+    'en-us': 'Update',
+    'en-uk': 'Update',
   }
 };
 

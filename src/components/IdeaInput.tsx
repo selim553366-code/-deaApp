@@ -52,7 +52,7 @@ export const IdeaInput = ({ user, onProjectCreated, initialPrompt }: { user: Use
   const handleStart = async () => {
     if (!idea.trim() || isFetchingQuestions || isGenerating) return;
 
-    if (user && !user.isPremium && user.credits < 10) {
+    if (user && !user.isPremium && (user.siteCreationCredits || 0) < 10) {
       window.dispatchEvent(new CustomEvent('show-premium-modal'));
       return;
     }
@@ -133,7 +133,7 @@ export const IdeaInput = ({ user, onProjectCreated, initialPrompt }: { user: Use
       if (user && !user.isPremium) {
         const userRef = doc(db, 'users', user.uid);
         await updateDoc(userRef, {
-          credits: Math.max(0, user.credits - 10)
+          siteCreationCredits: Math.max(0, (user.siteCreationCredits || 0) - 10)
         });
       }
 
