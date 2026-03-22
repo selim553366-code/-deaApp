@@ -1,12 +1,39 @@
 import express from "express";
 import path from "path";
 import dotenv from "dotenv";
+import { GoogleGenAI } from "@google/genai";
 
 dotenv.config();
 
 const app = express();
 
 app.use(express.json());
+
+// AI Generation Endpoint
+app.post("/api/ai/generate", async (req, res) => {
+  try {
+    const { contents, systemInstruction, model = "gemini-3-flash-preview" } = req.body;
+    
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey || apiKey === "MY_GEMINI_API_KEY" || apiKey === "YOUR_GEMINI_API_KEY" || apiKey === "undefined" || apiKey === "") {
+      return res.status(500).json({ error: "API Anahtarı sunucuda yapılandırılmamış. (Hata: API_KEY_MISSING)" });
+    }
+
+    const ai = new GoogleGenAI({ apiKey });
+    const response = await ai.models.generateContent({
+      model,
+      contents,
+      config: {
+        systemInstruction,
+      },
+    });
+
+    res.json({ text: response.text });
+  } catch (error: any) {
+    console.error("AI Generation Error:", error);
+    res.status(500).json({ error: error.message || "Yapay zeka yanıt verirken bir hata oluştu." });
+  }
+});
 
 // API routes
 app.get("/api/health", (req, res) => {

@@ -3,7 +3,6 @@ import { Project, User } from '../types';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Loader2, Globe, RefreshCw, Edit2, Check, Settings, Maximize2, Minimize2, Circle, CheckCircle2, Bot, Send } from 'lucide-react';
-import { GoogleGenAI } from '@google/genai';
 import { ProjectSettingsModal } from './ProjectSettingsModal';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -87,18 +86,6 @@ export const ProjectPreview = ({
     setIsChatLoading(true);
 
     try {
-      // Use the provided API key as a fallback if the environment variable is not set
-      let apiKey = process.env.GEMINI_API_KEY;
-      const fallbackKey = "a3c030f57f10e87a54e1a8c2e6fd3f9c5ec8da8e";
-      
-      if (!apiKey || apiKey === "MY_GEMINI_API_KEY" || apiKey === "YOUR_GEMINI_API_KEY" || apiKey === "undefined" || apiKey === "") {
-        apiKey = fallbackKey;
-      }
-
-      if (!apiKey) {
-        throw new Error("API Anahtarı bulunamadı! Lütfen sistem yöneticisiyle iletişime geçin. (Hata: API_KEY_MISSING)");
-      }
-
       // Deduct credits if not premium
       if (user && !user.isPremium) {
         try {
@@ -112,8 +99,6 @@ export const ProjectPreview = ({
         }
       }
 
-      const ai = new GoogleGenAI({ apiKey });
-      
       const contents = updatedMessages.map(msg => ({
         role: msg.role,
         parts: [{ text: msg.text }]
@@ -124,15 +109,26 @@ export const ProjectPreview = ({
       const currentCode = project.code || "";
       lastMsg.parts[0].text = `Mevcut HTML Kodu:\n\`\`\`html\n${currentCode}\n\`\`\`\n\nKullanıcı Mesajı: ${newUserMsg.text}`;
 
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: contents,
-        config: {
-          systemInstruction: "Sen uzman bir Frontend Geliştiricisi ve UI/UX Tasarımcısısın. Kullanıcının web sitesini güncellemesine yardımcı oluyorsun.\n\nÖNEMLİ KURAL: Cevapların her zaman ÇOK KISA, ÖZ ve NET olmalı. Uzun açıklamalar yapma.\n\nKullanıcı bir değişiklik istediğinde, değişikliği yap ve güncellenmiş çalışabilir HTML kodunun TAMAMINI ```html ve ``` etiketleri arasına yazarak cevap ver. Kodun dışında sadece çok kısa bir açıklama yap. Türkçe konuş.",
-        }
+      const systemInstruction = "Sen uzman bir Frontend Geliştiricisi ve UI/UX Tasarımcısısın. Kullanıcının web sitesini güncellemesine yardımcı oluyorsun.\n\nÖNEMLİ KURAL: Cevapların her zaman ÇOK KISA, ÖZ ve NET olmalı. Uzun açıklamalar yapma.\n\nKullanıcı bir değişiklik istediğinde, değişikliği yap ve güncellenmiş çalışabilir HTML kodunun TAMAMINI ```html ve ``` etiketleri arasına yazarak cevap ver. Kodun dışında sadece çok kısa bir açıklama yap. Türkçe konuş.";
+
+      const aiResponse = await fetch("/api/ai/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents,
+          systemInstruction,
+          model: "gemini-3-flash-preview"
+        })
       });
+
+      if (!aiResponse.ok) {
+        const errorData = await aiResponse.json();
+        throw new Error(errorData.error || "Yapay zeka sunucusuna bağlanılamadı.");
+      }
+
+      const data = await aiResponse.json();
+      let responseText = data.text || '';
       
-      let responseText = response.text || '';
       if (!responseText) {
         throw new Error("Yapay zekadan boş cevap döndü. Lütfen tekrar deneyin.");
       }

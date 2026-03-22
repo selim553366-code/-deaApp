@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { GoogleGenAI } from "@google/genai";
 import { User } from '../types';
 
 export const AIHelper = ({ user }: { user: User | null }) => {
@@ -17,15 +16,26 @@ export const AIHelper = ({ user }: { user: User | null }) => {
 
     setLoading(true);
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
-      const result = await ai.models.generateContent({
-        model: "gemini-3.1-pro-preview",
-        contents: prompt,
+      const aiResponse = await fetch("/api/ai/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+          systemInstruction: "Sen yardımcı bir AI asistanısın. Kullanıcılara web sitesi fikirleri ve teknik konularda yardımcı oluyorsun. Kısa ve öz cevaplar ver.",
+          model: "gemini-3-flash-preview"
+        })
       });
-      setResponse(result.text || 'Cevap alınamadı.');
-    } catch (err) {
+
+      if (!aiResponse.ok) {
+        const errorData = await aiResponse.json();
+        throw new Error(errorData.error || "Yapay zeka sunucusuna bağlanılamadı.");
+      }
+
+      const data = await aiResponse.json();
+      setResponse(data.text || 'Cevap alınamadı.');
+    } catch (err: any) {
       console.error(err);
-      setResponse('Bir hata oluştu.');
+      setResponse(err.message || 'Bir hata oluştu.');
     } finally {
       setLoading(false);
     }
