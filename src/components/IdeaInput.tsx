@@ -96,60 +96,57 @@ export const IdeaInput = ({ user, onProjectCreated }: { user: User | null, onPro
       finalPrompt += `- Soru: ${q}\n  Cevap: ${finalAnswers[i]}\n`;
     });
 
-    let step = 0;
-    const interval = setInterval(async () => {
-      step++;
-      if (step < loadingMessages.length) {
-        setLoadingStep(step);
-      } else {
-        clearInterval(interval);
-        try {
-          // Deduct credits if not premium
-          if (user && !user.isPremium) {
-            const userRef = doc(db, 'users', user.uid);
-            await updateDoc(userRef, {
-              credits: Math.max(0, user.credits - 10)
-            });
-          }
-
-          // Generate code
-          const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
-          const response = await ai.models.generateContent({
-            model: "gemini-3-flash-preview",
-            contents: `Kullanıcının fikri ve detayları: "${finalPrompt}". Bu fikir için tek sayfalık, modern, Tailwind CSS kullanan, işlevsel bir HTML kodu oluştur. Sadece HTML kodunu döndür, markdown işaretleri kullanma.`
-          });
-          
-          let code = response.text || '<h1>Hata oluştu</h1>';
-          code = code.replace(/```html/g, '').replace(/```/g, '').trim();
-
-          const newProjectRef = doc(collection(db, 'projects'));
-          const newProject = {
-            id: newProjectRef.id,
-            userId: auth.currentUser?.uid,
-            title: idea.substring(0, 30) + (idea.length > 30 ? "..." : ""),
-            idea: finalPrompt,
-            code,
-            isPublished: false,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          };
-
-          await setDoc(newProjectRef, newProject);
-          
-          setIdea('');
-          setShowPreview(false);
-          setIsGenerating(false);
-          
-          if (onProjectCreated) {
-            onProjectCreated(newProjectRef.id);
-          }
-        } catch (err) {
-          console.error(err);
-          alert('Bir hata oluştu.');
-          setIsGenerating(false);
-        }
+    try {
+      // Loading simulation
+      for (let i = 0; i < loadingMessages.length; i++) {
+        setLoadingStep(i);
+        await new Promise(resolve => setTimeout(resolve, 1500));
       }
-    }, 1500);
+
+      // Deduct credits if not premium
+      if (user && !user.isPremium) {
+        const userRef = doc(db, 'users', user.uid);
+        await updateDoc(userRef, {
+          credits: Math.max(0, user.credits - 10)
+        });
+      }
+
+      // Generate code
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: `Kullanıcının fikri ve detayları: "${finalPrompt}". Bu fikir için tek sayfalık, modern, Tailwind CSS kullanan, işlevsel bir HTML kodu oluştur. Sadece HTML kodunu döndür, markdown işaretleri kullanma.`
+      });
+      
+      let code = response.text || '<h1>Hata oluştu</h1>';
+      code = code.replace(/```html/g, '').replace(/```/g, '').trim();
+
+      const newProjectRef = doc(collection(db, 'projects'));
+      const newProject = {
+        id: newProjectRef.id,
+        userId: auth.currentUser?.uid,
+        title: idea.substring(0, 30) + (idea.length > 30 ? "..." : ""),
+        idea: finalPrompt,
+        code,
+        isPublished: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      await setDoc(newProjectRef, newProject);
+      
+      setIdea('');
+      setShowPreview(false);
+      setIsGenerating(false);
+      
+      if (onProjectCreated) {
+        onProjectCreated(newProjectRef.id);
+      }
+    } catch (err) {
+      console.error("Proje oluşturma hatası:", err);
+      alert(`Bir hata oluştu: ${err instanceof Error ? err.message : 'Bilinmeyen hata'}`);
+      setIsGenerating(false);
+    }
   };
 
   return (
