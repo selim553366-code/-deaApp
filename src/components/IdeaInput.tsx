@@ -232,7 +232,13 @@ export const IdeaInput = ({ user, onProjectCreated }: { user: User | null, onPro
                       }}
                     />
                     
-                    <div className="mt-auto pt-4 flex justify-end">
+                    <div className="mt-auto pt-4 flex justify-between items-center">
+                      <button
+                        onClick={() => handleBuild(answers.concat(Array(questions.length - answers.length).fill('Kullanıcı cevap vermedi.')))}
+                        className="text-zinc-400 hover:text-white text-sm font-medium transition-colors"
+                      >
+                        Soruları Atla
+                      </button>
                       <button
                         onClick={handleAnswerSubmit}
                         disabled={!currentAnswer.trim()}
