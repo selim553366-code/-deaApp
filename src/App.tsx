@@ -19,7 +19,9 @@ export default function App() {
         // Listen to user data changes
         const unsubUser = onSnapshot(userRef, async (docSnap) => {
           if (docSnap.exists()) {
-            setUser(docSnap.data() as User);
+            const userData = docSnap.data();
+            console.log("User data:", userData);
+            setUser(userData as User);
           } else {
             // Create new user
             const newUser: User = {
@@ -58,7 +60,7 @@ export default function App() {
       <Routes>
         <Route 
           path="/" 
-          element={user ? <IdeaApp user={user} /> : <Login />} 
+          element={user ? <div>User logged in</div> : <Login />} 
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

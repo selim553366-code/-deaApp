@@ -92,12 +92,7 @@ export function Preview({ code, isGenerating, isPremium }: { code?: string, isGe
 
       <div className="flex-1 flex items-center justify-center p-8 overflow-auto">
         <div className={`transition-all duration-300 ease-in-out bg-white shadow-2xl rounded-xl overflow-hidden max-w-5xl mx-auto ${deviceView === 'mobile' ? 'w-[375px] h-[667px]' : 'w-full h-full'}`}>
-          <iframe 
-            srcDoc={code} 
-            className="w-full h-full border-none"
-            title="Preview"
-            sandbox="allow-scripts allow-same-origin"
-          />
+          <p>Preview disabled</p>
         </div>
       </div>
 

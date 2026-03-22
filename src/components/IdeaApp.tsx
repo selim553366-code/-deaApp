@@ -96,11 +96,12 @@ export function IdeaApp({ user }: { user: User }) {
            \`\`\`html
            ${currentProject.code}
            \`\`\`
-           Return ONLY the complete, updated HTML file with Tailwind CSS via CDN. No markdown formatting, no explanations.`
+           Return ONLY the complete, updated HTML file with Tailwind CSS via CDN. Ensure it has a full <html>, <head>, and <body> structure. No markdown formatting, no explanations.`
         : `Create a modern, beautiful, responsive single-page website using HTML and Tailwind CSS (via CDN) based on this idea: "${idea}". 
            ${answers ? `Additional context: ${answers.join(", ")}.` : ""}
            ${showReviews ? "Include a customer review section." : "Do NOT include any customer review section."}
            Include a nice UI, good typography, and placeholder images if needed. 
+           Ensure it has a full <html>, <head>, and <body> structure.
            Return ONLY the raw HTML code. Do not wrap in markdown blocks like \`\`\`html.`;
 
       const response = await ai.models.generateContent({
