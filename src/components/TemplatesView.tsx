@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Search, LayoutTemplate, MousePointerClick, LayoutDashboard, FileText, ShoppingCart, Image as ImageIcon, ArrowRight, Code, X } from 'lucide-react';
 import { Project } from '../types';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface Template {
   id: string;
@@ -382,6 +383,7 @@ export function TemplatesView({
   onSelectForNewProject: (prompt: string) => void,
   onSelectForExistingProject: (projectId: string, prompt: string) => void
 }) {
+  const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<'all' | 'page' | 'button' | 'component'>('all');
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
@@ -400,10 +402,10 @@ export function TemplatesView({
     <div className="max-w-6xl mx-auto p-4 md:p-8 space-y-8">
       <div className="text-center space-y-4 pt-4">
         <h2 className="text-4xl font-extrabold tracking-tight text-zinc-900">
-          Şablon Galerisi
+          {t('templatesTitle')}
         </h2>
         <p className="text-lg text-zinc-500 max-w-2xl mx-auto">
-          İhtiyacınıza uygun hazır tasarım şablonlarını seçin ve yapay zeka ile anında hayata geçirin.
+          {t('templatesDesc')}
         </p>
       </div>
 
@@ -412,7 +414,7 @@ export function TemplatesView({
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
           <input
             type="text"
-            placeholder="Şablonlarda ara..."
+            placeholder={t('searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
@@ -430,10 +432,10 @@ export function TemplatesView({
                   : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
               }`}
             >
-              {category === 'all' && 'Tümü'}
-              {category === 'page' && 'Sayfalar'}
-              {category === 'button' && 'Butonlar'}
-              {category === 'component' && 'Bileşenler'}
+              {category === 'all' && t('all')}
+              {category === 'page' && t('pages')}
+              {category === 'button' && t('buttons')}
+              {category === 'component' && t('components')}
             </button>
           ))}
         </div>
@@ -456,7 +458,7 @@ export function TemplatesView({
               <div className="p-6 flex flex-col flex-1">
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md">
-                    {template.category === 'page' ? 'Sayfa' : template.category === 'button' ? 'Buton' : 'Bileşen'}
+                    {template.category === 'page' ? t('page') : template.category === 'button' ? t('button') : t('component')}
                   </span>
                 </div>
                 <h3 className="text-xl font-bold text-zinc-900 mb-2">{template.title}</h3>
@@ -465,7 +467,7 @@ export function TemplatesView({
                   onClick={() => setSelectedTemplate(template)}
                   className="w-full py-3 bg-zinc-50 hover:bg-indigo-600 text-zinc-700 hover:text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2 group/btn"
                 >
-                  Önizle ve Kullan
+                  {t('previewAndUse')}
                   <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
                 </button>
               </div>
@@ -476,8 +478,8 @@ export function TemplatesView({
             <div className="w-16 h-16 bg-zinc-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Search className="w-8 h-8 text-zinc-400" />
             </div>
-            <h3 className="text-xl font-semibold text-zinc-900 mb-2">Sonuç bulunamadı</h3>
-            <p className="text-zinc-500">Arama kriterlerinize uygun şablon bulamadık. Lütfen farklı kelimeler deneyin.</p>
+            <h3 className="text-xl font-semibold text-zinc-900 mb-2">{t('noResults')}</h3>
+            <p className="text-zinc-500">{t('noResultsDesc')}</p>
           </div>
         )}
       </div>
@@ -507,7 +509,7 @@ export function TemplatesView({
                     <div className="w-3 h-3 rounded-full bg-amber-400"></div>
                     <div className="w-3 h-3 rounded-full bg-emerald-400"></div>
                   </div>
-                  <span className="md:ml-2 font-medium">Önizleme: {selectedTemplate.title}</span>
+                  <span className="md:ml-2 font-medium">{t('previewLabel')}: {selectedTemplate.title}</span>
                 </div>
                 <div className="flex-1 relative bg-white">
                   <iframe 
@@ -523,7 +525,7 @@ export function TemplatesView({
                 <div className="flex justify-between items-start mb-6">
                   <div>
                     <span className="inline-block px-3 py-1 bg-indigo-50 text-indigo-600 text-xs font-bold uppercase tracking-wider rounded-lg mb-3">
-                      {selectedTemplate.category === 'page' ? 'Sayfa' : selectedTemplate.category === 'button' ? 'Buton' : 'Bileşen'}
+                      {selectedTemplate.category === 'page' ? t('page') : selectedTemplate.category === 'button' ? t('button') : t('component')}
                     </span>
                     <h3 className="text-2xl font-extrabold text-zinc-900 leading-tight">{selectedTemplate.title}</h3>
                   </div>
@@ -541,9 +543,9 @@ export function TemplatesView({
                   <div className="space-y-3 bg-indigo-50/50 p-4 md:p-5 rounded-2xl border border-indigo-100">
                     <h4 className="font-bold text-sm text-indigo-900 flex items-center gap-2">
                       <LayoutTemplate className="w-4 h-4" />
-                      Sıfırdan Başla
+                      {t('startFromScratch')}
                     </h4>
-                    <p className="text-[10px] md:text-xs text-indigo-700/70 mb-3">Bu şablonu kullanarak yepyeni bir proje oluşturun.</p>
+                    <p className="text-[10px] md:text-xs text-indigo-700/70 mb-3">{t('startFromScratchDesc')}</p>
                     <button 
                       onClick={() => {
                         onSelectForNewProject(selectedTemplate.prompt);
@@ -551,22 +553,22 @@ export function TemplatesView({
                       }} 
                       className="w-full py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-medium shadow-sm transition-all hover:shadow-md text-sm md:text-base"
                     >
-                      Yeni Proje Oluştur
+                      {t('createNewProject')}
                     </button>
                   </div>
                   
                   <div className="relative flex items-center py-2">
                     <div className="flex-grow border-t border-zinc-200"></div>
-                    <span className="flex-shrink-0 mx-4 text-zinc-400 text-[10px] md:text-xs font-medium uppercase tracking-wider">veya</span>
+                    <span className="flex-shrink-0 mx-4 text-zinc-400 text-[10px] md:text-xs font-medium uppercase tracking-wider">{t('or')}</span>
                     <div className="flex-grow border-t border-zinc-200"></div>
                   </div>
 
                   <div className="space-y-3 bg-zinc-50 p-5 rounded-2xl border border-zinc-200">
                     <h4 className="font-bold text-sm text-zinc-900 flex items-center gap-2">
                       <Code className="w-4 h-4" />
-                      Mevcut Projeye Aktar
+                      {t('importToExisting')}
                     </h4>
-                    <p className="text-xs text-zinc-500 mb-3">Bu şablonu var olan bir projenize ekleyin.</p>
+                    <p className="text-xs text-zinc-500 mb-3">{t('importToExistingDesc')}</p>
                     
                     {projects.length > 0 ? (
                       <div className="flex flex-col gap-3">
@@ -575,7 +577,7 @@ export function TemplatesView({
                           value={selectedProjectId}
                           onChange={(e) => setSelectedProjectId(e.target.value)}
                         >
-                          <option value="">Proje Seçin...</option>
+                          <option value="">{t('selectProject')}</option>
                           {projects.map(p => (
                             <option key={p.id} value={p.id}>{p.title || 'İsimsiz Proje'}</option>
                           ))}
@@ -588,12 +590,12 @@ export function TemplatesView({
                           }} 
                           className="w-full py-3 bg-zinc-900 text-white rounded-xl hover:bg-zinc-800 font-medium disabled:opacity-50 transition-all"
                         >
-                          Seçili Projeye Aktar
+                          {t('importToSelected')}
                         </button>
                       </div>
                     ) : (
                       <div className="p-4 bg-zinc-100 rounded-xl text-center border border-zinc-200 border-dashed">
-                        <p className="text-sm text-zinc-500">Henüz hiç projeniz yok.</p>
+                        <p className="text-sm text-zinc-500">{t('noProjectsYet')}</p>
                       </div>
                     )}
                   </div>

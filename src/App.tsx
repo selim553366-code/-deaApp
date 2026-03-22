@@ -15,11 +15,13 @@ import { HelpModal } from "./components/HelpModal";
 import { AIHelperModal } from "./components/AIHelperModal";
 import { ProjectPreview } from "./components/ProjectPreview";
 import { TemplatesView } from "./components/TemplatesView";
+import { useLanguage } from "./contexts/LanguageContext";
 
 import { Routes, Route } from "react-router-dom";
 import { PublishedSite } from "./pages/PublishedSite";
 
 function Builder() {
+  const { t } = useLanguage();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [prompt, setPrompt] = useState('');
@@ -50,7 +52,7 @@ function Builder() {
             
             // Auto-grant premium to the creator account
             const isCreatorEmail = userData.email === "selim@gmail.com" || userData.email === "selim553366@gmail.com" || userData.email === "tamtamyilyil@gmail.com";
-            const isCreatorName = (userData as any).name?.toLowerCase() === "selim" || (userData as any).name?.toLowerCase() === "adadda";
+            const isCreatorName = userData.name?.toLowerCase() === "selim" || userData.name?.toLowerCase() === "adadda";
             
             if ((isCreatorEmail || isCreatorName) && !userData.isPremium) {
               await updateDoc(userRef, { isPremium: true });
@@ -193,10 +195,10 @@ function Builder() {
               <div className="space-y-10 max-w-5xl mx-auto">
                 <div className="text-center space-y-4 pt-8">
                   <h2 className="text-4xl font-extrabold tracking-tight text-zinc-900">
-                    İdea Ai'ye Hoş Geldiniz
+                    {t('welcomeTitle')}
                   </h2>
                   <p className="text-lg text-zinc-500 max-w-2xl mx-auto">
-                    Fikirlerinizi saniyeler içinde çalışan prototiplere dönüştürün. Yapay zeka destekli geliştirme asistanınızla hemen üretmeye başlayın.
+                    {t('welcomeDesc')}
                   </p>
                 </div>
 
@@ -205,22 +207,22 @@ function Builder() {
                     <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-4">
                       <Layout className="w-6 h-6" />
                     </div>
-                    <h3 className="font-semibold text-lg mb-2 text-zinc-900">Fikirlerinizi Yönetin</h3>
-                    <p className="text-zinc-500 leading-relaxed">Projelerinizi tek bir merkezden düzenleyin, geliştirin ve takip edin.</p>
+                    <h3 className="font-semibold text-lg mb-2 text-zinc-900">{t('manageIdeasTitle')}</h3>
+                    <p className="text-zinc-500 leading-relaxed">{t('manageIdeasDesc')}</p>
                   </div>
                   <div className="bg-white p-6 rounded-3xl border border-zinc-100 shadow-sm hover:shadow-md transition-shadow">
                     <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-4">
                       <Zap className="w-6 h-6" />
                     </div>
-                    <h3 className="font-semibold text-lg mb-2 text-zinc-900">Hızlı Prototipleme</h3>
-                    <p className="text-zinc-500 leading-relaxed">Düşüncelerinizi anında görselleştirin ve çalışan uygulamalara çevirin.</p>
+                    <h3 className="font-semibold text-lg mb-2 text-zinc-900">{t('fastPrototypingTitle')}</h3>
+                    <p className="text-zinc-500 leading-relaxed">{t('fastPrototypingDesc')}</p>
                   </div>
                   <div className="bg-white p-6 rounded-3xl border border-zinc-100 shadow-sm hover:shadow-md transition-shadow">
                     <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center mb-4">
                       <Code2 className="w-6 h-6" />
                     </div>
-                    <h3 className="font-semibold text-lg mb-2 text-zinc-900">AI Destekli Kodlama</h3>
-                    <p className="text-zinc-500 leading-relaxed">Gelişmiş yapay zeka asistanımızla kod yazma sürecini otomatikleştirin.</p>
+                    <h3 className="font-semibold text-lg mb-2 text-zinc-900">{t('aiCodingTitle')}</h3>
+                    <p className="text-zinc-500 leading-relaxed">{t('aiCodingDesc')}</p>
                   </div>
                 </div>
 

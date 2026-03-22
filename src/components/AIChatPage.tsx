@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { GoogleGenAI } from "@google/genai";
 import { Send, Loader2, Bot, User as UserIcon, Sparkles } from "lucide-react";
+import { useLanguage } from '../contexts/LanguageContext';
 
 export const AIChatPage = ({ onOpenPremium }: { onOpenPremium: () => void }) => {
+  const { t, language } = useLanguage();
   const [messages, setMessages] = useState<{ role: 'user' | 'ai', text: string }[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -36,16 +38,23 @@ export const AIChatPage = ({ onOpenPremium }: { onOpenPremium: () => void }) => 
 
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+      
+      const promptTemplate = language === 'tr' 
+        ? (fetchedContent 
+            ? `Aşağıdaki web sitesinden alınan verileri analiz et ve kullanıcının isteğine göre mevcut takvimi güncelle. Eski özellikleri koru ve bozma.\n\nWeb sitesi içeriği:\n${fetchedContent}\n\nKullanıcı isteği:\n${prompt}`
+            : `Mevcut takvimi güncelle. Eski özellikleri koru ve bozma. Kullanıcı isteği:\n${prompt}`)
+        : (fetchedContent
+            ? `Analyze the data from the following website and update the current calendar according to the user's request. Keep old features and do not break them.\n\nWebsite content:\n${fetchedContent}\n\nUser request:\n${prompt}`
+            : `Update the current calendar. Keep old features and do not break them. User request:\n${prompt}`);
+
       const result = await ai.models.generateContent({
         model: "gemini-3.1-pro-preview",
-        contents: fetchedContent 
-          ? `Aşağıdaki web sitesinden alınan verileri analiz et ve kullanıcının isteğine göre mevcut takvimi güncelle. Eski özellikleri koru ve bozma.\n\nWeb sitesi içeriği:\n${fetchedContent}\n\nKullanıcı isteği:\n${prompt}`
-          : `Mevcut takvimi güncelle. Eski özellikleri koru ve bozma. Kullanıcı isteği:\n${prompt}`,
+        contents: promptTemplate,
       });
-      setMessages([...newMessages, { role: 'ai' as const, text: result.text || 'Cevap alınamadı.' }]);
+      setMessages([...newMessages, { role: 'ai' as const, text: result.text || t('noResponse') }]);
     } catch (err) {
       console.error(err);
-      setMessages([...newMessages, { role: 'ai' as const, text: 'Bir hata oluştu.' }]);
+      setMessages([...newMessages, { role: 'ai' as const, text: t('errorOccurred') }]);
     } finally {
       setLoading(false);
     }
@@ -54,13 +63,13 @@ export const AIChatPage = ({ onOpenPremium }: { onOpenPremium: () => void }) => 
   return (
     <div className="min-h-screen bg-zinc-50 p-8 flex flex-col items-center">
       <div className="w-full max-w-2xl flex justify-between items-center mb-12">
-        <h1 className="font-handwriting text-6xl font-bold text-zinc-900">Düşünceni Gerçeğe Çevir.</h1>
+        <h1 className="font-handwriting text-6xl font-bold text-zinc-900">{t('mainTitle')}</h1>
         <button 
           onClick={onOpenPremium}
           className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-full font-medium hover:bg-indigo-700 transition-colors"
         >
           <Sparkles className="w-4 h-4" />
-          Premium
+          {t('premium')}
         </button>
       </div>
       
@@ -75,7 +84,7 @@ export const AIChatPage = ({ onOpenPremium }: { onOpenPremium: () => void }) => 
               {msg.role === 'user' && <UserIcon className="w-8 h-8 text-zinc-400" />}
             </div>
           ))}
-          {loading && <div className="text-zinc-500 italic">AI düşünüyor...</div>}
+          {loading && <div className="text-zinc-500 italic">{t('aiThinking')}</div>}
         </div>
         
         <div className="p-4 border-t border-zinc-200 flex gap-2">
@@ -83,7 +92,7 @@ export const AIChatPage = ({ onOpenPremium }: { onOpenPremium: () => void }) => 
             value={input}
             onChange={(e) => setInput(e.target.value)}
             className="flex-1 p-3 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none max-h-40 overflow-y-auto"
-            placeholder="Ne oluşturmak istersin?"
+            placeholder={t('subTitle')}
             rows={4}
           />
           <button 

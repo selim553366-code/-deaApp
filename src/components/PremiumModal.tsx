@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { User } from "../types";
 import { X, CheckCircle2, Loader2, Sparkles } from "lucide-react";
+import { useLanguage } from "../contexts/LanguageContext";
 
 export function PremiumModal({ user, onClose }: { user: User, onClose: () => void }) {
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -25,25 +27,25 @@ export function PremiumModal({ user, onClose }: { user: User, onClose: () => voi
             <Sparkles className="w-8 h-8 text-white" />
           </div>
           
-          <h2 className="text-2xl font-bold text-white mb-2">Premium'a Geçin</h2>
-          <p className="text-zinc-400 mb-8">Sınırsız web sitesi oluşturma, güncelleme ve yayınlama özelliklerine erişin.</p>
+          <h2 className="text-2xl font-bold text-white mb-2">{t('upgradeToPremium')}</h2>
+          <p className="text-zinc-400 mb-8">{t('premiumDesc')}</p>
 
           <div className="space-y-4 mb-8">
             <div className="flex items-start gap-3">
               <CheckCircle2 className="w-5 h-5 text-indigo-400 shrink-0 mt-0.5" />
-              <span className="text-zinc-300">Sınırsız web sitesi oluşturma</span>
+              <span className="text-zinc-300">{t('featureUnlimitedSites')}</span>
             </div>
             <div className="flex items-start gap-3">
               <CheckCircle2 className="w-5 h-5 text-indigo-400 shrink-0 mt-0.5" />
-              <span className="text-zinc-300">Oluşturulan siteleri sınırsız güncelleme</span>
+              <span className="text-zinc-300">{t('featureUnlimitedUpdates')}</span>
             </div>
             <div className="flex items-start gap-3">
               <CheckCircle2 className="w-5 h-5 text-indigo-400 shrink-0 mt-0.5" />
-              <span className="text-zinc-300">Siteleri yayınlama fırsatı</span>
+              <span className="text-zinc-300">{t('featurePublishing')}</span>
             </div>
             <div className="flex items-start gap-3">
               <CheckCircle2 className="w-5 h-5 text-indigo-400 shrink-0 mt-0.5" />
-              <span className="text-zinc-300">Öncelikli yapay zeka desteği</span>
+              <span className="text-zinc-300">{t('featurePrioritySupport')}</span>
             </div>
           </div>
 
@@ -58,11 +60,11 @@ export function PremiumModal({ user, onClose }: { user: User, onClose: () => voi
             disabled={loading}
             className="w-full bg-indigo-500 hover:bg-indigo-600 disabled:bg-indigo-500/50 text-white font-medium py-4 px-6 rounded-xl transition-colors flex items-center justify-center gap-2 text-lg shadow-lg shadow-indigo-500/20"
           >
-            {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : "Aylık 399 TL - Hemen Başla"}
+            {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : t('premiumPrice')}
           </button>
           
           <p className="text-center text-zinc-500 text-xs mt-4">
-            İstediğiniz zaman iptal edebilirsiniz.
+            {t('cancelAnytime')}
           </p>
         </div>
       </div>

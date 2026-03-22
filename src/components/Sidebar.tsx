@@ -1,6 +1,7 @@
 import { Project, User } from "../types";
 import { Plus, LayoutTemplate, Clock, Home, Bot, Sparkles, FolderKanban, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion } from "motion/react";
+import { useLanguage } from "../contexts/LanguageContext";
 
 export function Sidebar({ 
   projects, 
@@ -27,6 +28,8 @@ export function Sidebar({
   isCollapsed?: boolean,
   onToggleCollapse?: () => void
 }) {
+  const { t } = useLanguage();
+
   return (
     <>
       {/* Mobile Overlay */}
@@ -44,10 +47,10 @@ export function Sidebar({
             whileTap={{ scale: 0.95 }}
             onClick={() => { onNewProject(); onClose(); }}
             className={`bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2.5 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2 group ${isCollapsed ? 'w-10 h-10 px-0' : 'flex-1 px-4'}`}
-            title="Yeni Proje"
+            title={t('newProject')}
           >
             <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
-            {!isCollapsed && <span>Yeni Proje</span>}
+            {!isCollapsed && <span>{t('newProject')}</span>}
           </motion.button>
           {!isCollapsed && (
             <button onClick={onClose} className="md:hidden ml-4 text-zinc-400 hover:text-white p-1">
@@ -62,7 +65,7 @@ export function Sidebar({
               whileHover={{ scale: 1.02, x: isCollapsed ? 0 : 4 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => { onSelectProject(null); onClose(); }}
-              title="Ana Sayfa"
+              title={t('home')}
               className={`w-full text-left py-2.5 rounded-xl text-sm font-medium transition-colors flex items-center gap-3 ${isCollapsed ? 'justify-center px-0' : 'px-3'} ${
                 currentProject === null 
                   ? "bg-zinc-800/80 text-white" 
@@ -70,29 +73,29 @@ export function Sidebar({
               }`}
             >
               <Home className="w-5 h-5 shrink-0" />
-              {!isCollapsed && <span>Ana Sayfa</span>}
+              {!isCollapsed && <span>{t('home')}</span>}
             </motion.button>
 
             <motion.button
               whileHover={{ scale: 1.02, x: isCollapsed ? 0 : 4 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => { onToggleAI(); onClose(); }}
-              title="Yardımcı AI"
+              title={t('aiAssistant')}
               className={`w-full text-left py-2.5 rounded-xl text-sm font-medium transition-colors flex items-center gap-3 text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200 ${isCollapsed ? 'justify-center px-0' : 'px-3'}`}
             >
               <Bot className="w-5 h-5 shrink-0" />
-              {!isCollapsed && <span>Yardımcı AI</span>}
+              {!isCollapsed && <span>{t('aiAssistant')}</span>}
             </motion.button>
 
             <motion.button
               whileHover={{ scale: 1.02, x: isCollapsed ? 0 : 4 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => { onShowTemplates(); onClose(); }}
-              title="Şablonlar"
+              title={t('templates')}
               className={`w-full text-left py-2.5 rounded-xl text-sm font-medium transition-colors flex items-center gap-3 text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200 ${isCollapsed ? 'justify-center px-0' : 'px-3'}`}
             >
               <LayoutTemplate className="w-5 h-5 shrink-0" />
-              {!isCollapsed && <span>Şablonlar</span>}
+              {!isCollapsed && <span>{t('templates')}</span>}
             </motion.button>
           </div>
 
@@ -100,12 +103,12 @@ export function Sidebar({
             {!isCollapsed && (
               <div className="px-3 mb-2 text-xs font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-2">
                 <FolderKanban className="w-4 h-4" />
-                Projelerim
+                {t('projects')}
               </div>
             )}
             {isCollapsed && (
               <div className="flex justify-center mb-2">
-                <FolderKanban className="w-5 h-5 text-zinc-500" title="Projelerim" />
+                <FolderKanban className="w-5 h-5 text-zinc-500" title={t('projects')} />
               </div>
             )}
             
@@ -113,7 +116,7 @@ export function Sidebar({
               {projects.length === 0 ? (
                 !isCollapsed && (
                   <div className="px-3 py-4 text-sm text-zinc-600 text-center bg-zinc-900/50 rounded-xl border border-zinc-800/50 border-dashed">
-                    Henüz proje oluşturmadınız.
+                    {t('noProjects')}
                   </div>
                 )
               ) : (
@@ -142,7 +145,7 @@ export function Sidebar({
           <button 
             onClick={onToggleCollapse}
             className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800/50 rounded-lg transition-colors"
-            title={isCollapsed ? "Genişlet" : "Daralt"}
+            title={isCollapsed ? t('expand') : t('collapse')}
           >
             {isCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
           </button>
@@ -155,13 +158,13 @@ export function Sidebar({
               <div className="absolute top-0 right-0 p-2 opacity-20">
                 <Sparkles className="w-12 h-12 text-indigo-400" />
               </div>
-              <h3 className="font-semibold text-white mb-1 text-sm relative z-10">Premium'a Geç</h3>
-              <p className="text-xs text-zinc-400 mb-4 relative z-10">Sınırsız güncelleme ve yayınlama hakkı kazan.</p>
+              <h3 className="font-semibold text-white mb-1 text-sm relative z-10">{t('upgrade')}</h3>
+              <p className="text-xs text-zinc-400 mb-4 relative z-10">{t('upgradeDesc')}</p>
               <button 
                 onClick={() => { window.dispatchEvent(new CustomEvent('show-premium-modal')); onClose(); }}
                 className="w-full bg-white text-zinc-950 hover:bg-zinc-100 font-semibold py-2 px-3 rounded-xl text-xs transition-colors relative z-10 shadow-sm"
               >
-                Yükselt (399 TL/ay)
+                {t('upgradeButton')}
               </button>
             </div>
           </div>
@@ -171,7 +174,7 @@ export function Sidebar({
              <button 
                 onClick={() => { window.dispatchEvent(new CustomEvent('show-premium-modal')); onClose(); }}
                 className="p-2 bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600/30 rounded-lg transition-colors"
-                title="Premium'a Geç"
+                title={t('upgrade')}
               >
                 <Sparkles className="w-5 h-5" />
               </button>

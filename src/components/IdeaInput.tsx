@@ -5,16 +5,10 @@ import { Loader2, Sparkles, X, CheckCircle2, Circle, Wand2 } from 'lucide-react'
 import { User } from '../types';
 import { GoogleGenAI, Type } from "@google/genai";
 import { motion, AnimatePresence } from "motion/react";
-
-const loadingMessages = [
-  "Fikriniz analiz ediliyor...",
-  "Gerekli bileşenler belirleniyor...",
-  "Veritabanı şeması tasarlanıyor...",
-  "Kullanıcı arayüzü oluşturuluyor...",
-  "Son dokunuşlar yapılıyor..."
-];
+import { useLanguage } from '../contexts/LanguageContext';
 
 export const IdeaInput = ({ user, onProjectCreated, initialPrompt }: { user: User | null, onProjectCreated?: (id: string) => void, initialPrompt?: string }) => {
+  const { t, language } = useLanguage();
   const [idea, setIdea] = useState(initialPrompt || '');
   const [showPreview, setShowPreview] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
@@ -27,6 +21,20 @@ export const IdeaInput = ({ user, onProjectCreated, initialPrompt }: { user: Use
   const [isFetchingQuestions, setIsFetchingQuestions] = useState(false);
   const [showGeminiImport, setShowGeminiImport] = useState(false);
   const [geminiHistory, setGeminiHistory] = useState('');
+
+  const loadingMessages = language === 'tr' ? [
+    "Fikriniz analiz ediliyor...",
+    "Gerekli bileşenler belirleniyor...",
+    "Veritabanı şeması tasarlanıyor...",
+    "Kullanıcı arayüzü oluşturuluyor...",
+    "Son dokunuşlar yapılıyor..."
+  ] : [
+    "Analyzing your idea...",
+    "Determining necessary components...",
+    "Designing database schema...",
+    "Creating user interface...",
+    "Making final touches..."
+  ];
 
   useEffect(() => {
     if (initialPrompt) {
@@ -186,13 +194,13 @@ Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`
     >
       {/* Left Panel - Input */}
       <div className="w-full md:w-[600px] p-6 md:p-8 bg-white rounded-3xl shadow-xl border border-zinc-100 flex flex-col relative z-10 shrink-0">
-        <h1 className="font-handwriting text-4xl md:text-5xl font-bold text-center text-indigo-600 mb-2">Düşünceni Gerçeğe Çevir.</h1>
-        <h2 className="mb-6 text-xl font-medium text-center text-zinc-700">Ne oluşturmak istersin?</h2>
+        <h1 className="font-handwriting text-4xl md:text-5xl font-bold text-center text-indigo-600 mb-2">{t('mainTitle')}</h1>
+        <h2 className="mb-6 text-xl font-medium text-center text-zinc-700">{t('subTitle')}</h2>
         <textarea
           value={idea}
           onChange={(e) => setIdea(e.target.value)}
           className="w-full p-4 mb-4 text-base border border-zinc-200 rounded-2xl focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all resize-none bg-zinc-50/50"
-          placeholder="Uygulama fikrini buraya yaz..."
+          placeholder={t('placeholder')}
           rows={4}
           disabled={isGenerating}
         />
@@ -207,25 +215,25 @@ Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`
             {isFetchingQuestions ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
-                Hazırlanıyor...
+                {t('preparing')}
               </>
             ) : (
               <>
                 <Wand2 className="w-5 h-5" />
-                Oluşturmaya Başla
+                {t('startCreating')}
               </>
             )}
           </motion.button>
           <motion.button 
             whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => setShowGeminiImport(true)}
             disabled={isGenerating || isFetchingQuestions || showPreview}
             className="w-full sm:w-auto p-4 text-sm text-indigo-600 bg-indigo-50 border border-indigo-200 rounded-2xl hover:bg-indigo-100 font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 whitespace-nowrap"
-            title="Gemini geçmişinizi yapıştırarak proje oluşturun"
+            title={t('importGemini')}
           >
             <Sparkles className="w-5 h-5" />
-            Gemini'dan Aktar
+            {t('importGemini')}
           </motion.button>
         </div>
       </div>
@@ -253,15 +261,15 @@ Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`
             </button>
             <h3 className="text-2xl font-bold text-zinc-900 mb-2 flex items-center gap-2">
               <Sparkles className="w-6 h-6 text-indigo-600" />
-              Gemini Geçmişinden İçe Aktar
+              {t('importGeminiTitle')}
             </h3>
-            <p className="text-zinc-500 mb-6">Gemini.google.com'daki konuşma geçmişinizi kopyalayıp buraya yapıştırın. Yapay zeka, bu geçmişi analiz ederek istediğiniz web sitesini oluşturacaktır.</p>
+            <p className="text-zinc-500 mb-6">{t('importGeminiDesc')}</p>
             
             <textarea
               value={geminiHistory}
               onChange={(e) => setGeminiHistory(e.target.value)}
               className="w-full p-4 mb-6 text-sm border border-zinc-200 rounded-2xl focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all resize-none bg-zinc-50 h-64"
-              placeholder="Gemini konuşma geçmişinizi buraya yapıştırın..."
+              placeholder={t('importGeminiPlaceholder')}
             />
             
             <div className="flex justify-end gap-3">
@@ -269,7 +277,7 @@ Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`
                 onClick={() => setShowGeminiImport(false)}
                 className="px-6 py-3 text-zinc-600 font-medium hover:bg-zinc-100 rounded-xl transition-colors"
               >
-                İptal
+                {t('cancel')}
               </button>
               <button 
                 onClick={handleGeminiImport}
@@ -277,7 +285,7 @@ Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`
                 className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2"
               >
                 <CheckCircle2 className="w-5 h-5" />
-                İçe Aktar ve Devam Et
+                {t('importAndContinue')}
               </button>
             </div>
           </motion.div>
@@ -306,19 +314,19 @@ Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`
             <>
               <h3 className="text-lg font-semibold mb-6 flex items-center gap-2">
                 <Wand2 className="text-indigo-400 w-5 h-5" />
-                Detayları Belirleyelim
+                {t('detailsTitle')}
               </h3>
               <div className="flex-1 flex flex-col gap-4">
                 {isFetchingQuestions ? (
                   <div className="flex flex-col items-center justify-center h-full text-zinc-400 gap-4 py-8">
                     <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
-                    <p className="text-center text-sm">Projeniz için en iyi sorular hazırlanıyor...</p>
+                    <p className="text-center text-sm">{t('preparingQuestions')}</p>
                   </div>
                 ) : questions.length > 0 ? (
                   <div className="flex flex-col h-full">
                     <div className="mb-4">
                       <span className="text-xs font-medium text-indigo-400 mb-1 block">
-                        Soru {currentQuestionIndex + 1} / {questions.length}
+                        {t('question')} {currentQuestionIndex + 1} / {questions.length}
                       </span>
                       <p className="text-zinc-200 font-medium">{questions[currentQuestionIndex]}</p>
                     </div>
@@ -327,7 +335,7 @@ Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`
                       value={currentAnswer}
                       onChange={(e) => setCurrentAnswer(e.target.value)}
                       className="w-full p-3 mb-4 text-sm border border-zinc-700 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none resize-none bg-zinc-800/50 text-white"
-                      placeholder="Cevabınızı buraya yazın..."
+                      placeholder={t('answerPlaceholder')}
                       rows={3}
                       autoFocus
                       onKeyDown={(e) => {
@@ -343,14 +351,14 @@ Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`
                         onClick={() => handleBuild(answers.concat(Array(questions.length - answers.length).fill('Kullanıcı cevap vermedi.')))}
                         className="text-zinc-400 hover:text-white text-sm font-medium transition-colors"
                       >
-                        Soruları Atla
+                        {t('skipQuestions')}
                       </button>
                       <button
                         onClick={handleAnswerSubmit}
                         disabled={!currentAnswer.trim()}
                         className="px-6 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-500 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                       >
-                        {currentQuestionIndex < questions.length - 1 ? 'Sonraki Soru' : 'Oluşturmaya Başla'}
+                        {currentQuestionIndex < questions.length - 1 ? t('nextQuestion') : t('startCreating')}
                       </button>
                     </div>
                   </div>
@@ -361,7 +369,7 @@ Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`
             <>
               <h3 className="text-lg font-semibold mb-6 flex items-center gap-2">
                 <Sparkles className="text-indigo-400 w-5 h-5" />
-                Önizleme
+                {t('preview')}
               </h3>
               <div className="flex-1 flex flex-col gap-5">
                 {loadingMessages.map((msg, idx) => (
