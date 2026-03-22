@@ -14,24 +14,59 @@ app.post("/api/ai/generate", async (req, res) => {
   try {
     const { contents, systemInstruction, model = "gemini-3-flash-preview" } = req.body;
     
-    const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-    
-    const isPlaceholder = (key: string | undefined) => 
-      !key || 
-      key.trim() === "" ||
-      key === "MY_GEMINI_API_KEY" || 
-      key === "YOUR_GEMINI_API_KEY" || 
-      key === "undefined";
+    const keysToTry = [
+      { name: "GEMINI_API_KEY", value: process.env.GEMINI_API_KEY },
+      { name: "API_KEY", value: process.env.API_KEY },
+      { name: "NEXT_PUBLIC_GEMINI_API_KEY", value: process.env.NEXT_PUBLIC_GEMINI_API_KEY },
+      { name: "HARDCODED_FALLBACK", value: "AIzaSyDAdxxhbE5Rq40pf7vNvUq8zmcxKASWznI" } // User provided key
+    ];
 
-    if (isPlaceholder(apiKey)) {
-      const availableKeys = Object.keys(process.env).filter(k => k.includes("KEY") || k.includes("API"));
-      console.error("API Key Missing or Placeholder. Available keys:", availableKeys);
+    let foundKey = "";
+    let debugInfo = "";
+
+    for (const item of keysToTry) {
+      let val = item.value?.trim();
+      
+      if (!val || val === "undefined" || val === "" || val.includes("YOUR_GEMINI_API_KEY")) {
+        continue;
+      }
+
+      // Remove any accidental quotes or parentheses
+      const cleanVal = val.replace(/['"()]/g, "").trim();
+      
+      // Check for common mistakes
+      const upperVal = cleanVal.toUpperCase();
+      
+      if (!cleanVal.startsWith("AIza")) {
+        if (upperVal.startsWith("A1ZA")) {
+          debugInfo += `[${item.name}: "AIza" yerine "a1za" (1 rakamı) kullanılmış!] `;
+        } else if (upperVal.startsWith("AIZA")) {
+          debugInfo += `[${item.name}: Büyük/Küçük harf hatası (Tam olarak "AIza" olmalı)] `;
+        } else if (cleanVal.length < 20) {
+          debugInfo += `[${item.name}: Çok kısa (${cleanVal.length} karakter)] `;
+        } else {
+          debugInfo += `[${item.name}: "AIza" ile başlamıyor (Şu anki başlangıç: "${cleanVal.substring(0, 4)}")] `;
+        }
+        continue;
+      }
+
+      if (cleanVal.length < 30) {
+        debugInfo += `[${item.name}: Anahtar çok kısa görünüyor, eksik kopyalanmış olabilir.] `;
+        continue;
+      }
+      
+      foundKey = cleanVal;
+      break;
+    }
+
+    if (!foundKey) {
+      const statusMessage = debugInfo || "Tüm anahtarlar boş veya geçersiz.";
       return res.status(500).json({ 
-        error: `API Anahtarı sunucuda yapılandırılmamış veya geçersiz. (Hata: API_KEY_MISSING). Mevcut anahtar isimleri: ${availableKeys.join(", ")}. Lütfen AI Studio Secrets panelinden GEMINI_API_KEY değişkenini doğru tanımladığınızdan emin olun.` 
+        error: `Geçerli bir Gemini API anahtarı bulunamadı. (Hata: API_KEY_INVALID)\n\nDurum: ${statusMessage}\n\nÇözüm:\n1. https://aistudio.google.com/app/apikey adresine gidin.\n2. "Create API key" butonuna basın.\n3. "AIza" ile başlayan kodu kopyalayın.\n4. Secrets panelindeki GEMINI_API_KEY değerini bununla değiştirin.\n5. Kaydederken başında/sonunda boşluk, parantez veya tırnak olmadığından emin olun.` 
       });
     }
 
-    const ai = new GoogleGenAI({ apiKey: apiKey!.trim() });
+    const ai = new GoogleGenAI({ apiKey: foundKey });
     const response = await ai.models.generateContent({
       model,
       contents,
