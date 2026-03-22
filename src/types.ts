@@ -9,8 +9,10 @@ export interface User {
 export interface Project {
   id: string;
   userId: string;
+  title?: string;
   idea: string;
   code: string;
+  isPublished?: boolean;
   createdAt: string;
   updatedAt: string;
 }

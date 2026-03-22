@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { onAuthStateChanged } from "firebase/auth";
-import { doc, setDoc, onSnapshot } from "firebase/firestore";
+import { doc, setDoc, updateDoc, onSnapshot, collection, query, where } from "firebase/firestore";
 import { auth, db } from "./firebase";
 import { User, Project } from "./types";
 import { Loader2, Layout, Zap, Code2 } from "lucide-react";
@@ -13,6 +13,7 @@ import { Sidebar } from "./components/Sidebar";
 import { PremiumModal } from "./components/PremiumModal";
 import { HelpModal } from "./components/HelpModal";
 import { AIHelperModal } from "./components/AIHelperModal";
+import { ProjectPreview } from "./components/ProjectPreview";
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -24,6 +25,8 @@ export default function App() {
   const [showHelp, setShowHelp] = useState(false);
   const [showAI, setShowAI] = useState(false);
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const pendingProjectIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     const handleShowPremium = () => setShowPremium(true);
@@ -36,15 +39,29 @@ export default function App() {
         // Listen to user data changes
         const unsubUser = onSnapshot(userRef, async (docSnap) => {
           if (docSnap.exists()) {
-            const userData = docSnap.data();
-            setUser(userData as User);
+            const userData = docSnap.data() as User;
+            
+            // Auto-grant premium to the creator account
+            const isCreatorEmail = userData.email === "selim@gmail.com" || userData.email === "selim553366@gmail.com";
+            const isCreatorName = userData.name?.toLowerCase() === "selim" || userData.name?.toLowerCase() === "adadda";
+            
+            if ((isCreatorEmail || isCreatorName) && !userData.isPremium) {
+              await updateDoc(userRef, { isPremium: true });
+              userData.isPremium = true;
+            }
+            
+            setUser(userData);
           } else {
             // Create new user
+            const isCreatorEmail = firebaseUser.email === "selim@gmail.com" || firebaseUser.email === "selim553366@gmail.com";
+            const isCreatorName = firebaseUser.displayName?.toLowerCase() === "selim" || firebaseUser.displayName?.toLowerCase() === "adadda";
+            const isCreator = isCreatorEmail || isCreatorName;
+            
             const newUser: User = {
               uid: firebaseUser.uid,
               email: firebaseUser.email || "",
               credits: 10,
-              isPremium: false,
+              isPremium: isCreator,
               createdAt: new Date().toISOString(),
             };
             await setDoc(userRef, newUser);
@@ -53,9 +70,39 @@ export default function App() {
           setLoading(false);
         });
         
-        return () => unsubUser();
+        // Listen to user's projects
+        const q = query(collection(db, "projects"), where("userId", "==", firebaseUser.uid));
+        const unsubProjects = onSnapshot(q, (snapshot) => {
+          const projs: Project[] = [];
+          snapshot.forEach(doc => {
+            projs.push({ id: doc.id, ...doc.data() } as Project);
+          });
+          projs.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+          setProjects(projs);
+          
+          // Update current project if it exists in the new data
+          setCurrentProject(prev => {
+            if (pendingProjectIdRef.current) {
+              const pendingProj = projs.find(p => p.id === pendingProjectIdRef.current);
+              if (pendingProj) {
+                pendingProjectIdRef.current = null;
+                return pendingProj;
+              }
+            }
+            if (!prev) return null;
+            const updated = projs.find(p => p.id === prev.id);
+            return updated || prev;
+          });
+        });
+        
+        return () => {
+          unsubUser();
+          unsubProjects();
+        };
       } else {
         setUser(null);
+        setProjects([]);
+        setCurrentProject(null);
         setLoading(false);
       }
     });
@@ -75,35 +122,41 @@ export default function App() {
   }
 
   return (
-    <div className="flex min-h-screen bg-zinc-50">
+    <div className="flex min-h-screen bg-zinc-50 overflow-hidden">
       {showPremium && <PremiumModal user={user} onClose={() => setShowPremium(false)} />}
       {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
       {showAI && <AIHelperModal onClose={() => setShowAI(false)} user={user} />}
       <Sidebar 
         projects={projects} 
         currentProject={currentProject} 
-        onSelectProject={setCurrentProject} 
-        onNewProject={() => {}} 
+        onSelectProject={(p) => { setCurrentProject(p); setIsMobileMenuOpen(false); }} 
+        onNewProject={() => { setCurrentProject(null); setIsMobileMenuOpen(false); }} 
         user={user} 
-        onToggleAI={() => setShowAI(!showAI)}
+        onToggleAI={() => { setShowAI(!showAI); setIsMobileMenuOpen(false); }}
+        isOpen={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
       />
-      <div className="flex-1 overflow-y-auto">
-        <Header user={user} onLogin={() => setShowAuth(true)} onSignup={() => setShowAuth(true)} onHelp={() => setShowHelp(true)} onPremium={() => setShowPremium(true)} />
+      <div className="flex-1 overflow-y-auto w-full">
+        <Header 
+          user={user} 
+          onLogin={() => setShowAuth(true)} 
+          onSignup={() => setShowAuth(true)} 
+          onHelp={() => setShowHelp(true)} 
+          onPremium={() => setShowPremium(true)} 
+          onMenuClick={() => setIsMobileMenuOpen(true)}
+        />
         <main className="w-full max-w-7xl mx-auto p-4 md:p-6">
           {!user ? (
             !showAuth ? (
               <AppCreationPrompt onNext={(p) => { setPrompt(p); setShowAuth(true); }} />
             ) : (
-              <AuthForm prompt={prompt} />
+              <AuthForm prompt={prompt} onProjectCreated={(id) => {
+                pendingProjectIdRef.current = id;
+              }} />
             )
           ) : (
             currentProject ? (
-              <div className="space-y-6">
-                <h2 className="text-2xl font-bold">{currentProject.idea}</h2>
-                <pre className="bg-zinc-900 text-white p-4 rounded-xl overflow-x-auto">
-                  <code>{currentProject.code}</code>
-                </pre>
-              </div>
+              <ProjectPreview project={currentProject} user={user} />
             ) : (
               <div className="space-y-10 max-w-5xl mx-auto">
                 <div className="text-center space-y-4 pt-8">
@@ -140,7 +193,10 @@ export default function App() {
                 </div>
 
                 <div className="pt-2 border-t border-zinc-100">
-                  <IdeaInput user={user} />
+                  <IdeaInput user={user} onProjectCreated={(id) => {
+                    const newProj = projects.find(p => p.id === id);
+                    if (newProj) setCurrentProject(newProj);
+                  }} />
                 </div>
               </div>
             )
