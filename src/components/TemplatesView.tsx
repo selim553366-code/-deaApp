@@ -16,6 +16,26 @@ interface Template {
 
 const TEMPLATES: Template[] = [
   {
+    id: 'agri-calendar',
+    title: 'Tarım Takvimi',
+    description: 'Ekim, dikim ve hasat zamanlarını takip edin.',
+    category: 'page',
+    icon: LayoutTemplate,
+    prompt: 'Tarım ve çiftçilik için bir takvim uygulaması oluştur. Ekim, dikim ve hasat zamanlarını takip etmeyi sağlayan bir arayüz, hava durumu entegrasyonu ve aylık görünüm olsun.',
+    color: 'bg-emerald-600',
+    previewCode: `<html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-emerald-50 font-sans p-4"><div class="max-w-md mx-auto bg-white rounded-2xl shadow-lg p-6"><h1 class="text-2xl font-bold text-emerald-900 mb-4">Tarım Takvimi</h1><div class="grid grid-cols-7 gap-2 text-center text-sm mb-4"><div class="text-zinc-400">P</div><div class="text-zinc-400">S</div><div class="text-zinc-400">Ç</div><div class="text-zinc-400">P</div><div class="text-zinc-400">C</div><div class="text-zinc-400">C</div><div class="text-zinc-400">P</div></div><div class="grid grid-cols-7 gap-2"><div class="h-10 bg-emerald-100 rounded-lg flex items-center justify-center font-bold text-emerald-800">1</div><div class="h-10 bg-emerald-100 rounded-lg flex items-center justify-center font-bold text-emerald-800">2</div><div class="h-10 bg-emerald-500 text-white rounded-lg flex items-center justify-center font-bold">3</div></div></div></body></html>`
+  },
+  {
+    id: 'astro-diary',
+    title: 'Astroloji Günlüğü',
+    description: 'Günlük burç yorumları ve astrolojik notlar.',
+    category: 'page',
+    icon: LayoutTemplate,
+    prompt: 'Astroloji meraklıları için günlük burç yorumları, gökyüzü olayları ve kişisel notlar içeren bir astroloji günlüğü uygulaması oluştur.',
+    color: 'bg-indigo-700',
+    previewCode: `<html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-indigo-950 text-indigo-100 font-sans p-4"><div class="max-w-md mx-auto bg-indigo-900 rounded-2xl shadow-lg p-6"><h1 class="text-2xl font-bold text-indigo-200 mb-2">Astroloji Günlüğü</h1><p class="text-indigo-300 mb-6">Bugün gökyüzü ne diyor?</p><div class="bg-indigo-800 p-4 rounded-xl mb-4"><h3 class="font-bold text-white">Koç Burcu</h3><p class="text-sm">Bugün enerjiniz yüksek, yeni başlangıçlar için ideal!</p></div><textarea class="w-full bg-indigo-950 p-3 rounded-lg text-sm" placeholder="Notunuzu buraya yazın..."></textarea></div></body></html>`
+  },
+  {
     id: 'landing-modern',
     title: 'Modern Landing Page',
     description: 'Şık, minimalist ve dönüşüm odaklı bir açılış sayfası.',
@@ -186,154 +206,144 @@ const TEMPLATES: Template[] = [
     previewCode: `<html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-zinc-900 flex items-center justify-center min-h-screen p-4"><div class="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl w-full text-center"><div class="p-4"><div class="text-4xl font-extrabold text-lime-400 mb-2">99%</div><div class="text-zinc-400 text-sm font-medium uppercase tracking-wider">Müşteri Memnuniyeti</div></div><div class="p-4"><div class="text-4xl font-extrabold text-lime-400 mb-2">24/7</div><div class="text-zinc-400 text-sm font-medium uppercase tracking-wider">Canlı Destek</div></div><div class="p-4"><div class="text-4xl font-extrabold text-lime-400 mb-2">10k+</div><div class="text-zinc-400 text-sm font-medium uppercase tracking-wider">Aktif Kullanıcı</div></div><div class="p-4"><div class="text-4xl font-extrabold text-lime-400 mb-2">500+</div><div class="text-zinc-400 text-sm font-medium uppercase tracking-wider">Tamamlanan Proje</div></div></div></body></html>`
   },
   {
-    id: 'page-agency',
-    title: 'Dijital Ajans',
-    description: 'Yaratıcı ajanslar için modern ve dinamik sayfa.',
-    category: 'page',
-    icon: LayoutTemplate,
-    prompt: 'Yaratıcı bir dijital ajans için modern bir web sitesi oluştur. Koyu tema ağırlıklı, büyük tipografi, hizmetler bölümü, portföy galerisi ve iletişim formu içersin. Animasyonlu hissettiren Tailwind sınıfları kullan.',
-    color: 'bg-indigo-600',
-    previewCode: `<html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-zinc-950 text-white font-sans"><div class="p-12 md:p-24 max-w-5xl mx-auto"><h1 class="text-5xl md:text-7xl font-black tracking-tighter mb-6 leading-tight">Fikirleri <span class="text-indigo-500">Dijital</span><br/>Gerçekliğe Dönüştürüyoruz.</h1><p class="text-xl text-zinc-400 max-w-2xl mb-10">Markanız için yenilikçi web deneyimleri, mobil uygulamalar ve dijital stratejiler geliştiriyoruz.</p><div class="flex gap-4"><button class="px-8 py-4 bg-indigo-600 hover:bg-indigo-500 rounded-full font-bold transition">Projelerimiz</button><button class="px-8 py-4 bg-transparent border border-zinc-700 hover:border-zinc-500 rounded-full font-bold transition">Bize Ulaşın</button></div></div></body></html>`
-  },
-  {
-    id: 'comp-newsletter',
-    title: 'Bülten Aboneliği',
-    description: 'E-posta abonelik formu.',
-    category: 'component',
-    icon: Code,
-    prompt: 'Tailwind CSS ile şık bir e-posta bülten (newsletter) abonelik formu oluştur. Başlık, açıklama, e-posta input alanı ve "Abone Ol" butonu içersin. Input ve buton yan yana veya mobilde alt alta olsun.',
-    color: 'bg-pink-500',
-    previewCode: `<html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-zinc-50 flex items-center justify-center min-h-screen p-4"><div class="bg-white p-8 md:p-12 rounded-3xl shadow-xl max-w-2xl w-full text-center border border-zinc-100"><div class="w-16 h-16 bg-pink-100 text-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-6"><svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg></div><h2 class="text-3xl font-bold text-zinc-800 mb-4">Gelişmelerden Haberdar Olun</h2><p class="text-zinc-500 mb-8">En yeni özellikler, güncellemeler ve ipuçları doğrudan gelen kutunuza gelsin.</p><form class="flex flex-col md:flex-row gap-3 max-w-md mx-auto"><input type="email" placeholder="E-posta adresiniz" class="flex-1 px-4 py-3 rounded-xl border border-zinc-200 focus:ring-2 focus:ring-pink-500 focus:border-pink-500 outline-none" /><button type="button" class="px-6 py-3 bg-pink-500 text-white font-bold rounded-xl hover:bg-pink-600 transition shadow-lg shadow-pink-500/30">Abone Ol</button></form></div></body></html>`
-  },
-  {
-    id: 'page-realestate',
-    title: 'Emlak Listesi',
-    description: 'Emlak ve gayrimenkul listeleme sayfası.',
-    category: 'page',
-    icon: LayoutTemplate,
-    prompt: 'Tailwind CSS ile bir emlak (real estate) listeleme sayfası oluştur. Üstte arama/filtreleme çubuğu, altta ise ev ilanlarını gösteren kartlar (resim, fiyat, yatak odası, banyo, metrekare bilgileri) olsun.',
-    color: 'bg-emerald-600',
-    previewCode: `<html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-zinc-100 font-sans p-4 md:p-8"><div class="max-w-5xl mx-auto"><div class="bg-white p-4 rounded-2xl shadow-sm mb-8 flex flex-col md:flex-row gap-4"><input type="text" placeholder="Konum ara..." class="flex-1 px-4 py-2 bg-zinc-50 border border-zinc-200 rounded-xl outline-none focus:border-emerald-500"><select class="px-4 py-2 bg-zinc-50 border border-zinc-200 rounded-xl outline-none"><option>Satılık</option><option>Kiralık</option></select><button class="px-6 py-2 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700">Ara</button></div><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"><div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-zinc-100 hover:shadow-md transition"><div class="h-48 bg-zinc-200 relative"><div class="absolute top-4 left-4 bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-full">Yeni</div></div><div class="p-5"><div class="text-2xl font-bold text-zinc-800 mb-1">₺4.500.000</div><div class="text-zinc-500 text-sm mb-4">Kadıköy, İstanbul</div><div class="flex justify-between text-sm text-zinc-600 border-t border-zinc-100 pt-4"><span>🛏️ 3 Oda</span><span>🛁 2 Banyo</span><span>📐 120 m²</span></div></div></div><div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-zinc-100 hover:shadow-md transition"><div class="h-48 bg-zinc-200"></div><div class="p-5"><div class="text-2xl font-bold text-zinc-800 mb-1">₺2.850.000</div><div class="text-zinc-500 text-sm mb-4">Beşiktaş, İstanbul</div><div class="flex justify-between text-sm text-zinc-600 border-t border-zinc-100 pt-4"><span>🛏️ 2 Oda</span><span>🛁 1 Banyo</span><span>📐 85 m²</span></div></div></div></div></div></body></html>`
-  },
-  {
-    id: 'comp-login',
-    title: 'Giriş Formu',
-    description: 'Modern ve güvenli giriş ekranı.',
-    category: 'component',
-    icon: Code,
-    prompt: 'Tailwind CSS ile modern bir kullanıcı giriş (login) formu oluştur. E-posta, şifre alanları, "Şifremi unuttum" linki, "Giriş Yap" butonu ve "Google ile Giriş" gibi sosyal medya butonları içersin. Ekranı ikiye bölüp bir tarafında görsel kullanabilirsin.',
-    color: 'bg-violet-500',
-    previewCode: `<html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-zinc-50 flex items-center justify-center min-h-screen p-4"><div class="bg-white rounded-3xl shadow-xl overflow-hidden flex max-w-4xl w-full border border-zinc-100"><div class="w-1/2 bg-violet-600 p-12 text-white hidden md:flex flex-col justify-between"><div class="text-2xl font-bold">Logo</div><div><h2 class="text-4xl font-bold mb-4">Tekrar Hoş Geldiniz!</h2><p class="text-violet-200">Hesabınıza giriş yaparak kaldığınız yerden devam edin.</p></div><div class="text-sm text-violet-300">© 2024 Tüm hakları saklıdır.</div></div><div class="w-full md:w-1/2 p-8 md:p-12"><h3 class="text-2xl font-bold text-zinc-800 mb-2">Giriş Yap</h3><p class="text-zinc-500 mb-8">Lütfen bilgilerinizi girin.</p><form class="space-y-4"><div><label class="block text-sm font-medium text-zinc-700 mb-1">E-posta</label><input type="email" class="w-full px-4 py-3 rounded-xl border border-zinc-200 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none" placeholder="ornek@email.com"></div><div><div class="flex justify-between mb-1"><label class="block text-sm font-medium text-zinc-700">Şifre</label><a href="#" class="text-sm text-violet-600 hover:text-violet-500">Şifremi unuttum</a></div><input type="password" class="w-full px-4 py-3 rounded-xl border border-zinc-200 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none" placeholder="••••••••"></div><button type="button" class="w-full py-3 bg-violet-600 text-white font-bold rounded-xl hover:bg-violet-700 transition">Giriş Yap</button><div class="relative py-4"><div class="absolute inset-0 flex items-center"><div class="w-full border-t border-zinc-200"></div></div><div class="relative flex justify-center"><span class="bg-white px-4 text-sm text-zinc-500">veya</span></div></div><button type="button" class="w-full py-3 bg-white border border-zinc-200 text-zinc-700 font-bold rounded-xl hover:bg-zinc-50 transition flex items-center justify-center gap-2"><svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" /><path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" /><path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" /><path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" /></svg> Google ile devam et</button></form></div></div></body></html>`
-  },
-  {
-    id: 'page-personal-blog',
-    title: 'Kişisel Blog',
-    description: 'Yazarlar ve içerik üreticileri için kişisel blog.',
-    category: 'page',
-    icon: LayoutTemplate,
-    prompt: 'Yazarlar için kişisel bir blog sitesi oluştur. Üstte yazarın kısa biyografisi ve fotoğrafı, altında ise makale listesi olsun. Makale kartlarında öne çıkan görsel, başlık, özet ve okuma süresi bulunsun.',
-    color: 'bg-rose-600',
-    previewCode: `<html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-zinc-50 font-sans"><div class="max-w-3xl mx-auto p-8"><header class="text-center mb-16 pt-12"><div class="w-24 h-24 bg-zinc-200 rounded-full mx-auto mb-4"></div><h1 class="text-3xl font-bold text-zinc-800 mb-2">Ayşe Yılmaz</h1><p class="text-zinc-500 max-w-md mx-auto">Tasarım, teknoloji ve hayat üzerine yazılar yazıyorum. Haftalık bültenime abone olmayı unutmayın.</p></header><div class="space-y-8"><article class="bg-white p-6 rounded-2xl shadow-sm border border-zinc-100 hover:shadow-md transition cursor-pointer"><div class="text-sm text-rose-500 font-semibold mb-2">Tasarım • 5 dk okuma</div><h2 class="text-2xl font-bold text-zinc-800 mb-3">Minimalizmin Gücü</h2><p class="text-zinc-600 mb-4">Daha az şeyle daha fazla etki yaratmanın yolları üzerine düşünceler...</p><div class="text-sm text-zinc-400">12 Mayıs 2024</div></article><article class="bg-white p-6 rounded-2xl shadow-sm border border-zinc-100 hover:shadow-md transition cursor-pointer"><div class="text-sm text-rose-500 font-semibold mb-2">Teknoloji • 8 dk okuma</div><h2 class="text-2xl font-bold text-zinc-800 mb-3">Yapay Zeka ve Gelecek</h2><p class="text-zinc-600 mb-4">AI araçlarının günlük iş akışımızı nasıl değiştireceğine dair bir inceleme...</p><div class="text-sm text-zinc-400">5 Mayıs 2024</div></article></div></div></body></html>`
-  },
-  {
-    id: 'comp-pricing-cards',
-    title: 'Fiyatlandırma Kartları',
-    description: 'Aylık/Yıllık geçişli fiyatlandırma.',
-    category: 'component',
-    icon: Code,
-    prompt: 'Tailwind CSS ile aylık ve yıllık ödeme seçeneği (toggle switch) olan bir fiyatlandırma bölümü oluştur. 3 farklı paket olsun ve yıllık seçimde indirim uygulandığını gösteren bir etiket bulunsun.',
-    color: 'bg-blue-600',
-    previewCode: `<html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-zinc-50 flex items-center justify-center min-h-screen p-4"><div class="max-w-5xl w-full"><div class="text-center mb-12"><h2 class="text-3xl font-bold text-zinc-800 mb-6">Basit ve Şeffaf Fiyatlandırma</h2><div class="flex items-center justify-center gap-3"><span class="text-zinc-500 font-medium">Aylık</span><div class="w-14 h-8 bg-blue-600 rounded-full p-1 cursor-pointer relative"><div class="w-6 h-6 bg-white rounded-full absolute right-1"></div></div><span class="text-zinc-900 font-bold">Yıllık <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full ml-1">%20 İndirim</span></span></div></div><div class="grid grid-cols-1 md:grid-cols-3 gap-8"><div class="bg-white p-8 rounded-3xl shadow-sm border border-zinc-100"><h3 class="text-xl font-bold text-zinc-800 mb-2">Başlangıç</h3><div class="text-4xl font-bold mb-6">₺99<span class="text-lg text-zinc-400 font-normal">/ay</span></div><ul class="space-y-3 mb-8 text-zinc-600"><li class="flex items-center gap-2">✓ 1 Proje</li><li class="flex items-center gap-2">✓ Temel Destek</li></ul><button class="w-full py-3 bg-zinc-100 text-zinc-800 font-bold rounded-xl hover:bg-zinc-200 transition">Seç</button></div><div class="bg-blue-600 p-8 rounded-3xl shadow-xl text-white transform md:-translate-y-4 relative"><div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-blue-400 to-blue-300 text-blue-900 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">En Popüler</div><h3 class="text-xl font-bold text-blue-100 mb-2">Pro</h3><div class="text-4xl font-bold mb-6">₺199<span class="text-lg text-blue-200 font-normal">/ay</span></div><ul class="space-y-3 mb-8 text-blue-50"><li class="flex items-center gap-2">✓ Sınırsız Proje</li><li class="flex items-center gap-2">✓ Öncelikli Destek</li><li class="flex items-center gap-2">✓ Gelişmiş Analitik</li></ul><button class="w-full py-3 bg-white text-blue-600 font-bold rounded-xl hover:bg-zinc-50 transition">Seç</button></div><div class="bg-white p-8 rounded-3xl shadow-sm border border-zinc-100"><h3 class="text-xl font-bold text-zinc-800 mb-2">Kurumsal</h3><div class="text-4xl font-bold mb-6">₺499<span class="text-lg text-zinc-400 font-normal">/ay</span></div><ul class="space-y-3 mb-8 text-zinc-600"><li class="flex items-center gap-2">✓ Her Şey Dahil</li><li class="flex items-center gap-2">✓ 7/24 Destek</li><li class="flex items-center gap-2">✓ Özel Entegrasyon</li></ul><button class="w-full py-3 bg-zinc-100 text-zinc-800 font-bold rounded-xl hover:bg-zinc-200 transition">Seç</button></div></div></div></body></html>`
-  },
-  {
-    id: 'comp-footer',
-    title: 'Geniş Footer',
-    description: 'Bağlantılar ve bülten içeren alt bilgi.',
-    category: 'component',
-    icon: Code,
-    prompt: 'Tailwind CSS ile kapsamlı bir footer (alt bilgi) alanı oluştur. Logo, açıklama, 3-4 sütunlu bağlantı listeleri (Ürün, Şirket, Destek vb.), sosyal medya ikonları ve en altta telif hakkı yazısı bulunsun.',
-    color: 'bg-zinc-800',
-    previewCode: `<html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-zinc-100 flex flex-col min-h-screen"><div class="flex-1"></div><footer class="bg-zinc-900 text-zinc-400 py-12 px-8"><div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 mb-8"><div class="col-span-1 md:col-span-1"><div class="text-2xl font-bold text-white mb-4">Logo</div><p class="text-sm">Modern web deneyimleri inşa etmek için en iyi araçları sunuyoruz.</p></div><div><h4 class="text-white font-bold mb-4">Ürün</h4><ul class="space-y-2 text-sm"><li><a href="#" class="hover:text-white transition">Özellikler</a></li><li><a href="#" class="hover:text-white transition">Fiyatlandırma</a></li><li><a href="#" class="hover:text-white transition">Sürümler</a></li></ul></div><div><h4 class="text-white font-bold mb-4">Şirket</h4><ul class="space-y-2 text-sm"><li><a href="#" class="hover:text-white transition">Hakkımızda</a></li><li><a href="#" class="hover:text-white transition">Kariyer</a></li><li><a href="#" class="hover:text-white transition">İletişim</a></li></ul></div><div><h4 class="text-white font-bold mb-4">Yasal</h4><ul class="space-y-2 text-sm"><li><a href="#" class="hover:text-white transition">Gizlilik Politikası</a></li><li><a href="#" class="hover:text-white transition">Kullanım Şartları</a></li></ul></div></div><div class="max-w-6xl mx-auto border-t border-zinc-800 pt-8 flex flex-col md:flex-row justify-between items-center text-sm"><p>© 2024 Şirket Adı. Tüm hakları saklıdır.</p><div class="flex gap-4 mt-4 md:mt-0"><div class="w-8 h-8 bg-zinc-800 rounded-full"></div><div class="w-8 h-8 bg-zinc-800 rounded-full"></div><div class="w-8 h-8 bg-zinc-800 rounded-full"></div></div></div></footer></body></html>`
-  },
-  {
-    id: 'comp-navbar',
-    title: 'Modern Navbar',
-    description: 'Responsive ve şık navigasyon menüsü.',
-    category: 'component',
-    icon: Code,
-    prompt: 'Tailwind CSS ile modern bir navbar (navigasyon menüsü) oluştur. Sol tarafta logo, ortada menü bağlantıları, sağ tarafta ise "Giriş Yap" ve "Kayıt Ol" butonları bulunsun. Mobil cihazlar için hamburger menü ikonu ekle.',
-    color: 'bg-indigo-400',
-    previewCode: `<html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-zinc-50 font-sans"><nav class="bg-white shadow-sm border-b border-zinc-100 px-6 py-4 flex justify-between items-center"><div class="text-xl font-bold text-indigo-600">BrandLogo</div><div class="hidden md:flex gap-6 text-sm font-medium text-zinc-600"><a href="#" class="hover:text-indigo-600 transition">Ana Sayfa</a><a href="#" class="hover:text-indigo-600 transition">Özellikler</a><a href="#" class="hover:text-indigo-600 transition">Fiyatlar</a><a href="#" class="hover:text-indigo-600 transition">İletişim</a></div><div class="hidden md:flex gap-3"><button class="px-4 py-2 text-sm font-medium text-zinc-600 hover:text-indigo-600 transition">Giriş Yap</button><button class="px-4 py-2 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">Kayıt Ol</button></div><div class="md:hidden text-zinc-600"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg></div></nav></body></html>`
-  },
-  {
-    id: 'comp-hero-section',
-    title: 'Hero Bölümü',
-    description: 'Etkileyici bir açılış (hero) alanı.',
-    category: 'component',
-    icon: Code,
-    prompt: 'Tailwind CSS ile dikkat çekici bir hero (açılış) bölümü oluştur. Büyük bir başlık, alt başlık, iki adet CTA (çağrı) butonu ve sağ tarafta veya arka planda şık bir görsel/illüstrasyon alanı olsun.',
-    color: 'bg-fuchsia-600',
-    previewCode: `<html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-white font-sans"><div class="relative overflow-hidden bg-white"><div class="max-w-7xl mx-auto"><div class="relative z-10 pb-8 bg-white sm:pb-16 md:pb-20 lg:max-w-2xl lg:w-full lg:pb-28 xl:pb-32 pt-20 px-4 sm:px-6 lg:px-8"><main class="mt-10 mx-auto max-w-7xl sm:mt-12 md:mt-16 lg:mt-20 xl:mt-28"><div class="sm:text-center lg:text-left"><h1 class="text-4xl tracking-tight font-extrabold text-zinc-900 sm:text-5xl md:text-6xl"><span class="block xl:inline">İşinizi büyütmek için</span> <span class="block text-fuchsia-600 xl:inline">en iyi araçlar</span></h1><p class="mt-3 text-base text-zinc-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">Modern, hızlı ve güvenilir altyapımızla projelerinizi hayata geçirin. Hemen ücretsiz başlayın ve farkı görün.</p><div class="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start"><div class="rounded-md shadow"><a href="#" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-fuchsia-600 hover:bg-fuchsia-700 md:py-4 md:text-lg md:px-10">Ücretsiz Başla</a></div><div class="mt-3 sm:mt-0 sm:ml-3"><a href="#" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-fuchsia-700 bg-fuchsia-100 hover:bg-fuchsia-200 md:py-4 md:text-lg md:px-10">Canlı Demo</a></div></div></div></main></div></div><div class="lg:absolute lg:inset-y-0 lg:right-0 lg:w-1/2"><div class="h-56 w-full bg-zinc-200 sm:h-72 md:h-96 lg:w-full lg:h-full flex items-center justify-center text-zinc-400">Görsel Alanı</div></div></div></body></html>`
-  },
-  {
-    id: 'page-dashboard-dark',
-    title: 'Karanlık Dashboard',
-    description: 'Koyu temalı, modern veri paneli.',
+    id: 'page-fitness',
+    title: 'Fitness Takipçisi',
+    description: 'Antrenman ve sağlık verilerinizi takip edin.',
     category: 'page',
     icon: LayoutDashboard,
-    prompt: 'Koyu tema (dark mode) kullanan modern bir dashboard arayüzü oluştur. Sol menü, üst bar, istatistik kartları ve bir grafik/tablo alanı içersin. Renk paleti olarak koyu gri/siyah ve vurgu rengi olarak neon mavi veya mor kullan.',
-    color: 'bg-zinc-900',
-    previewCode: `<html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-zinc-950 text-zinc-100 flex h-screen font-sans"><aside class="w-64 bg-zinc-900 border-r border-zinc-800 p-6 flex flex-col"><div class="text-2xl font-bold text-indigo-400 mb-10">DarkDash</div><nav class="flex-1 space-y-2"><a href="#" class="flex items-center gap-3 px-4 py-3 bg-indigo-500/10 text-indigo-400 rounded-xl font-medium"><span>📊</span> Genel Bakış</a><a href="#" class="flex items-center gap-3 px-4 py-3 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/50 rounded-xl transition"><span>👥</span> Kullanıcılar</a><a href="#" class="flex items-center gap-3 px-4 py-3 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/50 rounded-xl transition"><span>⚙️</span> Ayarlar</a></nav></aside><main class="flex-1 flex flex-col"><header class="h-20 border-b border-zinc-800 flex items-center justify-between px-8"><div class="relative w-64"><input type="text" placeholder="Ara..." class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-indigo-500 transition"></div><div class="flex items-center gap-4"><div class="w-10 h-10 bg-zinc-800 rounded-full"></div></div></header><div class="p-8 flex-1 overflow-y-auto"><h1 class="text-2xl font-bold mb-6">Genel Bakış</h1><div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"><div class="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl"><div class="text-zinc-400 text-sm mb-2">Toplam Gelir</div><div class="text-3xl font-bold text-white">$45,231</div><div class="text-emerald-400 text-sm mt-2 flex items-center gap-1">↑ 20.1% geçen aydan</div></div><div class="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl"><div class="text-zinc-400 text-sm mb-2">Aktif Kullanıcı</div><div class="text-3xl font-bold text-white">2,405</div><div class="text-emerald-400 text-sm mt-2 flex items-center gap-1">↑ 12.5% geçen aydan</div></div><div class="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl"><div class="text-zinc-400 text-sm mb-2">Hemen Çıkma Oranı</div><div class="text-3xl font-bold text-white">42%</div><div class="text-rose-400 text-sm mt-2 flex items-center gap-1">↓ 4.2% geçen aydan</div></div></div><div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 h-64 flex items-center justify-center text-zinc-500">Grafik Alanı</div></div></main></body></html>`
+    prompt: 'Modern bir fitness takip uygulaması oluştur. Günlük adım sayısı, yakılan kalori, aktif süre gibi istatistik kartları, haftalık aktivite grafiği ve son antrenmanlar listesi olsun. Canlı ve enerjik renkler kullan.',
+    color: 'bg-orange-500',
+    previewCode: `<html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-zinc-50 p-4 font-sans"><div class="max-w-md mx-auto space-y-4"><div class="flex justify-between items-center"><h1 class="text-2xl font-bold">Aktivite</h1><div class="w-10 h-10 bg-orange-100 rounded-full"></div></div><div class="grid grid-cols-2 gap-4"><div class="bg-white p-4 rounded-2xl shadow-sm"><div class="text-zinc-400 text-xs uppercase">Adımlar</div><div class="text-xl font-bold">8,432</div></div><div class="bg-white p-4 rounded-2xl shadow-sm"><div class="text-zinc-400 text-xs uppercase">Kalori</div><div class="text-xl font-bold">450 kcal</div></div></div><div class="bg-orange-500 text-white p-6 rounded-3xl shadow-lg shadow-orange-200"><h3 class="font-bold mb-2">Günlük Hedef</h3><div class="h-2 bg-white/30 rounded-full overflow-hidden"><div class="h-full bg-white w-3/4"></div></div><p class="text-sm mt-2 opacity-90">Hedefine %75 ulaştın!</p></div></div></body></html>`
   },
   {
-    id: 'comp-feature-grid',
-    title: 'Özellikler Gridi',
-    description: 'Ürün özelliklerini anlatan ikonlu kartlar.',
-    category: 'component',
-    icon: Code,
-    prompt: 'Tailwind CSS ile bir ürünün veya hizmetin özelliklerini anlatan 3x2 (veya benzeri) bir grid yapısı oluştur. Her bir özellik için bir ikon, başlık ve kısa açıklama bulunsun.',
-    color: 'bg-amber-400',
-    previewCode: `<html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-white py-24 sm:py-32"><div class="mx-auto max-w-7xl px-6 lg:px-8"><div class="mx-auto max-w-2xl lg:text-center"><h2 class="text-base font-semibold leading-7 text-amber-600">Daha Hızlı Üretin</h2><p class="mt-2 text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">İhtiyacınız olan her şey burada</p><p class="mt-6 text-lg leading-8 text-zinc-600">Projelerinizi hızlandırmak ve kalitesini artırmak için tasarlanmış güçlü özellikler.</p></div><div class="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-4xl"><dl class="grid max-w-xl grid-cols-1 gap-x-8 gap-y-10 lg:max-w-none lg:grid-cols-2 lg:gap-y-16"><div class="relative pl-16"><dt class="text-base font-semibold leading-7 text-zinc-900"><div class="absolute left-0 top-0 flex h-10 w-10 items-center justify-center rounded-lg bg-amber-600"><svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" /></svg></div>Bulut Yedekleme</dt><dd class="mt-2 text-base leading-7 text-zinc-600">Verileriniz otomatik olarak buluta yedeklenir, böylece hiçbir zaman veri kaybı yaşamazsınız.</dd></div><div class="relative pl-16"><dt class="text-base font-semibold leading-7 text-zinc-900"><div class="absolute left-0 top-0 flex h-10 w-10 items-center justify-center rounded-lg bg-amber-600"><svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg></div>Gelişmiş Güvenlik</dt><dd class="mt-2 text-base leading-7 text-zinc-600">Uçtan uca şifreleme ve iki faktörlü kimlik doğrulama ile hesaplarınız her zaman güvende.</dd></div><div class="relative pl-16"><dt class="text-base font-semibold leading-7 text-zinc-900"><div class="absolute left-0 top-0 flex h-10 w-10 items-center justify-center rounded-lg bg-amber-600"><svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" /></svg></div>Otomatik Güncellemeler</dt><dd class="mt-2 text-base leading-7 text-zinc-600">Sistem arka planda kendini günceller, böylece her zaman en son özelliklere sahip olursunuz.</dd></div><div class="relative pl-16"><dt class="text-base font-semibold leading-7 text-zinc-900"><div class="absolute left-0 top-0 flex h-10 w-10 items-center justify-center rounded-lg bg-amber-600"><svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M7.864 4.243A7.5 7.5 0 0119.5 10.5c0 2.92-.556 5.709-1.568 8.268M5.742 6.364A7.465 7.465 0 004.5 10.5a7.464 7.464 0 01-1.15 3.993m1.989 3.559A11.209 11.209 0 008.25 10.5a3.75 3.75 0 117.5 0c0 .527-.021 1.049-.064 1.565M12 10.5a14.94 14.94 0 01-3.6 9.75m6.633-4.596a18.666 18.666 0 01-2.485 5.33" /></svg></div>Parmak İzi Desteği</dt><dd class="mt-2 text-base leading-7 text-zinc-600">Biyometrik doğrulama ile şifre girmeden hızlı ve güvenli bir şekilde giriş yapın.</dd></div></dl></div></div></body></html>`
-  },
-  {
-    id: 'page-event',
-    title: 'Etkinlik Sayfası',
-    description: 'Konferans veya etkinlik tanıtım sayfası.',
+    id: 'page-recipe',
+    title: 'Yemek Tarifleri',
+    description: 'Lezzetli tarifler ve adım adım hazırlık rehberi.',
     category: 'page',
     icon: LayoutTemplate,
-    prompt: 'Yaklaşan bir teknoloji konferansı için etkinlik sayfası oluştur. Etkinlik tarihi, konuşmacılar gridi, program (schedule) çizelgesi ve bilet alma butonu içersin. Canlı ve enerjik renkler kullan.',
-    color: 'bg-rose-500',
-    previewCode: `<html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-zinc-950 text-white font-sans"><div class="relative overflow-hidden"><div class="absolute inset-0 bg-gradient-to-br from-rose-600/20 to-purple-900/40 z-0"></div><div class="max-w-5xl mx-auto p-8 relative z-10 pt-20 pb-32 text-center"><div class="inline-block px-4 py-1 rounded-full bg-rose-500/20 text-rose-300 font-medium text-sm mb-6 border border-rose-500/30">15-16 Ekim 2024 • İstanbul</div><h1 class="text-6xl md:text-8xl font-black tracking-tighter mb-6">TechSummit<span class="text-rose-500">.</span></h1><p class="text-xl text-zinc-400 max-w-2xl mx-auto mb-10">Geleceğin teknolojilerini şekillendiren liderlerle bir araya gelin. İki gün sürecek ilham verici konuşmalar ve atölyeler.</p><button class="px-8 py-4 bg-rose-600 hover:bg-rose-500 rounded-full font-bold text-lg transition shadow-[0_0_30px_rgba(225,29,72,0.4)]">Biletini Al</button></div></div><div class="max-w-5xl mx-auto p-8 -mt-16 relative z-20"><div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 shadow-2xl"><h2 class="text-2xl font-bold mb-8 text-center">Öne Çıkan Konuşmacılar</h2><div class="grid grid-cols-2 md:grid-cols-4 gap-6"><div class="text-center"><div class="w-24 h-24 bg-zinc-800 rounded-full mx-auto mb-4"></div><h3 class="font-bold">Dr. Ayşe Yılmaz</h3><p class="text-sm text-zinc-500">Yapay Zeka Araştırmacısı</p></div><div class="text-center"><div class="w-24 h-24 bg-zinc-800 rounded-full mx-auto mb-4"></div><h3 class="font-bold">Caner Demir</h3><p class="text-sm text-zinc-500">UX Direktörü</p></div><div class="text-center"><div class="w-24 h-24 bg-zinc-800 rounded-full mx-auto mb-4"></div><h3 class="font-bold">Zeynep Kaya</h3><p class="text-sm text-zinc-500">Yazılım Mimarı</p></div><div class="text-center"><div class="w-24 h-24 bg-zinc-800 rounded-full mx-auto mb-4"></div><h3 class="font-bold">Ali Vefa</h3><p class="text-sm text-zinc-500">Girişimci</p></div></div></div></div></body></html>`
-  },
-  {
-    id: 'comp-team',
-    title: 'Ekip Üyeleri',
-    description: 'Şirket çalışanlarını tanıtan bölüm.',
-    category: 'component',
-    icon: Code,
-    prompt: 'Tailwind CSS ile "Ekibimiz" (Team) bölümü oluştur. Her ekip üyesi için bir fotoğraf, isim, unvan ve sosyal medya ikonları içeren kartlar tasarla.',
-    color: 'bg-teal-600',
-    previewCode: `<html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-white py-24 sm:py-32"><div class="mx-auto max-w-7xl px-6 lg:px-8"><div class="mx-auto max-w-2xl lg:mx-0"><h2 class="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">Harika Ekibimiz</h2><p class="mt-6 text-lg leading-8 text-zinc-600">Tutkulu, yaratıcı ve deneyimli profesyonellerden oluşan ekibimizle tanışın.</p></div><ul role="list" class="mx-auto mt-20 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 sm:grid-cols-2 lg:mx-0 lg:max-w-none lg:grid-cols-3"><li><div class="bg-zinc-50 rounded-2xl p-6 text-center border border-zinc-100"><div class="mx-auto h-40 w-40 rounded-full bg-zinc-200 mb-6"></div><h3 class="text-base font-semibold leading-7 tracking-tight text-zinc-900">Ahmet Yılmaz</h3><p class="text-sm font-semibold leading-6 text-teal-600">Kurucu & CEO</p><ul role="list" class="mt-6 flex justify-center gap-x-6"><li><a href="#" class="text-zinc-400 hover:text-zinc-500"><span class="sr-only">Twitter</span><svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path d="M11.4678 8.77491L17.2961 2H15.915L10.8543 7.88256L6.81232 2H2.15039L8.26263 10.8955L2.15039 18H3.53159L8.87581 11.7878L13.1444 18H17.8063L11.4675 8.77491H11.4678ZM9.57608 10.9738L8.95678 10.0881L4.02925 3.03974H6.15068L10.1273 8.72795L10.7466 9.61374L15.9156 17.0075H13.7942L9.57608 10.9742V10.9738Z" /></svg></a></li><li><a href="#" class="text-zinc-400 hover:text-zinc-500"><span class="sr-only">LinkedIn</span><svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path fill-rule="evenodd" d="M16.338 16.338H13.67V12.16c0-.995-.017-2.277-1.387-2.277-1.39 0-1.601 1.086-1.601 2.207v4.248H8.014v-8.59h2.559v1.174h.037c.356-.675 1.227-1.387 2.526-1.387 2.703 0 3.203 1.778 3.203 4.092v4.711zM5.005 6.575a1.548 1.548 0 11-.003-3.096 1.548 1.548 0 01.003 3.096zm-1.337 9.763H6.34v-8.59H3.667v8.59zM17.668 1H2.328C1.595 1 1 1.581 1 2.298v15.403C1 18.418 1.595 19 2.328 19h15.34c.734 0 1.332-.582 1.332-1.299V2.298C19 1.581 18.402 1 17.668 1z" clip-rule="evenodd" /></svg></a></li></ul></div></li><li><div class="bg-zinc-50 rounded-2xl p-6 text-center border border-zinc-100"><div class="mx-auto h-40 w-40 rounded-full bg-zinc-200 mb-6"></div><h3 class="text-base font-semibold leading-7 tracking-tight text-zinc-900">Zeynep Kaya</h3><p class="text-sm font-semibold leading-6 text-teal-600">Tasarım Direktörü</p><ul role="list" class="mt-6 flex justify-center gap-x-6"><li><a href="#" class="text-zinc-400 hover:text-zinc-500"><span class="sr-only">Twitter</span><svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path d="M11.4678 8.77491L17.2961 2H15.915L10.8543 7.88256L6.81232 2H2.15039L8.26263 10.8955L2.15039 18H3.53159L8.87581 11.7878L13.1444 18H17.8063L11.4675 8.77491H11.4678ZM9.57608 10.9738L8.95678 10.0881L4.02925 3.03974H6.15068L10.1273 8.72795L10.7466 9.61374L15.9156 17.0075H13.7942L9.57608 10.9742V10.9738Z" /></svg></a></li><li><a href="#" class="text-zinc-400 hover:text-zinc-500"><span class="sr-only">LinkedIn</span><svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path fill-rule="evenodd" d="M16.338 16.338H13.67V12.16c0-.995-.017-2.277-1.387-2.277-1.39 0-1.601 1.086-1.601 2.207v4.248H8.014v-8.59h2.559v1.174h.037c.356-.675 1.227-1.387 2.526-1.387 2.703 0 3.203 1.778 3.203 4.092v4.711zM5.005 6.575a1.548 1.548 0 11-.003-3.096 1.548 1.548 0 01.003 3.096zm-1.337 9.763H6.34v-8.59H3.667v8.59zM17.668 1H2.328C1.595 1 1 1.581 1 2.298v15.403C1 18.418 1.595 19 2.328 19h15.34c.734 0 1.332-.582 1.332-1.299V2.298C19 1.581 18.402 1 17.668 1z" clip-rule="evenodd" /></svg></a></li></ul></div></li><li><div class="bg-zinc-50 rounded-2xl p-6 text-center border border-zinc-100"><div class="mx-auto h-40 w-40 rounded-full bg-zinc-200 mb-6"></div><h3 class="text-base font-semibold leading-7 tracking-tight text-zinc-900">Caner Demir</h3><p class="text-sm font-semibold leading-6 text-teal-600">Baş Geliştirici</p><ul role="list" class="mt-6 flex justify-center gap-x-6"><li><a href="#" class="text-zinc-400 hover:text-zinc-500"><span class="sr-only">Twitter</span><svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path d="M11.4678 8.77491L17.2961 2H15.915L10.8543 7.88256L6.81232 2H2.15039L8.26263 10.8955L2.15039 18H3.53159L8.87581 11.7878L13.1444 18H17.8063L11.4675 8.77491H11.4678ZM9.57608 10.9738L8.95678 10.0881L4.02925 3.03974H6.15068L10.1273 8.72795L10.7466 9.61374L15.9156 17.0075H13.7942L9.57608 10.9742V10.9738Z" /></svg></a></li><li><a href="#" class="text-zinc-400 hover:text-zinc-500"><span class="sr-only">LinkedIn</span><svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path fill-rule="evenodd" d="M16.338 16.338H13.67V12.16c0-.995-.017-2.277-1.387-2.277-1.39 0-1.601 1.086-1.601 2.207v4.248H8.014v-8.59h2.559v1.174h.037c.356-.675 1.227-1.387 2.526-1.387 2.703 0 3.203 1.778 3.203 4.092v4.711zM5.005 6.575a1.548 1.548 0 11-.003-3.096 1.548 1.548 0 01.003 3.096zm-1.337 9.763H6.34v-8.59H3.667v8.59zM17.668 1H2.328C1.595 1 1 1.581 1 2.298v15.403C1 18.418 1.595 19 2.328 19h15.34c.734 0 1.332-.582 1.332-1.299V2.298C19 1.581 18.402 1 17.668 1z" clip-rule="evenodd" /></svg></a></li></ul></div></li></ul></div></div></body></html>`
-  },
-  {
-    id: 'page-login-modern',
-    title: 'Modern Giriş Sayfası',
-    description: 'Bölünmüş ekranlı şık bir giriş sayfası.',
-    category: 'page',
-    icon: LayoutTemplate,
-    prompt: 'Ekranın bir yarısında görsel/illüstrasyon, diğer yarısında giriş formu olan modern bir login sayfası oluştur. Formda email, şifre, "beni hatırla" ve "şifremi unuttum" seçenekleri olsun.',
-    color: 'bg-indigo-600',
-    previewCode: `<html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-white font-sans"><div class="flex min-h-screen"><div class="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24"><div class="mx-auto w-full max-w-sm lg:w-96"><div><h2 class="mt-8 text-2xl font-bold leading-9 tracking-tight text-zinc-900">Hesabınıza giriş yapın</h2><p class="mt-2 text-sm leading-6 text-zinc-500">Veya <a href="#" class="font-semibold text-indigo-600 hover:text-indigo-500">14 günlük ücretsiz denemenizi başlatın</a></p></div><div class="mt-10"><div><form action="#" method="POST" class="space-y-6"><div><label for="email" class="block text-sm font-medium leading-6 text-zinc-900">E-posta adresi</label><div class="mt-2"><input id="email" name="email" type="email" autocomplete="email" required class="block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-zinc-300 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 px-3"></div></div><div><label for="password" class="block text-sm font-medium leading-6 text-zinc-900">Şifre</label><div class="mt-2"><input id="password" name="password" type="password" autocomplete="current-password" required class="block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-zinc-300 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 px-3"></div></div><div class="flex items-center justify-between"><div class="flex items-center"><input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-600"><label for="remember-me" class="ml-3 block text-sm leading-6 text-zinc-700">Beni hatırla</label></div><div class="text-sm leading-6"><a href="#" class="font-semibold text-indigo-600 hover:text-indigo-500">Şifrenizi mi unuttunuz?</a></div></div><div><button type="submit" class="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Giriş Yap</button></div></form></div><div class="mt-10"></div></div></div></div><div class="relative hidden w-0 flex-1 lg:block"><div class="absolute inset-0 h-full w-full bg-indigo-600 flex items-center justify-center"><div class="text-white text-center p-12"><h2 class="text-4xl font-bold mb-4">Sisteme Hoş Geldiniz</h2><p class="text-indigo-200 text-lg">Tüm iş süreçlerinizi tek bir platformdan yönetin.</p></div></div></div></div></body></html>`
-  },
-  {
-    id: 'comp-stats-cards',
-    title: 'İstatistik Kartları',
-    description: 'Özet verileri gösteren kartlar.',
-    category: 'component',
-    icon: Code,
-    prompt: 'Tailwind CSS ile 3 veya 4 sütunlu istatistik kartları oluştur. Her kartta bir sayısal değer, başlık ve değişim oranı (ikonlu) bulunsun.',
+    prompt: 'Kullanıcı dostu bir yemek tarifi uygulaması oluştur. Tarif kartları (resim, süre, zorluk), malzeme listesi ve hazırlama adımları olsun. İştah açıcı görseller ve temiz bir düzen kullan.',
     color: 'bg-emerald-500',
-    previewCode: `<html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-zinc-100 p-8 font-sans"><div class="max-w-7xl mx-auto"><h3 class="text-base font-semibold leading-6 text-zinc-900 mb-5">Son 30 Gün</h3><dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3"><div class="relative overflow-hidden rounded-lg bg-white px-4 pb-12 pt-5 shadow sm:px-6 sm:pt-6"><dt><div class="absolute rounded-md bg-emerald-500 p-3"><svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg></div><p class="ml-16 truncate text-sm font-medium text-zinc-500">Toplam Abone</p></dt><dd class="ml-16 flex items-baseline pb-6 sm:pb-7"><p class="text-2xl font-semibold text-zinc-900">71,897</p><p class="ml-2 flex items-baseline text-sm font-semibold text-emerald-600"><svg class="h-5 w-5 flex-shrink-0 self-center text-emerald-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10 17a.75.75 0 01-.75-.75V5.612L5.29 9.77a.75.75 0 01-1.08-1.04l5.25-5.5a.75.75 0 011.08 0l5.25 5.5a.75.75 0 11-1.08 1.04l-3.96-4.158V16.25A.75.75 0 0110 17z" clip-rule="evenodd" /></svg><span class="sr-only"> Arttı </span>122</p><div class="absolute inset-x-0 bottom-0 bg-zinc-50 px-4 py-4 sm:px-6"><div class="text-sm"><a href="#" class="font-medium text-emerald-600 hover:text-emerald-500">Tümünü gör<span class="sr-only"> Toplam Abone istatistikleri</span></a></div></div></dd></div><div class="relative overflow-hidden rounded-lg bg-white px-4 pb-12 pt-5 shadow sm:px-6 sm:pt-6"><dt><div class="absolute rounded-md bg-emerald-500 p-3"><svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 19.5H7.336c-.14 0-.274-.057-.373-.158L2.25 14.625l4.713-4.716c.1-.1.233-.158.373-.158h14.414c.414 0 .75.336.75.75v8.25c0 .414-.336.75-.75.75zM12 10.5h5.25M12 13.5h5.25" /></svg></div><p class="ml-16 truncate text-sm font-medium text-zinc-500">Açılma Oranı</p></dt><dd class="ml-16 flex items-baseline pb-6 sm:pb-7"><p class="text-2xl font-semibold text-zinc-900">58.16%</p><p class="ml-2 flex items-baseline text-sm font-semibold text-emerald-600"><svg class="h-5 w-5 flex-shrink-0 self-center text-emerald-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10 17a.75.75 0 01-.75-.75V5.612L5.29 9.77a.75.75 0 01-1.08-1.04l5.25-5.5a.75.75 0 011.08 0l5.25 5.5a.75.75 0 11-1.08 1.04l-3.96-4.158V16.25A.75.75 0 0110 17z" clip-rule="evenodd" /></svg><span class="sr-only"> Arttı </span>5.4%</p><div class="absolute inset-x-0 bottom-0 bg-zinc-50 px-4 py-4 sm:px-6"><div class="text-sm"><a href="#" class="font-medium text-emerald-600 hover:text-emerald-500">Tümünü gör<span class="sr-only"> Açılma Oranı istatistikleri</span></a></div></div></dd></div><div class="relative overflow-hidden rounded-lg bg-white px-4 pb-12 pt-5 shadow sm:px-6 sm:pt-6"><dt><div class="absolute rounded-md bg-emerald-500 p-3"><svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.042 21.672L13.684 16.6m0 0l-2.51 2.225.569-9.47 5.227 7.917-3.286-.672zM12 2.25V4.5m5.834.166l-1.591 1.591M20.25 10.5H18M7.757 14.743l-1.59 1.59M6 10.5H3.75m4.007-4.543l-1.59-1.59" /></svg></div><p class="ml-16 truncate text-sm font-medium text-zinc-500">Tıklanma Oranı</p></dt><dd class="ml-16 flex items-baseline pb-6 sm:pb-7"><p class="text-2xl font-semibold text-zinc-900">24.57%</p><p class="ml-2 flex items-baseline text-sm font-semibold text-rose-600"><svg class="h-5 w-5 flex-shrink-0 self-center text-rose-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10 3a.75.75 0 01.75.75v10.638l3.96-4.158a.75.75 0 111.08 1.04l-5.25 5.5a.75.75 0 01-1.08 0l-5.25-5.5a.75.75 0 111.08-1.04l3.96 4.158V3.75A.75.75 0 0110 3z" clip-rule="evenodd" /></svg><span class="sr-only"> Azaldı </span>3.2%</p><div class="absolute inset-x-0 bottom-0 bg-zinc-50 px-4 py-4 sm:px-6"><div class="text-sm"><a href="#" class="font-medium text-emerald-600 hover:text-emerald-500">Tümünü gör<span class="sr-only"> Tıklanma Oranı istatistikleri</span></a></div></div></dd></div></dl></div></body></html>`
+    previewCode: `<html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-zinc-50 p-4 font-sans"><div class="max-w-md mx-auto space-y-6"><div class="relative h-48 bg-emerald-100 rounded-3xl overflow-hidden flex items-center justify-center"><span class="text-emerald-800 font-bold">Yemek Görseli</span></div><div class="space-y-2"><h1 class="text-2xl font-bold">Avokadolu Tost</h1><div class="flex gap-4 text-sm text-zinc-500"><span>🕒 15 dk</span><span>🔥 Kolay</span></div></div><div class="bg-white p-6 rounded-3xl shadow-sm"><h3 class="font-bold mb-4">Malzemeler</h3><ul class="space-y-2 text-sm text-zinc-600"><li>• 2 dilim tam buğday ekmeği</li><li>• 1 olgun avokado</li><li>• Zeytinyağı ve baharatlar</li></ul></div></div></body></html>`
+  },
+  {
+    id: 'page-ai-chat',
+    title: 'AI Sohbet Arayüzü',
+    description: 'Modern ve akıcı bir yapay zeka sohbet deneyimi.',
+    category: 'page',
+    icon: LayoutTemplate,
+    prompt: 'Modern bir AI sohbet arayüzü oluştur. Sol tarafta geçmiş konuşmalar (sidebar), sağda ise mesajlaşma alanı olsun. Mesaj balonları, kod blokları ve alt kısımda şık bir input alanı içersin.',
+    color: 'bg-blue-600',
+    previewCode: `<html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-zinc-950 text-white font-sans h-screen flex flex-col"><div class="flex-1 overflow-y-auto p-4 space-y-6"><div class="flex gap-4"><div class="w-8 h-8 bg-blue-600 rounded-lg flex-shrink-0"></div><div class="bg-zinc-900 p-4 rounded-2xl rounded-tl-none max-w-[80%] text-sm">Merhaba! Size nasıl yardımcı olabilirim?</div></div><div class="flex gap-4 flex-row-reverse"><div class="w-8 h-8 bg-zinc-800 rounded-lg flex-shrink-0"></div><div class="bg-blue-600 p-4 rounded-2xl rounded-tr-none max-w-[80%] text-sm">Bana bir React bileşeni örneği verir misin?</div></div></div><div class="p-4 border-t border-zinc-800"><div class="bg-zinc-900 p-2 rounded-2xl flex gap-2"><input class="flex-1 bg-transparent px-4 py-2 outline-none text-sm" placeholder="Mesajınızı yazın..."><button class="bg-blue-600 p-2 rounded-xl">🚀</button></div></div></body></html>`
+  },
+  {
+    id: 'page-tasks',
+    title: 'Görev Yönetimi',
+    description: 'İşlerinizi organize edin ve verimliliğinizi artırın.',
+    category: 'page',
+    icon: LayoutDashboard,
+    prompt: 'Kişisel görev yönetim uygulaması oluştur. "Yapılacaklar", "Devam Edenler" ve "Tamamlananlar" sütunları olan bir Kanban board veya liste görünümü olsun. Görev ekleme butonu ve öncelik etiketleri içersin.',
+    color: 'bg-violet-600',
+    previewCode: `<html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-zinc-50 p-4 font-sans"><div class="max-w-md mx-auto space-y-6"><div class="flex justify-between items-center"><h1 class="text-2xl font-bold">Görevlerim</h1><button class="bg-violet-600 text-white px-4 py-2 rounded-xl text-sm font-bold">+</button></div><div class="space-y-3"><div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-amber-400"><div class="text-xs text-amber-600 font-bold mb-1">Yüksek Öncelik</div><div class="font-medium">Sunum hazırlığı</div></div><div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-blue-400"><div class="text-xs text-blue-600 font-bold mb-1">Normal</div><div class="font-medium">E-postaları yanıtla</div></div></div></div></body></html>`
+  },
+  {
+    id: 'page-travel',
+    title: 'Gezi Rehberi',
+    description: 'Dünyayı keşfetmek için ilham verici gezi rotaları.',
+    category: 'page',
+    icon: LayoutTemplate,
+    prompt: 'Gezginler için modern bir gezi rehberi uygulaması oluştur. Popüler destinasyonlar, gezi ipuçları, harita entegrasyonu (görsel olarak) ve kullanıcı yorumları olsun. Macera ruhunu yansıtan canlı görseller ve tipografi kullan.',
+    color: 'bg-sky-500',
+    previewCode: `<html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-zinc-50 p-4 font-sans"><div class="max-w-md mx-auto space-y-6"><div class="relative h-56 bg-sky-100 rounded-3xl overflow-hidden"><img src="https://picsum.photos/seed/travel/800/600" class="w-full h-full object-cover" referrerPolicy="no-referrer"><div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6"><h1 class="text-2xl font-bold text-white">Bali, Endonezya</h1></div></div><div class="grid grid-cols-3 gap-2 text-center"><div class="bg-white p-3 rounded-2xl shadow-sm"><div class="text-lg">🏝️</div><div class="text-[10px] uppercase text-zinc-500">Plaj</div></div><div class="bg-white p-3 rounded-2xl shadow-sm"><div class="text-lg">⛰️</div><div class="text-[10px] uppercase text-zinc-500">Doğa</div></div><div class="bg-white p-3 rounded-2xl shadow-sm"><div class="text-lg">⛩️</div><div class="text-[10px] uppercase text-zinc-500">Kültür</div></div></div><div class="bg-white p-6 rounded-3xl shadow-sm"><h3 class="font-bold mb-2">Hakkında</h3><p class="text-sm text-zinc-600 leading-relaxed">Bali, muhteşem plajları, yemyeşil pirinç terasları ve canlı kültürüyle her gezginin hayalidir.</p></div></div></body></html>`
+  },
+  {
+    id: 'page-finance',
+    title: 'Finans Takip',
+    description: 'Gelir ve giderlerinizi akıllıca yönetin.',
+    category: 'page',
+    icon: LayoutDashboard,
+    prompt: 'Kişisel finans yönetimi uygulaması oluştur. Toplam bakiye, aylık harcama grafiği, kategori bazlı harcama dağılımı ve son işlemler listesi olsun. Güven veren, temiz ve profesyonel bir arayüz tasarla.',
+    color: 'bg-emerald-600',
+    previewCode: `<html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-zinc-950 text-white p-4 font-sans"><div class="max-w-md mx-auto space-y-6"><div class="text-center py-8"><div class="text-zinc-400 text-sm mb-1">Toplam Bakiye</div><div class="text-4xl font-bold">₺45,250.00</div></div><div class="grid grid-cols-2 gap-4"><div class="bg-zinc-900 p-4 rounded-2xl border border-zinc-800"><div class="text-emerald-500 text-xs mb-1">Gelir</div><div class="text-lg font-bold">+₺12,000</div></div><div class="bg-zinc-900 p-4 rounded-2xl border border-zinc-800"><div class="text-rose-500 text-xs mb-1">Gider</div><div class="text-lg font-bold">-₺8,400</div></div></div><div class="bg-zinc-900 p-6 rounded-3xl border border-zinc-800"><h3 class="font-bold mb-4">Son İşlemler</h3><div class="space-y-4"><div class="flex justify-between items-center"><div class="flex items-center gap-3"><div class="w-10 h-10 bg-zinc-800 rounded-full flex items-center justify-center">🛒</div><div><div class="text-sm font-medium">Market</div><div class="text-xs text-zinc-500">Bugün</div></div></div><div class="font-bold">-₺450</div></div></div></div></div></body></html>`
+  },
+  {
+    id: 'page-education',
+    title: 'Online Kurs',
+    description: 'Yeni beceriler öğrenmek için eğitim platformu.',
+    category: 'page',
+    icon: LayoutTemplate,
+    prompt: 'Bir online eğitim platformu (LMS) arayüzü oluştur. Kurs kategorileri, popüler kurslar, devam eden derslerim bölümü ve eğitmen profilleri olsun. Öğrenmeyi teşvik eden, düzenli ve modern bir yapı kur.',
+    color: 'bg-blue-600',
+    previewCode: `<html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-zinc-50 p-4 font-sans"><div class="max-w-md mx-auto space-y-6"><div class="flex justify-between items-center"><h1 class="text-2xl font-bold">Öğrenmeye Devam Et</h1><div class="w-10 h-10 bg-blue-100 rounded-full"></div></div><div class="bg-white p-4 rounded-3xl shadow-sm flex gap-4 items-center"><div class="w-20 h-20 bg-blue-600 rounded-2xl flex-shrink-0 flex items-center justify-center text-white font-bold text-xs text-center p-2">UI Tasarım Temelleri</div><div class="flex-1"><h3 class="font-bold text-sm">Bölüm 4: Renk Teorisi</h3><div class="h-1.5 bg-zinc-100 rounded-full mt-2 overflow-hidden"><div class="h-full bg-blue-600 w-2/3"></div></div><div class="text-[10px] text-zinc-400 mt-1">%65 tamamlandı</div></div></div><h2 class="font-bold text-lg">Popüler Kurslar</h2><div class="grid grid-cols-2 gap-4"><div class="bg-white rounded-2xl shadow-sm overflow-hidden"><div class="h-24 bg-zinc-200"></div><div class="p-3"><h4 class="font-bold text-xs mb-1">React Geliştirme</h4><div class="text-[10px] text-zinc-500">12 Saat • 4.8 ⭐</div></div></div></div></div></body></html>`
+  },
+  {
+    id: 'page-health',
+    title: 'Sağlık Takibi',
+    description: 'Vital bulgularınızı ve randevularınızı yönetin.',
+    category: 'page',
+    icon: LayoutDashboard,
+    prompt: 'Kişisel sağlık takip uygulaması oluştur. Nabız, uyku kalitesi, su tüketimi gibi metrikler, ilaç hatırlatıcıları ve doktor randevuları takvimi olsun. Temiz, ferah ve güven veren bir tasarım kullan.',
+    color: 'bg-rose-500',
+    previewCode: `<html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-rose-50 p-4 font-sans"><div class="max-w-md mx-auto space-y-6"><div class="flex justify-between items-center"><h1 class="text-2xl font-bold text-rose-900">Sağlık Özeti</h1><div class="w-10 h-10 bg-rose-200 rounded-full"></div></div><div class="bg-white p-6 rounded-3xl shadow-sm border border-rose-100"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-rose-100 rounded-2xl flex items-center justify-center text-2xl">❤️</div><div><div class="text-zinc-500 text-xs">Nabız</div><div class="text-2xl font-bold text-rose-600">72 <span class="text-sm font-normal text-zinc-400">bpm</span></div></div></div></div><div class="grid grid-cols-2 gap-4"><div class="bg-white p-4 rounded-2xl shadow-sm border border-rose-100"><div class="text-xs text-zinc-400 mb-1">Su</div><div class="font-bold">1.5 / 2.5 L</div></div><div class="bg-white p-4 rounded-2xl shadow-sm border border-rose-100"><div class="text-xs text-zinc-400 mb-1">Uyku</div><div class="font-bold">7s 20dk</div></div></div></div></body></html>`
+  },
+  {
+    id: 'comp-hero-modern',
+    title: 'Modern Hero Bölümü',
+    description: 'Web siteleri için etkileyici giriş alanı.',
+    category: 'component',
+    icon: Code,
+    prompt: 'Tailwind CSS ile modern, büyük tipografili, görsel destekli ve etkileyici bir hero (giriş) bölümü oluştur. CTA butonları ve sosyal kanıt (social proof) öğeleri içersin.',
+    color: 'bg-zinc-900',
+    previewCode: `<html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-white font-sans"><section class="py-20 px-6 text-center max-w-4xl mx-auto space-y-8"><div class="inline-block px-4 py-1.5 bg-zinc-100 rounded-full text-xs font-bold text-zinc-600 uppercase tracking-widest">Yeni Nesil Çözümler</div><h1 class="text-6xl font-black tracking-tight text-zinc-900">Fikirlerinizi <span class="text-indigo-600">Gerçeğe</span> Dönüştürün</h1><p class="text-xl text-zinc-500 max-w-2xl mx-auto">En gelişmiş araçlarla projelerinizi bir üst seviyeye taşıyın. Hızlı, güvenli ve ölçeklenebilir.</p><div class="flex gap-4 justify-center"><button class="px-8 py-4 bg-zinc-900 text-white font-bold rounded-2xl hover:bg-zinc-800 transition shadow-xl">Hemen Başla</button><button class="px-8 py-4 bg-white border border-zinc-200 text-zinc-900 font-bold rounded-2xl hover:bg-zinc-50 transition">Daha Fazla Bilgi</button></div></section></body></html>`
+  },
+  {
+    id: 'btn-pixel',
+    title: 'Pixel Retro Buton',
+    description: '8-bit oyun tarzında retro buton.',
+    category: 'button',
+    icon: MousePointerClick,
+    prompt: 'Tailwind CSS ile 8-bit video oyunlarını andıran, keskin kenarlı (pixel art tarzı) ve tıklandığında içeri göçen bir retro buton oluştur.',
+    color: 'bg-yellow-400',
+    previewCode: `<html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="flex items-center justify-center h-screen bg-zinc-800"><button class="px-6 py-3 bg-yellow-400 text-zinc-900 font-bold uppercase tracking-widest border-4 border-zinc-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] active:bg-yellow-500 transition-all">Başlat</button></body></html>`
+  },
+  {
+    id: 'btn-cyberpunk',
+    title: 'Cyberpunk Buton',
+    description: 'Gelecekçi, keskin ve neon detaylı buton.',
+    category: 'button',
+    icon: MousePointerClick,
+    prompt: 'Tailwind CSS ile Cyberpunk 2077 tarzında, asimetrik kesimli, neon sarı ve siyah renkli, glitch efektli bir buton bileşeni oluştur.',
+    color: 'bg-yellow-300 text-black',
+    previewCode: `<html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="flex items-center justify-center h-screen bg-black"><button class="relative px-10 py-4 bg-yellow-300 text-black font-black uppercase italic tracking-tighter border-r-8 border-b-4 border-cyan-400 hover:bg-cyan-400 hover:text-black hover:border-yellow-300 transition-all duration-300 group"><span class="absolute top-0 left-0 w-2 h-2 bg-black"></span><span class="absolute bottom-0 right-0 w-4 h-1 bg-black"></span>SİSTEME GİRİŞ</button></body></html>`
+  },
+  {
+    id: 'btn-magnetic',
+    title: 'Manyetik Buton',
+    description: 'Mouse hareketine duyarlı, akışkan buton.',
+    category: 'button',
+    icon: MousePointerClick,
+    prompt: 'Tailwind CSS ile mouse üzerine geldiğinde hafifçe o yöne doğru esneyen (manyetik etki), yumuşak geçişli ve modern bir buton oluştur.',
+    color: 'bg-zinc-900 text-white',
+    previewCode: `<html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="flex items-center justify-center h-screen bg-white"><button class="px-10 py-4 bg-zinc-900 text-white font-medium rounded-full hover:scale-110 hover:-translate-y-1 transition-all duration-500 ease-out shadow-xl hover:shadow-zinc-300 active:scale-95">Keşfet</button></body></html>`
+  },
+  {
+    id: 'btn-loading',
+    title: 'Yükleme Butonu',
+    description: 'İşlem sırasında yükleme animasyonu gösteren buton.',
+    category: 'button',
+    icon: MousePointerClick,
+    prompt: 'Tailwind CSS ile tıklandığında içinde dönen bir yükleme ikonu (spinner) beliren ve metni değişen fonksiyonel bir buton tasarımı oluştur.',
+    color: 'bg-indigo-600',
+    previewCode: `<html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="flex items-center justify-center h-screen bg-zinc-50"><button class="flex items-center gap-3 px-8 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-all active:scale-95"><svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Gönderiliyor...</button></body></html>`
+  },
+  {
+    id: 'btn-social-group',
+    title: 'Sosyal Paylaşım Grubu',
+    description: 'Şık sosyal medya ikon butonları grubu.',
+    category: 'button',
+    icon: MousePointerClick,
+    prompt: 'Tailwind CSS ile yan yana dizilmiş, her biri farklı renkte (marka renkleri), hover durumunda büyüyen ve parlayan sosyal medya paylaşım butonları grubu oluştur.',
+    color: 'bg-zinc-100',
+    previewCode: `<html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="flex items-center justify-center h-screen bg-white"><div class="flex gap-4"><button class="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center hover:scale-110 hover:shadow-lg hover:shadow-blue-200 transition-all active:scale-90">f</button><button class="w-12 h-12 bg-sky-400 text-white rounded-full flex items-center justify-center hover:scale-110 hover:shadow-lg hover:shadow-sky-200 transition-all active:scale-90">t</button><button class="w-12 h-12 bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 text-white rounded-full flex items-center justify-center hover:scale-110 hover:shadow-lg hover:shadow-red-200 transition-all active:scale-90">i</button></div></body></html>`
   }
 ];
 
@@ -479,17 +489,25 @@ export function TemplatesView({
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-white rounded-3xl w-full max-w-5xl max-h-[90vh] h-[800px] overflow-hidden flex flex-col md:flex-row shadow-2xl"
+              className="bg-white rounded-3xl w-full max-w-5xl max-h-[95vh] md:max-h-[90vh] h-[90vh] md:h-[800px] overflow-hidden flex flex-col md:flex-row shadow-2xl relative"
             >
+              {/* Mobile Close Button */}
+              <button 
+                onClick={() => setSelectedTemplate(null)}
+                className="absolute top-4 right-4 z-50 p-2 bg-black/20 backdrop-blur-md hover:bg-black/30 rounded-full text-white md:hidden transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+
               {/* Left: Preview */}
-              <div className="flex-1 bg-zinc-100 relative border-r border-zinc-200 flex flex-col">
+              <div className="h-[40vh] md:h-auto md:flex-1 bg-zinc-100 relative border-b md:border-b-0 md:border-r border-zinc-200 flex flex-col">
                 <div className="bg-zinc-200/80 px-4 py-3 text-xs font-mono text-zinc-500 flex items-center gap-2 border-b border-zinc-300/50">
-                  <div className="flex gap-1.5">
+                  <div className="hidden md:flex gap-1.5">
                     <div className="w-3 h-3 rounded-full bg-red-400"></div>
                     <div className="w-3 h-3 rounded-full bg-amber-400"></div>
                     <div className="w-3 h-3 rounded-full bg-emerald-400"></div>
                   </div>
-                  <span className="ml-2 font-medium">Önizleme: {selectedTemplate.title}</span>
+                  <span className="md:ml-2 font-medium">Önizleme: {selectedTemplate.title}</span>
                 </div>
                 <div className="flex-1 relative bg-white">
                   <iframe 
@@ -501,7 +519,7 @@ export function TemplatesView({
               </div>
               
               {/* Right: Details & Actions */}
-              <div className="w-full md:w-96 p-8 flex flex-col bg-white overflow-y-auto">
+              <div className="flex-1 md:w-96 p-6 md:p-8 flex flex-col bg-white overflow-y-auto">
                 <div className="flex justify-between items-start mb-6">
                   <div>
                     <span className="inline-block px-3 py-1 bg-indigo-50 text-indigo-600 text-xs font-bold uppercase tracking-wider rounded-lg mb-3">
@@ -511,27 +529,27 @@ export function TemplatesView({
                   </div>
                   <button 
                     onClick={() => setSelectedTemplate(null)}
-                    className="p-2 bg-zinc-100 hover:bg-zinc-200 rounded-full text-zinc-500 transition-colors"
+                    className="hidden md:flex p-2 bg-zinc-100 hover:bg-zinc-200 rounded-full text-zinc-500 transition-colors"
                   >
                     <X className="w-5 h-5" />
                   </button>
                 </div>
                 
-                <p className="text-zinc-600 mb-8 leading-relaxed">{selectedTemplate.description}</p>
+                <p className="text-zinc-600 mb-8 leading-relaxed text-sm md:text-base">{selectedTemplate.description}</p>
                 
-                <div className="space-y-8 mt-auto">
-                  <div className="space-y-3 bg-indigo-50/50 p-5 rounded-2xl border border-indigo-100">
+                <div className="space-y-6 md:space-y-8 mt-auto">
+                  <div className="space-y-3 bg-indigo-50/50 p-4 md:p-5 rounded-2xl border border-indigo-100">
                     <h4 className="font-bold text-sm text-indigo-900 flex items-center gap-2">
                       <LayoutTemplate className="w-4 h-4" />
                       Sıfırdan Başla
                     </h4>
-                    <p className="text-xs text-indigo-700/70 mb-3">Bu şablonu kullanarak yepyeni bir proje oluşturun.</p>
+                    <p className="text-[10px] md:text-xs text-indigo-700/70 mb-3">Bu şablonu kullanarak yepyeni bir proje oluşturun.</p>
                     <button 
                       onClick={() => {
                         onSelectForNewProject(selectedTemplate.prompt);
                         setSelectedTemplate(null);
                       }} 
-                      className="w-full py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-medium shadow-sm transition-all hover:shadow-md"
+                      className="w-full py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-medium shadow-sm transition-all hover:shadow-md text-sm md:text-base"
                     >
                       Yeni Proje Oluştur
                     </button>
@@ -539,7 +557,7 @@ export function TemplatesView({
                   
                   <div className="relative flex items-center py-2">
                     <div className="flex-grow border-t border-zinc-200"></div>
-                    <span className="flex-shrink-0 mx-4 text-zinc-400 text-xs font-medium uppercase tracking-wider">veya</span>
+                    <span className="flex-shrink-0 mx-4 text-zinc-400 text-[10px] md:text-xs font-medium uppercase tracking-wider">veya</span>
                     <div className="flex-grow border-t border-zinc-200"></div>
                   </div>
 

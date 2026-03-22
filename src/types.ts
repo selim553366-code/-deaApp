@@ -1,6 +1,7 @@
 export interface User {
   uid: string;
   email: string;
+  name?: string;
   credits: number;
   isPremium: boolean;
   createdAt: string;

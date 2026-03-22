@@ -26,6 +26,9 @@ export function IdeaApp({ user }: { user: User }) {
   const [showReviews, setShowReviews] = useState(true);
   const [isPreviewOpen, setIsPreviewOpen] = useState(true);
   const [showAI, setShowAI] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [analysisQuestions, setAnalysisQuestions] = useState<AnalysisQuestion[] | null>(null);
   const [analysisAnswers, setAnalysisAnswers] = useState<string[]>([]);
   const [originalIdea, setOriginalIdea] = useState("");
@@ -179,13 +182,15 @@ export function IdeaApp({ user }: { user: User }) {
       <Sidebar 
         projects={projects} 
         currentProject={currentProject} 
-        onSelectProject={setCurrentProject}
-        onNewProject={() => { setCurrentProject(null); setShowAI(false); }}
+        onSelectProject={(p) => { setCurrentProject(p); setShowTemplates(false); }}
+        onNewProject={() => { setCurrentProject(null); setShowAI(false); setShowTemplates(false); }}
         user={user}
         onToggleAI={() => setShowAI(!showAI)}
-        onShowTemplates={() => {}} // Dummy function as it's not used in IdeaApp
-        isOpen={true} // Dummy value
-        onClose={() => {}} // Dummy function
+        onShowTemplates={() => setShowTemplates(true)}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
       />
       {showAI && (
         <div className="flex-1 overflow-y-auto bg-zinc-50 z-20">
