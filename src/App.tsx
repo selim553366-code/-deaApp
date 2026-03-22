@@ -14,6 +14,7 @@ import { PremiumModal } from "./components/PremiumModal";
 import { HelpModal } from "./components/HelpModal";
 import { AIHelperModal } from "./components/AIHelperModal";
 import { ProjectPreview } from "./components/ProjectPreview";
+import { TemplatesView } from "./components/TemplatesView";
 
 import { Routes, Route } from "react-router-dom";
 import { PublishedSite } from "./pages/PublishedSite";
@@ -27,6 +28,8 @@ function Builder() {
   const [showPremium, setShowPremium] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [showAI, setShowAI] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
+  const [templatePromptToApply, setTemplatePromptToApply] = useState('');
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -133,10 +136,11 @@ function Builder() {
       <Sidebar 
         projects={projects} 
         currentProject={currentProject} 
-        onSelectProject={(p) => { setCurrentProject(p); setIsMobileMenuOpen(false); }} 
-        onNewProject={() => { setCurrentProject(null); setIsMobileMenuOpen(false); }} 
+        onSelectProject={(p) => { setCurrentProject(p); setShowTemplates(false); setIsMobileMenuOpen(false); }} 
+        onNewProject={() => { setCurrentProject(null); setShowTemplates(false); setIsMobileMenuOpen(false); }} 
         user={user} 
         onToggleAI={() => { setShowAI(!showAI); setIsMobileMenuOpen(false); }}
+        onShowTemplates={() => { setShowTemplates(true); setCurrentProject(null); setIsMobileMenuOpen(false); }}
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
         isCollapsed={isSidebarCollapsed}
@@ -160,9 +164,31 @@ function Builder() {
                 pendingProjectIdRef.current = id;
               }} />
             )
+          ) : showTemplates ? (
+            <TemplatesView 
+              projects={projects}
+              onSelectForNewProject={(p) => {
+                setPrompt(p);
+                setShowTemplates(false);
+                setCurrentProject(null);
+              }}
+              onSelectForExistingProject={(projectId, p) => {
+                const proj = projects.find(proj => proj.id === projectId);
+                if (proj) {
+                  setCurrentProject(proj);
+                  setTemplatePromptToApply(`Lütfen bu şablonu projeme entegre et:\n\n${p}`);
+                  setShowTemplates(false);
+                }
+              }}
+            />
           ) : (
             currentProject ? (
-              <ProjectPreview project={currentProject} user={user} />
+              <ProjectPreview 
+                project={currentProject} 
+                user={user} 
+                initialChatPrompt={templatePromptToApply}
+                onClearInitialChatPrompt={() => setTemplatePromptToApply('')}
+              />
             ) : (
               <div className="space-y-10 max-w-5xl mx-auto">
                 <div className="text-center space-y-4 pt-8">
@@ -199,7 +225,7 @@ function Builder() {
                 </div>
 
                 <div className="pt-2 border-t border-zinc-100">
-                  <IdeaInput user={user} onProjectCreated={(id) => {
+                  <IdeaInput user={user} initialPrompt={prompt} onProjectCreated={(id) => {
                     const newProj = projects.find(p => p.id === id);
                     if (newProj) setCurrentProject(newProj);
                   }} />

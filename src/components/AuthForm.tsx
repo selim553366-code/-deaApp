@@ -3,6 +3,7 @@ import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, db, s
 import { collection, addDoc, doc, updateDoc, setDoc } from 'firebase/firestore';
 import { GoogleGenAI } from '@google/genai';
 import { Loader2 } from 'lucide-react';
+import { motion } from 'motion/react';
 
 interface Props {
   prompt: string;
@@ -77,17 +78,24 @@ export const AuthForm = ({ prompt, onProjectCreated }: Props) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4">
-      <div className="w-full max-w-sm p-8 bg-white rounded-xl shadow-md">
-        <h2 className="mb-6 text-2xl font-bold text-center">{isSignUp ? 'Kayıt Ol' : 'Giriş Yap'}</h2>
-        {error && <p className="mb-4 text-red-500 text-sm">{error}</p>}
+    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-zinc-50/50">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="w-full max-w-sm p-8 bg-white rounded-3xl shadow-xl border border-zinc-100"
+      >
+        <h2 className="mb-6 text-2xl font-bold text-center text-zinc-900">{isSignUp ? 'Kayıt Ol' : 'Giriş Yap'}</h2>
+        {error && <p className="mb-4 text-red-500 text-sm bg-red-50 p-3 rounded-xl border border-red-100">{error}</p>}
         
-        <button 
+        <motion.button 
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
           onClick={handleGoogleLogin} 
           disabled={isGenerating} 
-          className="w-full p-3 mb-6 text-zinc-700 bg-white border border-zinc-300 rounded-lg hover:bg-zinc-50 disabled:opacity-50 flex items-center justify-center gap-2 font-medium transition-colors"
+          className="w-full p-3 mb-6 text-zinc-700 bg-white border border-zinc-200 rounded-xl hover:bg-zinc-50 disabled:opacity-50 flex items-center justify-center gap-2 font-medium transition-colors shadow-sm"
         >
-          {isGenerating ? <Loader2 className="w-5 h-5 animate-spin" /> : (
+          {isGenerating ? <Loader2 className="w-5 h-5 animate-spin text-indigo-600" /> : (
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
               <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -95,8 +103,8 @@ export const AuthForm = ({ prompt, onProjectCreated }: Props) => {
               <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
             </svg>
           )}
-          Google ile {isSignUp ? 'Kayıt Ol' : 'Giriş Yap'}
-        </button>
+          {isGenerating ? 'İşlem yapılıyor...' : `Google ile ${isSignUp ? 'Kayıt Ol' : 'Giriş Yap'}`}
+        </motion.button>
 
         <div className="relative flex items-center py-2 mb-6">
           <div className="flex-grow border-t border-zinc-200"></div>
@@ -104,13 +112,13 @@ export const AuthForm = ({ prompt, onProjectCreated }: Props) => {
           <div className="flex-grow border-t border-zinc-200"></div>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <input
             type="email"
             placeholder="E-posta"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-3 mb-4 border rounded-lg"
+            className="w-full p-3 text-sm border border-zinc-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
             required
             disabled={isGenerating}
           />
@@ -119,24 +127,30 @@ export const AuthForm = ({ prompt, onProjectCreated }: Props) => {
             placeholder="Şifre"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-3 mb-6 border rounded-lg"
+            className="w-full p-3 text-sm border border-zinc-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
             required
             disabled={isGenerating}
           />
-          <button type="submit" disabled={isGenerating} className="w-full p-3 text-white bg-black rounded-lg hover:bg-gray-800 disabled:opacity-50 flex items-center justify-center gap-2">
-            {isGenerating && <Loader2 className="w-4 h-4 animate-spin" />}
-            {isGenerating ? 'Oluşturuluyor...' : (isSignUp ? 'Kayıt Ol' : 'Giriş Yap')}
-          </button>
+          <motion.button 
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            type="submit" 
+            disabled={isGenerating} 
+            className="w-full p-3 text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 disabled:opacity-50 font-medium transition-colors flex items-center justify-center gap-2 shadow-sm"
+          >
+            {isGenerating && <Loader2 className="w-5 h-5 animate-spin" />}
+            {isGenerating ? 'İşlem yapılıyor...' : (isSignUp ? 'Kayıt Ol' : 'Giriş Yap')}
+          </motion.button>
           <button
             type="button"
             onClick={() => setIsSignUp(!isSignUp)}
             disabled={isGenerating}
-            className="w-full mt-4 text-sm text-gray-600 hover:underline disabled:opacity-50"
+            className="w-full mt-2 text-sm text-indigo-600 hover:text-indigo-800 font-medium transition-colors disabled:opacity-50"
           >
             {isSignUp ? 'Zaten hesabınız var mı? Giriş yapın.' : 'Hesabınız yok mu? Kayıt olun.'}
           </button>
         </form>
-      </div>
+      </motion.div>
     </div>
   );
 };

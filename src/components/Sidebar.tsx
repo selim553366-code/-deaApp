@@ -1,5 +1,6 @@
 import { Project, User } from "../types";
 import { Plus, LayoutTemplate, Clock, Home, Bot, Sparkles, FolderKanban, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { motion } from "motion/react";
 
 export function Sidebar({ 
   projects, 
@@ -8,6 +9,7 @@ export function Sidebar({
   onNewProject,
   user,
   onToggleAI,
+  onShowTemplates,
   isOpen,
   onClose,
   isCollapsed,
@@ -19,6 +21,7 @@ export function Sidebar({
   onNewProject: () => void,
   user: User | null,
   onToggleAI: () => void,
+  onShowTemplates: () => void,
   isOpen: boolean,
   onClose: () => void,
   isCollapsed?: boolean,
@@ -36,14 +39,16 @@ export function Sidebar({
       
       <aside className={`fixed inset-y-0 left-0 z-50 bg-zinc-950 border-r border-zinc-800 flex flex-col h-screen shrink-0 text-zinc-300 transition-all duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 ${isCollapsed ? 'w-16' : 'w-72'}`}>
         <div className={`p-5 border-b border-zinc-800/50 flex items-center ${isCollapsed ? 'justify-center px-2' : 'justify-between'}`}>
-          <button 
+          <motion.button 
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => { onNewProject(); onClose(); }}
-            className={`bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2.5 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 group ${isCollapsed ? 'w-10 h-10 px-0' : 'flex-1 px-4'}`}
+            className={`bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2.5 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2 group ${isCollapsed ? 'w-10 h-10 px-0' : 'flex-1 px-4'}`}
             title="Yeni Proje"
           >
             <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
             {!isCollapsed && <span>Yeni Proje</span>}
-          </button>
+          </motion.button>
           {!isCollapsed && (
             <button onClick={onClose} className="md:hidden ml-4 text-zinc-400 hover:text-white p-1">
               <X className="w-6 h-6" />
@@ -53,7 +58,9 @@ export function Sidebar({
         
         <div className="flex-1 overflow-y-auto p-3 space-y-6 overflow-x-hidden">
           <div className="space-y-1">
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02, x: isCollapsed ? 0 : 4 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => { onSelectProject(null); onClose(); }}
               title="Ana Sayfa"
               className={`w-full text-left py-2.5 rounded-xl text-sm font-medium transition-colors flex items-center gap-3 ${isCollapsed ? 'justify-center px-0' : 'px-3'} ${
@@ -64,16 +71,29 @@ export function Sidebar({
             >
               <Home className="w-5 h-5 shrink-0" />
               {!isCollapsed && <span>Ana Sayfa</span>}
-            </button>
+            </motion.button>
 
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02, x: isCollapsed ? 0 : 4 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => { onToggleAI(); onClose(); }}
               title="Yardımcı AI"
               className={`w-full text-left py-2.5 rounded-xl text-sm font-medium transition-colors flex items-center gap-3 text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200 ${isCollapsed ? 'justify-center px-0' : 'px-3'}`}
             >
               <Bot className="w-5 h-5 shrink-0" />
               {!isCollapsed && <span>Yardımcı AI</span>}
-            </button>
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.02, x: isCollapsed ? 0 : 4 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => { onShowTemplates(); onClose(); }}
+              title="Şablonlar"
+              className={`w-full text-left py-2.5 rounded-xl text-sm font-medium transition-colors flex items-center gap-3 text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200 ${isCollapsed ? 'justify-center px-0' : 'px-3'}`}
+            >
+              <LayoutTemplate className="w-5 h-5 shrink-0" />
+              {!isCollapsed && <span>Şablonlar</span>}
+            </motion.button>
           </div>
 
           <div>

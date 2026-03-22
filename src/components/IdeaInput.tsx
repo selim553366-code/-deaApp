@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { db, auth } from '../firebase';
 import { collection, addDoc, doc, updateDoc, setDoc } from 'firebase/firestore';
 import { Loader2, Sparkles, X, CheckCircle2, Circle, Wand2 } from 'lucide-react';
 import { User } from '../types';
 import { GoogleGenAI, Type } from "@google/genai";
+import { motion, AnimatePresence } from "motion/react";
 
 const loadingMessages = [
   "Fikriniz analiz ediliyor...",
@@ -13,8 +14,8 @@ const loadingMessages = [
   "Son dokunuşlar yapılıyor..."
 ];
 
-export const IdeaInput = ({ user, onProjectCreated }: { user: User | null, onProjectCreated?: (id: string) => void }) => {
-  const [idea, setIdea] = useState('');
+export const IdeaInput = ({ user, onProjectCreated, initialPrompt }: { user: User | null, onProjectCreated?: (id: string) => void, initialPrompt?: string }) => {
+  const [idea, setIdea] = useState(initialPrompt || '');
   const [showPreview, setShowPreview] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -26,6 +27,12 @@ export const IdeaInput = ({ user, onProjectCreated }: { user: User | null, onPro
   const [isFetchingQuestions, setIsFetchingQuestions] = useState(false);
   const [showGeminiImport, setShowGeminiImport] = useState(false);
   const [geminiHistory, setGeminiHistory] = useState('');
+
+  useEffect(() => {
+    if (initialPrompt) {
+      setIdea(initialPrompt);
+    }
+  }, [initialPrompt]);
 
   const handleGeminiImport = () => {
     if (!geminiHistory.trim()) return;
@@ -171,7 +178,12 @@ Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`
   };
 
   return (
-    <div className={`w-full transition-all duration-700 ease-in-out ${showPreview ? 'max-w-5xl' : 'max-w-2xl'} mx-auto flex flex-col md:flex-row gap-6`}>
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className={`w-full transition-all duration-700 ease-in-out ${showPreview ? 'max-w-5xl' : 'max-w-2xl'} mx-auto flex flex-col md:flex-row gap-6`}
+    >
       {/* Left Panel - Input */}
       <div className="w-full md:w-[600px] p-6 md:p-8 bg-white rounded-3xl shadow-xl border border-zinc-100 flex flex-col relative z-10 shrink-0">
         <h1 className="font-handwriting text-4xl md:text-5xl font-bold text-center text-indigo-600 mb-2">Düşünceni Gerçeğe Çevir.</h1>
@@ -185,7 +197,9 @@ Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`
           disabled={isGenerating}
         />
         <div className="flex flex-col sm:flex-row gap-3">
-          <button 
+          <motion.button 
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={handleStart} 
             disabled={isGenerating || isFetchingQuestions || !idea.trim() || showPreview}
             className="w-full p-4 text-base text-white bg-indigo-600 rounded-2xl hover:bg-indigo-700 font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
@@ -201,8 +215,10 @@ Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`
                 Oluşturmaya Başla
               </>
             )}
-          </button>
-          <button 
+          </motion.button>
+          <motion.button 
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={() => setShowGeminiImport(true)}
             disabled={isGenerating || isFetchingQuestions || showPreview}
             className="w-full sm:w-auto p-4 text-sm text-indigo-600 bg-indigo-50 border border-indigo-200 rounded-2xl hover:bg-indigo-100 font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 whitespace-nowrap"
@@ -210,14 +226,25 @@ Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`
           >
             <Sparkles className="w-5 h-5" />
             Gemini'dan Aktar
-          </button>
+          </motion.button>
         </div>
       </div>
 
       {/* Gemini Import Modal */}
+      <AnimatePresence>
       {showGeminiImport && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl p-6 md:p-8 w-full max-w-2xl shadow-2xl relative">
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+        >
+          <motion.div 
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            className="bg-white rounded-3xl p-6 md:p-8 w-full max-w-2xl shadow-2xl relative"
+          >
             <button 
               onClick={() => setShowGeminiImport(false)}
               className="absolute top-6 right-6 text-zinc-400 hover:text-zinc-600 transition-colors"
@@ -253,13 +280,21 @@ Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`
                 İçe Aktar ve Devam Et
               </button>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
+      </AnimatePresence>
 
       {/* Right Panel - Preview */}
+      <AnimatePresence>
       {showPreview && (
-        <div className="w-full md:w-[400px] bg-zinc-900 rounded-3xl shadow-2xl border border-zinc-800 p-8 flex flex-col text-white relative animate-in slide-in-from-right-8 fade-in duration-500">
+        <motion.div 
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: 20 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="w-full md:w-[400px] bg-zinc-900 rounded-3xl shadow-2xl border border-zinc-800 p-8 flex flex-col text-white relative"
+        >
           <button 
             onClick={() => setShowPreview(false)} 
             className="absolute top-6 right-6 text-zinc-400 hover:text-white transition-colors"
@@ -357,8 +392,9 @@ Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`
               </div>
             </>
           )}
-        </div>
+        </motion.div>
       )}
-    </div>
+      </AnimatePresence>
+    </motion.div>
   );
 };
