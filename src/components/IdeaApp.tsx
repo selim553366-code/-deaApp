@@ -5,6 +5,7 @@ import { collection, query, where, orderBy, onSnapshot, doc, setDoc, updateDoc }
 import { Sidebar } from "./Sidebar";
 import { Preview } from "./Preview";
 import { PremiumModal } from "./PremiumModal";
+import { AIChatPage } from "./AIChatPage";
 import { Send, Sparkles, LogOut, Code, Loader2, Check, Eye, EyeOff } from "lucide-react";
 import { GoogleGenAI, Type } from "@google/genai";
 import { signOut } from "firebase/auth";
@@ -24,6 +25,7 @@ export function IdeaApp({ user }: { user: User }) {
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [showReviews, setShowReviews] = useState(true);
   const [isPreviewOpen, setIsPreviewOpen] = useState(true);
+  const [showAI, setShowAI] = useState(false);
   const [analysisQuestions, setAnalysisQuestions] = useState<AnalysisQuestion[] | null>(null);
   const [analysisAnswers, setAnalysisAnswers] = useState<string[]>([]);
   const [originalIdea, setOriginalIdea] = useState("");
@@ -177,17 +179,30 @@ export function IdeaApp({ user }: { user: User }) {
         projects={projects} 
         currentProject={currentProject} 
         onSelectProject={setCurrentProject}
-        onNewProject={() => setCurrentProject(null)}
+        onNewProject={() => { setCurrentProject(null); setShowAI(false); }}
         user={user}
+        onToggleAI={() => setShowAI(!showAI)}
       />
+      {showAI && (
+        <div className="flex-1 overflow-y-auto bg-zinc-50 z-20">
+          <AIChatPage onOpenPremium={() => setShowPremiumModal(true)} />
+        </div>
+      )}
       
       <main className="flex-1 flex flex-col relative">
         <header className="h-14 border-b border-zinc-800 flex items-center justify-between px-6 bg-zinc-900/50 backdrop-blur-sm">
           <div className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-indigo-400" />
-            <span className="font-semibold tracking-tight">IdeaApp</span>
+            <span className="font-semibold tracking-tight">İdea Ai</span>
           </div>
           <div className="flex items-center gap-4">
+            <button 
+              onClick={() => setShowPremiumModal(true)}
+              className="flex items-center gap-2 bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+            >
+              <Sparkles className="w-4 h-4" />
+              Premium
+            </button>
             <button 
               onClick={() => setIsPreviewOpen(!isPreviewOpen)}
               className="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors"

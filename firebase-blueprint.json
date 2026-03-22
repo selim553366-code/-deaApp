@@ -2,7 +2,7 @@
   "entities": {
     "User": {
       "title": "User",
-      "description": "A user of the IdeaApp platform.",
+      "description": "A user of the İdea Ai platform.",
       "type": "object",
       "properties": {
         "uid": {

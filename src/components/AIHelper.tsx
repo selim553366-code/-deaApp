@@ -1,13 +1,20 @@
 import React, { useState } from 'react';
 import { GoogleGenAI } from "@google/genai";
+import { User } from '../types';
 
-export const AIHelper = () => {
+export const AIHelper = ({ user }: { user: User | null }) => {
   const [prompt, setPrompt] = useState('');
   const [response, setResponse] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleAsk = async () => {
     if (!prompt.trim()) return;
+    
+    if (user && !user.isPremium && user.credits < 10) {
+      window.dispatchEvent(new CustomEvent('show-premium-modal'));
+      return;
+    }
+
     setLoading(true);
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
