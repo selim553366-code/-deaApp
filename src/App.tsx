@@ -50,7 +50,7 @@ function Builder() {
             
             // Auto-grant premium to the creator account
             const isCreatorEmail = userData.email === "selim@gmail.com" || userData.email === "selim553366@gmail.com" || userData.email === "tamtamyilyil@gmail.com";
-            const isCreatorName = userData.name?.toLowerCase() === "selim" || userData.name?.toLowerCase() === "adadda";
+            const isCreatorName = (userData as any).name?.toLowerCase() === "selim" || (userData as any).name?.toLowerCase() === "adadda";
             
             if ((isCreatorEmail || isCreatorName) && !userData.isPremium) {
               await updateDoc(userRef, { isPremium: true });

@@ -136,7 +136,7 @@ export const ProjectSettingsModal = ({ project, user, onClose }: Props) => {
               <div className="bg-amber-50 p-4 rounded-2xl border border-amber-200 flex items-center justify-between gap-4">
                 <p className="text-sm text-amber-800">Proje ismini değiştirmek için 50.99 TL ödemeniz gerekmektedir. (Premium üyeler için ücretsizdir)</p>
                 <a
-                  href={import.meta.env.VITE_LEMON_SQUEEZY_NAME_CHANGE_CHECKOUT_URL}
+                  href={(import.meta as any).env.VITE_LEMON_SQUEEZY_NAME_CHANGE_CHECKOUT_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-4 py-2 bg-amber-600 text-white text-sm font-medium rounded-xl hover:bg-amber-700 transition-colors"

@@ -13,6 +13,29 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
+app.post("/api/fetch-url", async (req, res) => {
+  try {
+    const { url } = req.body;
+    if (!url) return res.status(400).json({ error: "URL is required" });
+
+    const response = await fetch(url);
+    if (!response.ok) return res.status(500).json({ error: "Failed to fetch URL" });
+
+    const html = await response.text();
+    // Simple text extraction
+    const text = html.replace(/<script[^>]*>([\s\S]*?)<\/script>/g, '')
+                     .replace(/<style[^>]*>([\s\S]*?)<\/style>/g, '')
+                     .replace(/<[^>]+>/g, ' ')
+                     .replace(/\s+/g, ' ')
+                     .trim();
+
+    res.json({ text: text.substring(0, 5000) }); // Limit to 5000 chars
+  } catch (error) {
+    console.error("Fetch URL error:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 // Lemon Squeezy Checkout Creation
 app.post("/api/checkout", async (req, res) => {
   try {

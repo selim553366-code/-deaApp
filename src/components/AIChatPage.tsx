@@ -10,6 +10,25 @@ export const AIChatPage = ({ onOpenPremium }: { onOpenPremium: () => void }) => 
   const handleSend = async () => {
     if (!input.trim()) return;
 
+    let prompt = input;
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const urls = input.match(urlRegex);
+
+    let fetchedContent = "";
+    if (urls && urls.length > 0) {
+      try {
+        const response = await fetch('/api/fetch-url', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: urls[0] })
+        });
+        const data = await response.json();
+        fetchedContent = data.text || "";
+      } catch (err) {
+        console.error("URL fetch failed", err);
+      }
+    }
+
     const newMessages = [...messages, { role: 'user' as const, text: input }];
     setMessages(newMessages);
     setInput('');
@@ -19,7 +38,9 @@ export const AIChatPage = ({ onOpenPremium }: { onOpenPremium: () => void }) => 
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
       const result = await ai.models.generateContent({
         model: "gemini-3.1-pro-preview",
-        contents: input,
+        contents: fetchedContent 
+          ? `Aşağıdaki web sitesinden alınan verileri analiz et ve kullanıcının isteğine göre mevcut takvimi güncelle. Eski özellikleri koru ve bozma.\n\nWeb sitesi içeriği:\n${fetchedContent}\n\nKullanıcı isteği:\n${prompt}`
+          : `Mevcut takvimi güncelle. Eski özellikleri koru ve bozma. Kullanıcı isteği:\n${prompt}`,
       });
       setMessages([...newMessages, { role: 'ai' as const, text: result.text || 'Cevap alınamadı.' }]);
     } catch (err) {
@@ -61,9 +82,9 @@ export const AIChatPage = ({ onOpenPremium }: { onOpenPremium: () => void }) => 
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            className="flex-1 p-3 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+            className="flex-1 p-3 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none max-h-40 overflow-y-auto"
             placeholder="Ne oluşturmak istersin?"
-            rows={2}
+            rows={4}
           />
           <button 
             onClick={handleSend} 

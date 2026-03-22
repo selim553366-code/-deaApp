@@ -183,6 +183,9 @@ export function IdeaApp({ user }: { user: User }) {
         onNewProject={() => { setCurrentProject(null); setShowAI(false); }}
         user={user}
         onToggleAI={() => setShowAI(!showAI)}
+        onShowTemplates={() => {}} // Dummy function as it's not used in IdeaApp
+        isOpen={true} // Dummy value
+        onClose={() => {}} // Dummy function
       />
       {showAI && (
         <div className="flex-1 overflow-y-auto bg-zinc-50 z-20">
