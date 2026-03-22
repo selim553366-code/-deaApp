@@ -7,13 +7,6 @@ import { GoogleGenAI } from '@google/genai';
 import { ProjectSettingsModal } from './ProjectSettingsModal';
 import { motion, AnimatePresence } from 'motion/react';
 
-const updateMessages = [
-  "Mevcut kod inceleniyor...",
-  "İstediğiniz değişiklikler uygulanıyor...",
-  "Tasarım bütünlüğü kontrol ediliyor...",
-  "Son testler yapılıyor..."
-];
-
 export const ProjectPreview = ({ 
   project, 
   user,
@@ -28,22 +21,22 @@ export const ProjectPreview = ({
   const [title, setTitle] = useState(project.title || 'İsimsiz Proje');
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [chatInput, setChatInput] = useState('');
-  const [chatMessages, setChatMessages] = useState<{role: 'user' | 'model', text: string}[]>(project.chatHistory || []);
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [updateStep, setUpdateStep] = useState(0);
+  const [chatMessages, setChatMessages] = useState<{role: 'user' | 'model', text: string}[]>([]);
+  const [isChatLoading, setIsChatLoading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
+  // Sadece proje ID değiştiğinde chat geçmişini sıfırla/yükle
   useEffect(() => {
     setTitle(project.title || 'İsimsiz Proje');
     setChatMessages(project.chatHistory || []);
-  }, [project.id, project.title, project.chatHistory]);
+  }, [project.id]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [chatMessages, isUpdating]);
+  }, [chatMessages, isChatLoading]);
 
   useEffect(() => {
     if (initialChatPrompt) {
@@ -79,29 +72,32 @@ export const ProjectPreview = ({
       return;
     }
     
-    if (!chatInput.trim() || isUpdating) return;
+    if (!chatInput.trim() || isChatLoading) return;
 
     const newUserMsg = { role: 'user' as const, text: chatInput };
-    const updatedMessages = [...chatMessages, newUserMsg];
-    setChatMessages(updatedMessages);
+    
+    // Use functional state update to ensure we have the latest messages
+    setChatMessages(prevMessages => {
+      const updatedMessages = [...prevMessages, newUserMsg];
+      
+      // Update database asynchronously without blocking UI
+      updateDoc(doc(db, 'projects', project.id), { 
+        chatHistory: updatedMessages,
+        updatedAt: new Date().toISOString() 
+      }).catch(console.error);
+
+      return updatedMessages;
+    });
+    
     setChatInput('');
-    setIsUpdating(true);
-    setUpdateStep(0);
+    setIsChatLoading(true);
 
     try {
-      // Loading simulation in background
-      const simulateLoading = async () => {
-        for (let i = 0; i < updateMessages.length; i++) {
-          setUpdateStep(i);
-          await new Promise(resolve => setTimeout(resolve, 1500));
-        }
-        setUpdateStep(updateMessages.length - 1);
-      };
-      simulateLoading();
-
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
       
-      const contents = updatedMessages.map(msg => ({
+      // We need to build contents from the latest state, so we construct it here
+      const currentMessages = [...chatMessages, newUserMsg];
+      const contents = currentMessages.map(msg => ({
         role: msg.role,
         parts: [{ text: msg.text }]
       }));
@@ -113,7 +109,7 @@ export const ProjectPreview = ({
         model: "gemini-3.1-pro-preview",
         contents: contents,
         config: {
-          systemInstruction: "Sen uzman bir Frontend Geliştiricisi ve UI/UX Tasarımcısısın. Kullanıcıyla sohbet ederek web sitesini nasıl güncelleyeceğinizi tartışın. Gerekirse web'de araştırma yapabilirsin.\n\nÖNEMLİ KURAL: Kullanıcı kesin bir şekilde 'güncelle', 'kodu yaz', 'uygula', 'yap', 'ekle' gibi net bir talimat vermeden KESİNLİKLE HTML kodu üretme! Sadece sohbet et, fikir ver, plan yap.\n\nKullanıcı onay verdiğinde ve anlaştığınızda, tüm güncellenmiş çalışabilir HTML kodunu ```html ve ``` etiketleri arasına yazarak cevap ver. Sohbet ediyorsan normal metin yaz, kod bloğu kullanma. Türkçe konuş.",
+          systemInstruction: "Sen uzman bir Frontend Geliştiricisi ve UI/UX Tasarımcısısın. Kullanıcıyla sohbet ederek web sitesini nasıl güncelleyeceğinizi tartışın. Gerekirse web'de araştırma yapabilirsin.\n\nÖNEMLİ KURAL: Cevapların her zaman ÇOK KISA, ÖZ ve NET olmalı. Uzun açıklamalar yapma, en fazla 1-2 cümle kullan.\n\nKullanıcı bir değişiklik istediğinde kısaca ne yapacağını söyle ve 'Uygulamamı ister misin?' diye sor. Kullanıcı kesin bir şekilde 'evet', 'güncelle', 'kodu yaz', 'uygula', 'yap' gibi net bir onay vermeden KESİNLİKLE HTML kodu üretme! Sadece sohbet et, fikir ver, plan yap.\n\nKullanıcı onay verdiğinde ve anlaştığınızda, tüm güncellenmiş çalışabilir HTML kodunu ```html ve ``` etiketleri arasına yazarak cevap ver. Sohbet ediyorsan normal metin yaz, kod bloğu kullanma. Türkçe konuş.",
           tools: [{ googleSearch: {} }]
         }
       });
@@ -136,21 +132,35 @@ export const ProjectPreview = ({
       }
 
       const newAiMsg = { role: 'model' as const, text: aiMessageText };
-      const finalMessages = [...updatedMessages, newAiMsg];
+      
+      setChatMessages(prevMessages => {
+        const finalMessages = [...prevMessages, newAiMsg];
+        
+        updateDoc(doc(db, 'projects', project.id), { 
+          code: newCode,
+          chatHistory: finalMessages,
+          updatedAt: new Date().toISOString() 
+        }).catch(console.error);
 
-      setChatMessages(finalMessages);
-
-      await updateDoc(doc(db, 'projects', project.id), { 
-        code: newCode,
-        chatHistory: finalMessages,
-        updatedAt: new Date().toISOString() 
+        return finalMessages;
       });
       
     } catch (err) {
       console.error(err);
-      setChatMessages(prev => [...prev, { role: 'model', text: 'Üzgünüm, bir hata oluştu. Lütfen tekrar deneyin.' }]);
+      const errorMsg = { role: 'model' as const, text: 'Üzgünüm, bir hata oluştu. Lütfen tekrar deneyin.' };
+      
+      setChatMessages(prevMessages => {
+        const finalMessages = [...prevMessages, errorMsg];
+        
+        updateDoc(doc(db, 'projects', project.id), { 
+          chatHistory: finalMessages,
+          updatedAt: new Date().toISOString() 
+        }).catch(console.error);
+
+        return finalMessages;
+      });
     } finally {
-      setIsUpdating(false);
+      setIsChatLoading(false);
     }
   };
 
@@ -261,7 +271,7 @@ export const ProjectPreview = ({
           </div>
           
           <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-zinc-50/30">
-            {chatMessages.length === 0 && !isUpdating && (
+            {chatMessages.length === 0 && !isChatLoading && (
               <div className="h-full flex flex-col items-center justify-center text-center p-6 text-zinc-500 space-y-3">
                 <div className="w-12 h-12 bg-zinc-100 rounded-full flex items-center justify-center">
                   <Bot className="w-6 h-6 text-zinc-400" />
@@ -282,38 +292,11 @@ export const ProjectPreview = ({
               </div>
             ))}
             
-            {isUpdating && (
+            {isChatLoading && (
               <div className="flex justify-start">
-                <div className="max-w-[85%] p-3 rounded-2xl text-sm bg-white border border-zinc-200 text-zinc-700 rounded-tl-sm shadow-sm flex flex-col gap-2">
-                  <div className="flex items-center gap-2 text-indigo-600 font-medium mb-1">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>AI Düşünüyor...</span>
-                  </div>
-                  {updateMessages.map((msg, idx) => (
-                    <div 
-                      key={idx} 
-                      className={`flex items-start gap-2 transition-all duration-500 ${
-                        idx <= updateStep ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 hidden'
-                      }`}
-                    >
-                      <div className="mt-0.5">
-                        {idx < updateStep ? (
-                          <CheckCircle2 className="text-emerald-400" size={14} />
-                        ) : idx === updateStep ? (
-                          <Loader2 className="text-indigo-400 animate-spin" size={14} />
-                        ) : (
-                          <Circle className="text-zinc-300" size={14} />
-                        )}
-                      </div>
-                      <span className={`text-xs ${
-                        idx < updateStep ? 'text-zinc-400' : 
-                        idx === updateStep ? 'text-zinc-700 font-medium' : 
-                        'text-zinc-400'
-                      }`}>
-                        {msg}
-                      </span>
-                    </div>
-                  ))}
+                <div className="max-w-[85%] p-3 rounded-2xl text-sm bg-white border border-zinc-200 text-zinc-700 rounded-tl-sm shadow-sm flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin text-indigo-600" />
+                  <span className="text-zinc-500">AI Düşünüyor...</span>
                 </div>
               </div>
             )}
@@ -339,17 +322,17 @@ export const ProjectPreview = ({
                 }}
                 placeholder="Mesajınızı yazın..."
                 className="w-full max-h-32 min-h-[44px] p-3 text-sm border border-zinc-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none resize-none"
-                disabled={isUpdating}
+                disabled={isChatLoading}
                 rows={1}
               />
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleSendMessage}
-                disabled={isUpdating || !chatInput.trim()}
+                disabled={isChatLoading || !chatInput.trim()}
                 className="p-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center justify-center shrink-0"
               >
-                {isUpdating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+                {isChatLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
               </motion.button>
             </div>
           </div>

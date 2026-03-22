@@ -60,6 +60,23 @@
           "type": "string",
           "format": "date-time",
           "description": "When the project was last updated."
+        },
+        "chatHistory": {
+          "type": "array",
+          "description": "The chat history between the user and the AI assistant.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "role": {
+                "type": "string",
+                "enum": ["user", "model"]
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": ["role", "text"]
+          }
         }
       },
       "required": ["id", "userId", "idea", "code", "createdAt", "updatedAt"]

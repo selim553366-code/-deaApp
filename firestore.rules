@@ -78,7 +78,7 @@ service cloud.firestore {
     }
 
     function isValidProject(data) {
-      return hasOnlyAllowedFields(['id', 'userId', 'title', 'idea', 'code', 'isPublished', 'hasPaidForNameChange', 'createdAt', 'updatedAt']) &&
+      return hasOnlyAllowedFields(['id', 'userId', 'title', 'idea', 'code', 'isPublished', 'hasPaidForNameChange', 'createdAt', 'updatedAt', 'chatHistory']) &&
              data.id is string && data.id.size() > 0 &&
              data.userId is string && data.userId.size() > 0 &&
              (!('title' in data) || (data.title is string && data.title.size() <= 100)) &&
@@ -86,6 +86,7 @@ service cloud.firestore {
              data.code is string && data.code.size() > 0 && data.code.size() < 1000000 &&
              (!('isPublished' in data) || data.isPublished is bool) &&
              (!('hasPaidForNameChange' in data) || data.hasPaidForNameChange is bool) &&
+             (!('chatHistory' in data) || data.chatHistory is list) &&
              data.createdAt is string &&
              data.updatedAt is string;
     }
