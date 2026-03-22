@@ -14,21 +14,24 @@ app.post("/api/ai/generate", async (req, res) => {
   try {
     const { contents, systemInstruction, model = "gemini-3-flash-preview" } = req.body;
     
-    const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
     
     const isPlaceholder = (key: string | undefined) => 
       !key || 
+      key.trim() === "" ||
       key === "MY_GEMINI_API_KEY" || 
       key === "YOUR_GEMINI_API_KEY" || 
-      key === "undefined" || 
-      key === "";
+      key === "undefined";
 
     if (isPlaceholder(apiKey)) {
-      console.error("API Key Missing. Available env keys:", Object.keys(process.env).filter(k => k.includes("KEY") || k.includes("API")));
-      return res.status(500).json({ error: "API Anahtarı sunucuda yapılandırılmamış. Lütfen AI Studio Secrets panelinden GEMINI_API_KEY değişkenini tanımlayın. (Hata: API_KEY_MISSING)" });
+      const availableKeys = Object.keys(process.env).filter(k => k.includes("KEY") || k.includes("API"));
+      console.error("API Key Missing or Placeholder. Available keys:", availableKeys);
+      return res.status(500).json({ 
+        error: `API Anahtarı sunucuda yapılandırılmamış veya geçersiz. (Hata: API_KEY_MISSING). Mevcut anahtar isimleri: ${availableKeys.join(", ")}. Lütfen AI Studio Secrets panelinden GEMINI_API_KEY değişkenini doğru tanımladığınızdan emin olun.` 
+      });
     }
 
-    const ai = new GoogleGenAI({ apiKey: apiKey! });
+    const ai = new GoogleGenAI({ apiKey: apiKey!.trim() });
     const response = await ai.models.generateContent({
       model,
       contents,
