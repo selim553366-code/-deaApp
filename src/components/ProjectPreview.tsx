@@ -326,12 +326,12 @@ export const ProjectPreview = ({
         </div>
       </div>
 
-      <div className="flex-1 flex flex-row gap-4 min-h-0 overflow-x-auto pb-4">
+      <div className="flex-1 flex flex-col md:flex-row gap-4 min-h-0 overflow-y-auto md:overflow-x-auto pb-4">
         {isDesignMode && (
           <motion.div 
             initial={{ x: -20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            className="w-64 bg-white rounded-2xl border border-zinc-200 shadow-sm p-4 flex flex-col gap-4 shrink-0"
+            className="w-full md:w-64 bg-white rounded-2xl border border-zinc-200 shadow-sm p-4 flex flex-col gap-4 shrink-0"
           >
             <div className="flex items-center gap-2 mb-2">
               <div className="p-1.5 bg-indigo-100 rounded-lg text-indigo-600">

@@ -222,13 +222,13 @@ Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`
       className={`w-full transition-all duration-700 ease-in-out ${showPreview ? 'max-w-5xl' : 'max-w-2xl'} mx-auto flex flex-col md:flex-row gap-6`}
     >
       {/* Left Panel - Input */}
-      <div className="w-full md:w-[720px] p-6 md:p-14 bg-white/90 backdrop-blur-xl rounded-[32px] shadow-2xl shadow-indigo-500/5 border border-white flex flex-col relative z-10 shrink-0 mx-auto">
-        <h1 className="text-xl md:text-4xl font-black text-center text-zinc-900 mb-1 md:mb-2 tracking-tighter uppercase">{t('mainTitle')}</h1>
-        <h2 className="mb-6 md:mb-8 text-sm md:text-lg font-medium text-center text-zinc-500 leading-relaxed">{t('subTitle')}</h2>
+      <div className="w-full p-6 md:p-14 bg-white/90 backdrop-blur-xl rounded-[32px] shadow-2xl shadow-indigo-500/5 border border-white flex flex-col relative z-10 shrink-0 mx-auto">
+        <h1 className="text-2xl md:text-4xl font-black text-center text-zinc-900 mb-2 tracking-tighter uppercase">{t('mainTitle')}</h1>
+        <h2 className="mb-8 text-base md:text-lg font-medium text-center text-zinc-500 leading-relaxed">{t('subTitle')}</h2>
         <textarea
           value={idea}
           onChange={(e) => setIdea(e.target.value)}
-          className="w-full p-4 md:p-6 mb-4 md:mb-6 text-base md:text-lg border-2 border-zinc-100 rounded-[24px] md:rounded-[28px] focus:ring-0 focus:border-indigo-500 outline-none transition-all resize-none bg-zinc-50/50 min-h-[120px] md:min-h-[200px] placeholder:text-zinc-300 font-medium"
+          className="w-full p-4 md:p-6 mb-6 text-base md:text-lg border-2 border-zinc-100 rounded-[24px] md:rounded-[28px] focus:ring-0 focus:border-indigo-500 outline-none transition-all resize-none bg-zinc-50/50 min-h-[150px] md:min-h-[200px] placeholder:text-zinc-300 font-medium"
           placeholder={t('placeholder')}
           disabled={isGenerating}
         />

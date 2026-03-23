@@ -150,7 +150,7 @@ function Builder() {
   }
 
   return (
-    <div className="flex min-h-screen bg-zinc-50">
+    <div className="flex min-h-screen bg-background text-foreground">
       {showPremium && <PremiumModal user={user} onClose={() => setShowPremium(false)} />}
       {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
       {showAI && <AIHelperModal onClose={() => setShowAI(false)} user={user} />}
@@ -168,7 +168,7 @@ function Builder() {
         isCollapsed={isSidebarCollapsed}
         onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
       />
-      <div className="flex-1 overflow-y-auto w-full">
+      <div className="flex-1 flex flex-col min-w-0">
         <Header 
           user={user} 
           onLogin={() => setShowAuth(true)} 
@@ -178,7 +178,7 @@ function Builder() {
           onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)}
           onPolicy={(type) => setPolicyType(type)}
         />
-        <main className="w-full max-w-7xl mx-auto p-4 md:p-6">
+        <main className="flex-1 overflow-y-auto p-4 md:p-8">
           {!user ? (
             !showAuth ? (
               <IdeaInput user={user} initialPrompt={prompt} onProjectCreated={(id) => {
@@ -216,24 +216,24 @@ function Builder() {
               />
             ) : (
               <div className="space-y-16 max-w-6xl mx-auto py-12">
-                <div className="text-center space-y-6">
+                <div className="text-center space-y-4">
                   <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100 mb-4"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100 mb-2"
                   >
                     <Sparkles size={16} />
                     <span className="text-xs font-bold uppercase tracking-widest">
-                      {t('welcomeSubTitle')}
+                      İdea Ai
                     </span>
                   </motion.div>
                   
                   <motion.h2 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="text-4xl font-black tracking-tighter text-zinc-900 leading-tight"
+                    className="text-5xl font-black tracking-tighter text-zinc-900 leading-tight"
                   >
-                    {t('welcomeTitle')}
+                    Türkiye'nin Tek Güvenilir Web Sitesi Oluşturucusu
                   </motion.h2>
                   
                   <motion.p 
@@ -242,7 +242,7 @@ function Builder() {
                     transition={{ delay: 0.2 }}
                     className="text-xl text-zinc-500 max-w-2xl mx-auto leading-relaxed"
                   >
-                    {t('welcomeDesc')}
+                    Fikirlerinizi saniyeler içinde çalışan prototiplere dönüştürün. Yapay zeka destekli geliştirme asistanınızla hemen üretmeye başlayın.
                   </motion.p>
                 </div>
 
@@ -250,10 +250,10 @@ function Builder() {
                   initial={{ opacity: 0, y: 40 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
-                  className="relative"
+                  className="relative max-w-3xl mx-auto -mt-4"
                 >
-                  <div className="absolute -inset-4 bg-gradient-to-r from-indigo-500/5 to-purple-500/5 blur-3xl rounded-[40px] -z-10" />
-                  <div className="bg-white/80 backdrop-blur-xl border border-white shadow-2xl shadow-indigo-500/5 rounded-[40px] p-6 md:p-8">
+                  <div className="absolute -inset-4 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 blur-3xl rounded-[40px] -z-10" />
+                  <div className="bg-white/90 backdrop-blur-xl border border-white shadow-2xl shadow-indigo-500/10 rounded-[40px] p-4 md:p-6">
                     <IdeaInput user={user} initialPrompt={prompt} onProjectCreated={(id) => {
                       const newProj = projects.find(p => p.id === id);
                       if (newProj) setCurrentProject(newProj);

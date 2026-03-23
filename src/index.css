@@ -1,6 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
   --font-handwriting: "Dancing Script", cursive;
+  --font-sans: "Inter", sans-serif;
+  --color-primary: #2563eb; /* Modern Blue */
+  --color-primary-foreground: #ffffff;
+  --color-background: #f8fafc;
+  --color-foreground: #0f172a;
 }

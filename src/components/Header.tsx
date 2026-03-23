@@ -23,30 +23,30 @@ export const Header = ({ user, onLogin, onSignup, onHelp, onPremium, onMenuClick
   ];
 
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between px-4 md:px-6 py-4 bg-white/80 backdrop-blur-md border-b border-zinc-200/80">
+    <header className="sticky top-0 z-30 flex items-center justify-between px-4 md:px-6 py-4 bg-background/80 backdrop-blur-md border-b border-border">
       <div className="flex items-center gap-3">
-        <button onClick={onMenuClick} className="p-2 -ml-2 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 rounded-xl transition-colors">
+        <button onClick={onMenuClick} className="p-2 -ml-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-colors">
           <Menu className="w-6 h-6" />
         </button>
-        <div className="hidden sm:flex w-8 h-8 bg-indigo-600 rounded-xl items-center justify-center shadow-lg shadow-indigo-500/20">
-          <Sparkles className="w-5 h-5 text-white" />
+        <div className="hidden sm:flex w-8 h-8 bg-primary rounded-xl items-center justify-center shadow-lg shadow-primary/20">
+          <Sparkles className="w-5 h-5 text-primary-foreground" />
         </div>
         
-        <nav className="hidden lg:flex items-center gap-6 ml-8 border-l border-zinc-200 pl-8">
-          <button onClick={() => onPolicy('privacy')} className="text-sm font-medium text-zinc-500 hover:text-indigo-600 transition-colors">
+        <nav className="hidden lg:flex items-center gap-6 ml-8 border-l border-border pl-8">
+          <button onClick={() => onPolicy('privacy')} className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
             {t('privacyPolicy')}
           </button>
-          <button onClick={() => onPolicy('terms')} className="text-sm font-medium text-zinc-500 hover:text-indigo-600 transition-colors">
+          <button onClick={() => onPolicy('terms')} className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
             {t('termsOfService')}
           </button>
-          <button onClick={() => onPolicy('refund')} className="text-sm font-medium text-zinc-500 hover:text-indigo-600 transition-colors">
+          <button onClick={() => onPolicy('refund')} className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
             {t('refundPolicy')}
           </button>
         </nav>
       </div>
 
       <div className="flex items-center justify-center flex-1 px-2">
-        <h1 className="text-xl md:text-3xl font-black text-zinc-950 tracking-tighter whitespace-nowrap px-2">
+        <h1 className="text-xl md:text-3xl font-black text-foreground tracking-tighter whitespace-nowrap px-2">
           İdea Ai
         </h1>
       </div>
@@ -60,7 +60,7 @@ export const Header = ({ user, onLogin, onSignup, onHelp, onPremium, onMenuClick
               whileTap={{ scale: 0.9 }}
               onClick={() => setLanguage(lang.code as any)}
               className={`w-8 h-8 rounded-full overflow-hidden border-2 transition-all ${
-                language === lang.code ? 'border-indigo-500 scale-110 shadow-sm' : 'border-transparent opacity-60 hover:opacity-100'
+                language === lang.code ? 'border-primary scale-110 shadow-sm' : 'border-transparent opacity-60 hover:opacity-100'
               }`}
               title={lang.label}
             >
@@ -74,7 +74,7 @@ export const Header = ({ user, onLogin, onSignup, onHelp, onPremium, onMenuClick
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={onPremium} 
-            className="flex items-center gap-2 px-3 md:px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl hover:from-indigo-600 hover:to-purple-600 transition-all shadow-sm"
+            className="flex items-center gap-2 px-3 md:px-4 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-xl hover:bg-primary/90 transition-all shadow-sm"
           >
             <Sparkles className="w-4 h-4" /> <span className="hidden sm:inline">{t('premium')}</span>
           </motion.button>
@@ -83,16 +83,16 @@ export const Header = ({ user, onLogin, onSignup, onHelp, onPremium, onMenuClick
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={onHelp} 
-          className="flex items-center gap-2 px-3 md:px-4 py-2 text-sm font-medium text-zinc-600 bg-zinc-100 rounded-xl hover:bg-zinc-200 transition-colors"
+          className="flex items-center gap-2 px-3 md:px-4 py-2 text-sm font-medium text-muted-foreground bg-muted rounded-xl hover:bg-muted/80 transition-colors"
         >
           <HelpCircle className="w-4 h-4" />
           <span className="hidden sm:inline">{t('help')}</span>
         </motion.button>
         {user ? (
-          <div className="flex items-center gap-3 pl-2 md:pl-3 border-l border-zinc-200">
+          <div className="flex items-center gap-3 pl-2 md:pl-3 border-l border-border">
             <div className="hidden sm:flex flex-col items-end">
-              <span className="text-sm font-medium text-zinc-900">{user.email?.split('@')[0]}</span>
-              <div className="flex gap-2 text-[10px] text-zinc-500">
+              <span className="text-sm font-medium text-foreground">{user.email?.split('@')[0]}</span>
+              <div className="flex gap-2 text-[10px] text-muted-foreground">
                 <span>{t('siteCredits')}: {user.isPremium ? '∞' : (user.siteCreationCredits || 0)}</span>
                 <span>{t('updateCredits')}: {user.isPremium ? '∞' : (user.updateCredits || 0)}</span>
               </div>
@@ -101,19 +101,19 @@ export const Header = ({ user, onLogin, onSignup, onHelp, onPremium, onMenuClick
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={() => signOut(auth)} 
-              className="p-2 text-zinc-500 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors" 
+              className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl transition-colors" 
               title={t('logout')}
             >
               <LogOut className="w-5 h-5" />
             </motion.button>
           </div>
         ) : (
-          <div className="flex items-center gap-2 pl-2 md:pl-3 border-l border-zinc-200">
+          <div className="flex items-center gap-2 pl-2 md:pl-3 border-l border-border">
             <motion.button 
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={onLogin} 
-              className="px-3 md:px-4 py-2 text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors"
+              className="px-3 md:px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
               {t('login')}
             </motion.button>
@@ -121,7 +121,7 @@ export const Header = ({ user, onLogin, onSignup, onHelp, onPremium, onMenuClick
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={onSignup} 
-              className="px-3 md:px-4 py-2 text-sm font-medium text-white bg-zinc-900 rounded-xl hover:bg-zinc-800 transition-colors shadow-sm"
+              className="px-3 md:px-4 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-xl hover:bg-primary/90 transition-colors shadow-sm"
             >
               {t('signup')}
             </motion.button>
