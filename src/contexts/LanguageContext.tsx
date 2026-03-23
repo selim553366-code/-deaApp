@@ -563,6 +563,21 @@ const translations: Translations = {
     tr: 'Güncelleme',
     'en-us': 'Update',
     'en-uk': 'Update',
+  },
+  privacyPolicy: {
+    tr: 'Gizlilik Politikası',
+    'en-us': 'Privacy Policy',
+    'en-uk': 'Privacy Policy',
+  },
+  termsOfService: {
+    tr: 'Kullanım Koşulları',
+    'en-us': 'Terms of Service',
+    'en-uk': 'Terms of Service',
+  },
+  refundPolicy: {
+    tr: 'İade Politikası',
+    'en-us': 'Refund Policy',
+    'en-uk': 'Refund Policy',
   }
 };
 

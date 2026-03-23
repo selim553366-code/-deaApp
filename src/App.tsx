@@ -3,7 +3,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { doc, setDoc, updateDoc, onSnapshot, collection, query, where } from "firebase/firestore";
 import { auth, db } from "./firebase";
 import { User, Project } from "./types";
-import { Loader2, Layout, Zap, Code2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { AuthForm } from "./components/AuthForm";
 import { Header } from "./components/Header";
 import { IdeaInput } from "./components/IdeaInput";
@@ -15,6 +15,7 @@ import { HelpModal } from "./components/HelpModal";
 import { AIHelperModal } from "./components/AIHelperModal";
 import { ProjectPreview } from "./components/ProjectPreview";
 import { TemplatesView } from "./components/TemplatesView";
+import { PolicyModal } from "./components/PolicyModal";
 import { useLanguage } from "./contexts/LanguageContext";
 
 import { Routes, Route } from "react-router-dom";
@@ -35,6 +36,7 @@ function Builder() {
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [policyType, setPolicyType] = useState<'privacy' | 'terms' | 'refund' | null>(null);
   const pendingProjectIdRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -151,6 +153,7 @@ function Builder() {
       {showPremium && <PremiumModal user={user} onClose={() => setShowPremium(false)} />}
       {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
       {showAI && <AIHelperModal onClose={() => setShowAI(false)} user={user} />}
+      {policyType && <PolicyModal type={policyType} onClose={() => setPolicyType(null)} />}
       <Sidebar 
         projects={projects} 
         currentProject={currentProject} 
@@ -172,6 +175,7 @@ function Builder() {
           onHelp={() => setShowHelp(true)} 
           onPremium={() => setShowPremium(true)} 
           onMenuClick={() => setIsMobileMenuOpen(true)}
+          onPolicy={(type) => setPolicyType(type)}
         />
         <main className="w-full max-w-7xl mx-auto p-4 md:p-6">
           {!user ? (
@@ -219,30 +223,6 @@ function Builder() {
                   <p className="text-lg text-zinc-500 max-w-2xl mx-auto">
                     {t('welcomeDesc')}
                   </p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="bg-white p-6 rounded-3xl border border-zinc-100 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-4">
-                      <Layout className="w-6 h-6" />
-                    </div>
-                    <h3 className="font-semibold text-lg mb-2 text-zinc-900">{t('manageIdeasTitle')}</h3>
-                    <p className="text-zinc-500 leading-relaxed">{t('manageIdeasDesc')}</p>
-                  </div>
-                  <div className="bg-white p-6 rounded-3xl border border-zinc-100 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-4">
-                      <Zap className="w-6 h-6" />
-                    </div>
-                    <h3 className="font-semibold text-lg mb-2 text-zinc-900">{t('fastPrototypingTitle')}</h3>
-                    <p className="text-zinc-500 leading-relaxed">{t('fastPrototypingDesc')}</p>
-                  </div>
-                  <div className="bg-white p-6 rounded-3xl border border-zinc-100 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center mb-4">
-                      <Code2 className="w-6 h-6" />
-                    </div>
-                    <h3 className="font-semibold text-lg mb-2 text-zinc-900">{t('aiCodingTitle')}</h3>
-                    <p className="text-zinc-500 leading-relaxed">{t('aiCodingDesc')}</p>
-                  </div>
                 </div>
 
                 <div className="pt-2 border-t border-zinc-100">

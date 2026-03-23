@@ -5,7 +5,15 @@ import { Sparkles, LogOut, HelpCircle, Menu } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useLanguage } from '../contexts/LanguageContext';
 
-export const Header = ({ user, onLogin, onSignup, onHelp, onPremium, onMenuClick }: { user: User | null, onLogin: () => void, onSignup: () => void, onHelp: () => void, onPremium?: () => void, onMenuClick: () => void }) => {
+export const Header = ({ user, onLogin, onSignup, onHelp, onPremium, onMenuClick, onPolicy }: { 
+  user: User | null, 
+  onLogin: () => void, 
+  onSignup: () => void, 
+  onHelp: () => void, 
+  onPremium?: () => void, 
+  onMenuClick: () => void,
+  onPolicy: (type: 'privacy' | 'terms' | 'refund') => void
+}) => {
   const { language, setLanguage, t } = useLanguage();
 
   const languages = [
@@ -26,6 +34,18 @@ export const Header = ({ user, onLogin, onSignup, onHelp, onPremium, onMenuClick
         <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
           İdea Ai
         </h1>
+        
+        <nav className="hidden lg:flex items-center gap-6 ml-8 border-l border-zinc-200 pl-8">
+          <button onClick={() => onPolicy('privacy')} className="text-sm font-medium text-zinc-500 hover:text-indigo-600 transition-colors">
+            {t('privacyPolicy')}
+          </button>
+          <button onClick={() => onPolicy('terms')} className="text-sm font-medium text-zinc-500 hover:text-indigo-600 transition-colors">
+            {t('termsOfService')}
+          </button>
+          <button onClick={() => onPolicy('refund')} className="text-sm font-medium text-zinc-500 hover:text-indigo-600 transition-colors">
+            {t('refundPolicy')}
+          </button>
+        </nav>
       </div>
       <div className="flex items-center gap-2 md:gap-3">
         <div className="flex items-center gap-1.5 mr-1 md:mr-2">

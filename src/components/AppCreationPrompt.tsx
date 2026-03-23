@@ -38,20 +38,28 @@ export const AppCreationPrompt = ({ onNext }: Props) => {
     setCurrentAnswer('');
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: `Kullanıcı şu uygulamayı yapmak istiyor: "${prompt}". Bu uygulamayı daha iyi tasarlayabilmek için kullanıcıya sorulacak en önemli 3 soruyu oluştur. Sorular kısa ve net olmalı. Sadece JSON formatında bir string array döndür. Örnek: ["Soru 1?", "Soru 2?", "Soru 3?"].`,
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: Type.ARRAY,
-            items: { type: Type.STRING }
+      const aiResponse = await fetch("/api/ai/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "gemini-3-flash-preview",
+          contents: `Kullanıcı şu uygulamayı yapmak istiyor: "${prompt}". Bu uygulamayı daha iyi tasarlayabilmek için kullanıcıya sorulacak en önemli 3 soruyu oluştur. Sorular kısa ve net olmalı. Sadece JSON formatında bir string array döndür. Örnek: ["Soru 1?", "Soru 2?", "Soru 3?"].`,
+          config: {
+            responseMimeType: "application/json",
+            responseSchema: {
+              type: Type.ARRAY,
+              items: { type: Type.STRING }
+            }
           }
-        }
+        })
       });
+
+      if (!aiResponse.ok) {
+        throw new Error("AI Soruları oluşturulamadı.");
+      }
       
-      const result = JSON.parse(response.text || "[]");
+      const data = await aiResponse.json();
+      const result = JSON.parse(data.text || "[]");
       setQuestions(result.slice(0, 3)); // Ensure max 3 questions
     } catch (err) {
       console.error(err);
@@ -111,14 +119,17 @@ export const AppCreationPrompt = ({ onNext }: Props) => {
       <div className={`w-full transition-all duration-700 ease-in-out ${showPreview ? 'max-w-5xl' : 'max-w-2xl'} flex flex-col md:flex-row gap-6`}>
         {/* Left Panel - Input */}
         <div className="w-full md:w-[600px] p-6 md:p-8 bg-white rounded-3xl shadow-xl border border-zinc-100 flex flex-col relative z-10 shrink-0">
-          <div className="text-center mb-6">
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full inline-block mb-3">
+          <div className="text-center mb-8">
+            <span className="text-xs font-bold uppercase tracking-widest text-indigo-600 bg-indigo-50 px-4 py-1.5 rounded-full inline-block mb-4">
               Türkiye'nin Tek Güvenilir Web Sitesi Oluşturucusu
             </span>
-            <h1 className="text-5xl font-extrabold text-zinc-900 mb-2">İdea Ai</h1>
-            <p className="text-zinc-500 text-sm">Düşünceni Gerçeğe Çevir.</p>
+            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-zinc-900 leading-tight mb-4">
+              Düşünceni Gerçeğe Çevir.
+            </h1>
+            <p className="text-lg text-zinc-500">
+              Ne oluşturmak istersin? Fikrini yaz ve yapay zeka senin için kodlasın.
+            </p>
           </div>
-          <h2 className="mb-4 text-lg font-medium text-center text-zinc-700">Ne oluşturmak istersin?</h2>
           <textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}

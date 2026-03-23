@@ -19,13 +19,22 @@ export const AuthForm = ({ prompt, onProjectCreated }: Props) => {
 
   const handleAuthSuccess = async (userCredential: any) => {
     if (prompt) {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
-      const response = await ai.models.generateContent({
-        model: "gemini-3.1-pro-preview",
-        contents: `Sen uzman bir Frontend Geliştiricisi ve UI/UX Tasarımcısısın. Kullanıcının fikri: "${prompt}". Bu fikir için tek sayfalık, son derece modern, estetik, çok hızlı çalışan ve responsive (mobil uyumlu) bir HTML kodu oluştur. Tailwind CSS (CDN üzerinden) ve gerekiyorsa FontAwesome veya Lucide ikonları (CDN üzerinden) kullan. Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`\`html vb.) KULLANMA. Kod <html> ile başlayıp </html> ile bitmeli.`
+      const aiResponse = await fetch("/api/ai/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "gemini-3-flash-preview",
+          contents: `Sen uzman bir Frontend Geliştiricisi ve UI/UX Tasarımcısısın. Kullanıcının fikri: "${prompt}". Bu fikir için tek sayfalık, son derece modern, estetik, çok hızlı çalışan ve responsive (mobil uyumlu) bir HTML kodu oluştur. Tailwind CSS (CDN üzerinden) ve gerekiyorsa FontAwesome veya Lucide ikonları (CDN üzerinden) kullan. Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`\`html vb.) KULLANMA. Kod <html> ile başlayıp </html> ile bitmeli.`
+        })
       });
+
+      if (!aiResponse.ok) {
+        const errorData = await aiResponse.json();
+        throw new Error(errorData.error || "Web sitesi kodu oluşturulamadı.");
+      }
       
-      let code = response.text || '<h1>Hata oluştu</h1>';
+      const data = await aiResponse.json();
+      let code = data.text || '<h1>Hata oluştu</h1>';
       code = code.replace(/```html/g, '').replace(/```/g, '').trim();
 
       const newProjectRef = doc(collection(db, 'projects'));
