@@ -12,6 +12,7 @@ export const IdeaInput = ({ user, onProjectCreated, initialPrompt }: { user: Use
   const [showPreview, setShowPreview] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [previewMode, setPreviewMode] = useState<'questions' | 'building'>('questions');
   const [questions, setQuestions] = useState<string[]>([]);
   const [answers, setAnswers] = useState<string[]>([]);
@@ -139,6 +140,7 @@ export const IdeaInput = ({ user, onProjectCreated, initialPrompt }: { user: Use
     });
 
     try {
+      setError(null);
       // Loading simulation
       for (let i = 0; i < loadingMessages.length; i++) {
         setLoadingStep(i);
@@ -156,9 +158,13 @@ export const IdeaInput = ({ user, onProjectCreated, initialPrompt }: { user: Use
       }
 
       // Generate code
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 seconds timeout
+
       const aiResponse = await fetch("/api/ai/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
         body: JSON.stringify({
           model: "gemini-3-flash-preview",
           contents: `Sen uzman bir Frontend Geliştiricisi ve UI/UX Tasarımcısısın. Kullanıcının fikri ve detayları: "${finalPrompt}". 
@@ -169,6 +175,7 @@ Kullanıcı deneyimi (UX) en üst düzeyde olmalı.
 Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`\`html vb.) KULLANMA. Kod <html> ile başlayıp </html> ile bitmeli.`
         })
       });
+      clearTimeout(timeoutId);
 
       if (!aiResponse.ok) {
         const contentType = aiResponse.headers.get("content-type");
@@ -209,7 +216,7 @@ Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`
       }
     } catch (err) {
       console.error("Proje oluşturma hatası:", err);
-      // Use a custom error state instead of alert
+      setError(err instanceof Error ? err.message : "Beklenmedik bir hata oluştu.");
       setIsGenerating(false);
     }
   };
@@ -356,6 +363,11 @@ Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`
                 {t('preview')}
               </h3>
               <div className="flex-1 flex flex-col gap-5">
+                {error && (
+                  <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-sm">
+                    {error}
+                  </div>
+                )}
                 {loadingMessages.map((msg, idx) => (
                   <div 
                     key={idx} 
