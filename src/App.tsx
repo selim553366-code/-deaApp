@@ -178,7 +178,7 @@ function Builder() {
           onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)}
           onPolicy={(type) => setPolicyType(type)}
         />
-        <main className="w-full max-w-7xl mx-auto p-4 md:p-6">
+        <main className="w-full max-w-7xl mx-auto p-6">
           {!user ? (
             !showAuth ? (
               <AppCreationPrompt onNext={(p) => { setPrompt(p); setShowAuth(true); }} />
@@ -229,7 +229,7 @@ function Builder() {
                   <motion.h2 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="text-2xl md:text-4xl font-black tracking-tighter text-zinc-900 leading-tight"
+                    className="text-4xl font-black tracking-tighter text-zinc-900 leading-tight"
                   >
                     {t('welcomeTitle')}
                   </motion.h2>
@@ -251,7 +251,7 @@ function Builder() {
                   className="relative"
                 >
                   <div className="absolute -inset-4 bg-gradient-to-r from-indigo-500/5 to-purple-500/5 blur-3xl rounded-[40px] -z-10" />
-                  <div className="bg-white/80 backdrop-blur-xl border border-white shadow-2xl shadow-indigo-500/5 rounded-[40px] p-6 md:p-8">
+                  <div className="bg-white/80 backdrop-blur-xl border border-white shadow-2xl shadow-indigo-500/5 rounded-[40px] p-8">
                     <IdeaInput user={user} initialPrompt={prompt} onProjectCreated={(id) => {
                       const newProj = projects.find(p => p.id === id);
                       if (newProj) setCurrentProject(newProj);
@@ -260,7 +260,7 @@ function Builder() {
                 </motion.div>
 
                 {/* Quick Stats or Features could go here */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-8">
+                <div className="grid grid-cols-3 gap-8 pt-8 overflow-x-auto">
                   {[
                     { title: "Hızlı Kurulum", desc: "Saniyeler içinde projenizi başlatın." },
                     { title: "AI Destekli", desc: "En gelişmiş yapay zeka modelleriyle kodlama." },

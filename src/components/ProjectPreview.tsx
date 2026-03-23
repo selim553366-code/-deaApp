@@ -319,7 +319,7 @@ export const ProjectPreview = ({
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col md:flex-row gap-4 min-h-0">
+      <div className="flex-1 flex flex-row gap-4 min-h-0 overflow-x-auto pb-4">
         {isDesignMode && (
           <motion.div 
             initial={{ x: -20, opacity: 0 }}

@@ -75,6 +75,7 @@ app.post("/api/ai/generate", async (req, res) => {
     }
 
     const ai = new GoogleGenAI({ apiKey: foundKey });
+    
     const response = await ai.models.generateContent({
       model,
       contents,
