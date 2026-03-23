@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { db, auth } from '../firebase';
 import { collection, addDoc, doc, updateDoc, setDoc } from 'firebase/firestore';
-import { Loader2, Sparkles, X, CheckCircle2, Circle, Wand2 } from 'lucide-react';
+import { Loader2, Sparkles, X, CheckCircle2, Circle, Wand2, Lightbulb } from 'lucide-react';
 import { User } from '../types';
 import { GoogleGenAI, Type } from "@google/genai";
 import { motion, AnimatePresence } from "motion/react";
@@ -19,8 +19,6 @@ export const IdeaInput = ({ user, onProjectCreated, initialPrompt }: { user: Use
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [currentAnswer, setCurrentAnswer] = useState('');
   const [isFetchingQuestions, setIsFetchingQuestions] = useState(false);
-  const [showGeminiImport, setShowGeminiImport] = useState(false);
-  const [geminiHistory, setGeminiHistory] = useState('');
 
   const loadingMessages = language === 'tr' ? [
     "Fikriniz analiz ediliyor...",
@@ -36,18 +34,23 @@ export const IdeaInput = ({ user, onProjectCreated, initialPrompt }: { user: Use
     "Making final touches..."
   ];
 
+  const suggestedIdeas = language === 'tr' ? [
+    "Modern bir kişisel portfolyo sitesi",
+    "Kahve dükkanı için şık bir menü sayfası",
+    "Spor salonu üyelik ve kayıt ekranı",
+    "Dijital pazarlama ajansı açılış sayfası"
+  ] : [
+    "A modern personal portfolio website",
+    "A stylish menu page for a coffee shop",
+    "Gym membership and registration screen",
+    "Digital marketing agency landing page"
+  ];
+
   useEffect(() => {
     if (initialPrompt) {
       setIdea(initialPrompt);
     }
   }, [initialPrompt]);
-
-  const handleGeminiImport = () => {
-    if (!geminiHistory.trim()) return;
-    setIdea(`Aşağıdaki Gemini konuşma geçmişine dayanarak bir web sitesi oluştur:\n\n${geminiHistory}`);
-    setShowGeminiImport(false);
-    setGeminiHistory('');
-  };
 
   const handleStart = async () => {
     if (!idea.trim() || isFetchingQuestions || isGenerating) return;
@@ -211,12 +214,11 @@ Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`
         <textarea
           value={idea}
           onChange={(e) => setIdea(e.target.value)}
-          className="w-full p-4 mb-4 text-base border border-zinc-200 rounded-2xl focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all resize-none bg-zinc-50/50"
+          className="w-full p-4 mb-4 text-sm md:text-base border border-zinc-200 rounded-2xl focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all resize-none bg-zinc-50/50 min-h-[80px] md:min-h-[120px]"
           placeholder={t('placeholder')}
-          rows={4}
           disabled={isGenerating}
         />
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-col gap-3">
           <motion.button 
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -236,74 +238,30 @@ Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`
               </>
             )}
           </motion.button>
-          <motion.button 
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setShowGeminiImport(true)}
-            disabled={isGenerating || isFetchingQuestions || showPreview}
-            className="w-full sm:w-auto p-4 text-sm text-indigo-600 bg-indigo-50 border border-indigo-200 rounded-2xl hover:bg-indigo-100 font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 whitespace-nowrap"
-            title={t('importGemini')}
-          >
-            <Sparkles className="w-5 h-5" />
-            {t('importGemini')}
-          </motion.button>
         </div>
-      </div>
 
-      {/* Gemini Import Modal */}
-      <AnimatePresence>
-      {showGeminiImport && (
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
-        >
-          <motion.div 
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.95, opacity: 0 }}
-            className="bg-white rounded-3xl p-6 md:p-8 w-full max-w-2xl shadow-2xl relative"
-          >
-            <button 
-              onClick={() => setShowGeminiImport(false)}
-              className="absolute top-6 right-6 text-zinc-400 hover:text-zinc-600 transition-colors"
-            >
-              <X className="w-6 h-6" />
-            </button>
-            <h3 className="text-2xl font-bold text-zinc-900 mb-2 flex items-center gap-2">
-              <Sparkles className="w-6 h-6 text-indigo-600" />
-              {t('importGeminiTitle')}
-            </h3>
-            <p className="text-zinc-500 mb-6">{t('importGeminiDesc')}</p>
-            
-            <textarea
-              value={geminiHistory}
-              onChange={(e) => setGeminiHistory(e.target.value)}
-              className="w-full p-4 mb-6 text-sm border border-zinc-200 rounded-2xl focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all resize-none bg-zinc-50 h-64"
-              placeholder={t('importGeminiPlaceholder')}
-            />
-            
-            <div className="flex justify-end gap-3">
-              <button 
-                onClick={() => setShowGeminiImport(false)}
-                className="px-6 py-3 text-zinc-600 font-medium hover:bg-zinc-100 rounded-xl transition-colors"
-              >
-                {t('cancel')}
-              </button>
-              <button 
-                onClick={handleGeminiImport}
-                disabled={!geminiHistory.trim()}
-                className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2"
-              >
-                <CheckCircle2 className="w-5 h-5" />
-                {t('importAndContinue')}
-              </button>
+        {/* Suggested Ideas */}
+        {!showPreview && (
+          <div className="mt-6">
+            <div className="flex items-center gap-2 mb-3 text-zinc-500">
+              <Lightbulb className="w-4 h-4 text-amber-500" />
+              <span className="text-sm font-medium">{language === 'tr' ? 'Fikre mi ihtiyacınız var?' : 'Need an idea?'}</span>
             </div>
-          </motion.div>
-        </motion.div>
-      )}
-      </AnimatePresence>
+            <div className="flex flex-wrap gap-2">
+              {suggestedIdeas.map((suggestedIdea, index) => (
+                <button
+                  key={index}
+                  onClick={() => setIdea(suggestedIdea)}
+                  disabled={isGenerating || isFetchingQuestions}
+                  className="text-xs md:text-sm px-3 py-1.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded-lg transition-colors border border-zinc-200 text-left"
+                >
+                  {suggestedIdea}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Right Panel - Preview */}
       <AnimatePresence>
