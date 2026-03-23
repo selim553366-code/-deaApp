@@ -166,8 +166,15 @@ export const ProjectPreview = ({
       });
 
       if (!aiResponse.ok) {
-        const errorData = await aiResponse.json();
-        throw new Error(errorData.error || "Yapay zeka sunucusuna bağlanılamadı.");
+        const contentType = aiResponse.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          const errorData = await aiResponse.json();
+          throw new Error(errorData.error || "Yapay zeka sunucusuna bağlanılamadı.");
+        } else {
+          const errorText = await aiResponse.text();
+          console.error("Non-JSON error response:", errorText);
+          throw new Error(`Sunucu hatası (${aiResponse.status}). Lütfen daha sonra tekrar deneyin.`);
+        }
       }
 
       const data = await aiResponse.json();

@@ -5,21 +5,38 @@ import { GoogleGenAI } from "@google/genai";
 
 dotenv.config({ override: true });
 
+console.log("Environment check - NODE_ENV:", process.env.NODE_ENV);
+console.log("Environment check - APP_URL:", process.env.APP_URL);
+console.log("Environment check - GEMINI_API_KEY present:", !!process.env.GEMINI_API_KEY);
+console.log("Environment check - API_KEY present:", !!process.env.API_KEY);
+
 const app = express();
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  next();
+});
 
 // AI Generation Endpoint
 app.post("/api/ai/generate", async (req, res) => {
+  console.log(`[${new Date().toISOString()}] POST /api/ai/generate - Body keys:`, Object.keys(req.body));
   try {
     const { contents, systemInstruction, model = "gemini-3-flash-preview", config = {} } = req.body;
     
+    if (!contents) {
+      console.error("Missing contents in request body");
+      return res.status(400).json({ error: "İstek gövdesinde 'contents' eksik." });
+    }
     const keysToTry = [
       { name: "GEMINI_API_KEY", value: process.env.GEMINI_API_KEY },
       { name: "API_KEY", value: process.env.API_KEY },
       { name: "NEXT_PUBLIC_GEMINI_API_KEY", value: process.env.NEXT_PUBLIC_GEMINI_API_KEY },
       { name: "VITE_GEMINI_API_KEY", value: process.env.VITE_GEMINI_API_KEY },
-      { name: "VITE_API_KEY", value: process.env.VITE_API_KEY }
+      { name: "VITE_API_KEY", value: process.env.VITE_API_KEY },
+      { name: "MY_GEMINI_API_KEY", value: process.env.MY_GEMINI_API_KEY }
     ];
 
     let foundKey = "";
@@ -76,7 +93,23 @@ app.post("/api/ai/generate", async (req, res) => {
 
     const ai = new GoogleGenAI({ apiKey: foundKey });
     
-    const response = await ai.models.generateContent({
+    // Helper function for retries
+    async function generateWithRetry(params: any, retries = 3, delay = 1000): Promise<any> {
+      try {
+        return await ai.models.generateContent(params);
+      } catch (error: any) {
+        // Check if error is 503 (Service Unavailable) or has a status code of 503
+        const is503 = error.status === 503 || (error.message && error.message.includes("503"));
+        if (retries > 0 && is503) {
+          console.log(`Gemini API busy (503). Retrying... Retries left: ${retries}. Delay: ${delay}ms`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          return generateWithRetry(params, retries - 1, delay * 2);
+        }
+        throw error;
+      }
+    }
+
+    const response = await generateWithRetry({
       model,
       contents,
       config: {
@@ -189,29 +222,44 @@ app.post("/api/checkout", async (req, res) => {
 
 const PORT = 3000;
 
-// Vite middleware for development
-if (process.env.NODE_ENV !== "production") {
-  (async () => {
+async function startServer() {
+  // API routes FIRST
+  app.get("/api/health", (req, res) => {
+    res.json({ status: "ok" });
+  });
+
+  // Vite middleware for development
+  if (process.env.NODE_ENV !== "production") {
     const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
     });
     app.use(vite.middlewares);
-  })();
-} else {
-  const distPath = path.join(process.cwd(), 'dist');
-  app.use(express.static(distPath));
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(distPath, 'index.html'));
-  });
-}
+  } else {
+    const distPath = path.join(process.cwd(), 'dist');
+    app.use(express.static(distPath));
+  }
 
-// Ensure the server listens in development
-if (process.env.NODE_ENV !== 'production') {
+  // SPA fallback for production (must be after API routes and static files)
+  if (process.env.NODE_ENV === "production") {
+    app.get('*', (req, res) => {
+      res.sendFile(path.join(process.cwd(), 'dist', 'index.html'));
+    });
+  }
+
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
 }
+
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] Unmatched request: ${req.method} ${req.url}`);
+  next();
+});
+
+startServer().catch(err => {
+  console.error("Failed to start server:", err);
+});
 
 export default app;

@@ -31,9 +31,6 @@ export const Header = ({ user, onLogin, onSignup, onHelp, onPremium, onMenuClick
         <div className="hidden sm:flex w-8 h-8 bg-indigo-600 rounded-xl items-center justify-center shadow-lg shadow-indigo-500/20">
           <Sparkles className="w-5 h-5 text-white" />
         </div>
-        <h1 className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 tracking-tight">
-          İdea Ai
-        </h1>
         
         <nav className="hidden lg:flex items-center gap-6 ml-8 border-l border-zinc-200 pl-8">
           <button onClick={() => onPolicy('privacy')} className="text-sm font-medium text-zinc-500 hover:text-indigo-600 transition-colors">
@@ -47,6 +44,13 @@ export const Header = ({ user, onLogin, onSignup, onHelp, onPremium, onMenuClick
           </button>
         </nav>
       </div>
+
+      <div className="flex items-center justify-center flex-1 px-2">
+        <h1 className="text-xl md:text-3xl font-black text-zinc-950 tracking-tighter whitespace-nowrap px-2">
+          İdea Ai
+        </h1>
+      </div>
+
       <div className="flex items-center gap-2 md:gap-3">
         <div className="flex items-center gap-1.5 mr-1 md:mr-2">
           {languages.map((lang) => (

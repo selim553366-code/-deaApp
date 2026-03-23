@@ -129,12 +129,12 @@ export const AppCreationPrompt = ({ onNext }: Props) => {
 
       <div className={`w-full transition-all duration-700 ease-in-out ${showPreview ? 'max-w-6xl' : 'max-w-3xl'} flex flex-col md:flex-row gap-8 items-center`}>
         {/* Left Panel - Input */}
-        <div className="w-full p-8 md:p-12 bg-white/80 backdrop-blur-xl rounded-[40px] shadow-2xl shadow-indigo-500/5 border border-white flex flex-col relative z-10 shrink-0">
-          <div className="text-center mb-10">
+        <div className="w-full p-6 md:p-12 bg-white/80 backdrop-blur-xl rounded-[32px] md:rounded-[40px] shadow-2xl shadow-indigo-500/5 border border-white flex flex-col relative z-10 shrink-0">
+          <div className="text-center mb-6 md:mb-10">
             <motion.span 
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-600 bg-indigo-50 px-5 py-2 rounded-full inline-block mb-6"
+              className="text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-indigo-600 bg-indigo-50 px-4 md:px-5 py-1.5 md:py-2 rounded-full inline-block mb-4 md:mb-6"
             >
               Yapay Zeka ile Geleceği İnşa Et
             </motion.span>
@@ -142,7 +142,7 @@ export const AppCreationPrompt = ({ onNext }: Props) => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-5xl md:text-7xl font-black tracking-tighter text-zinc-900 leading-[0.9] mb-6"
+              className="text-3xl md:text-7xl font-black tracking-tighter text-zinc-900 leading-[0.9] mb-4 md:mb-6"
             >
               Hayal Et,<br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Biz Kodlayalım.</span>
@@ -151,7 +151,7 @@ export const AppCreationPrompt = ({ onNext }: Props) => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
-              className="text-xl text-zinc-500 max-w-lg mx-auto leading-relaxed"
+              className="text-base md:text-xl text-zinc-500 max-w-lg mx-auto leading-relaxed"
             >
               Sadece ne istediğini söyle, saniyeler içinde profesyonel web siteni hazırla. Kodlama bilmene gerek yok.
             </motion.p>
@@ -161,24 +161,24 @@ export const AppCreationPrompt = ({ onNext }: Props) => {
             <textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              className="w-full p-6 text-lg border-2 border-zinc-100 rounded-[32px] focus:ring-8 focus:ring-indigo-500/5 focus:border-indigo-500 outline-none transition-all resize-none bg-zinc-50/30 min-h-[160px] placeholder:text-zinc-300"
+              className="w-full p-4 md:p-6 text-base md:text-lg border-2 border-zinc-100 rounded-[24px] md:rounded-[32px] focus:ring-8 focus:ring-indigo-500/5 focus:border-indigo-500 outline-none transition-all resize-none bg-zinc-50/30 min-h-[120px] md:min-h-[160px] placeholder:text-zinc-300"
               placeholder="Örn: Modern bir kahve dükkanı sitesi, koyu tema ve animasyonlu menü olsun..."
               rows={4}
               disabled={isGenerating}
             />
-            <div className="absolute bottom-4 right-4 flex items-center gap-2 text-zinc-400 text-xs font-medium bg-white/80 backdrop-blur px-3 py-1.5 rounded-full border border-zinc-100">
+            <div className="absolute bottom-4 right-4 flex items-center gap-2 text-zinc-400 text-[10px] md:text-xs font-medium bg-white/80 backdrop-blur px-3 py-1.5 rounded-full border border-zinc-100">
               <Sparkles size={12} className="text-indigo-500" />
               AI Gücüyle
             </div>
           </div>
 
-          <div className="mt-8">
+          <div className="mt-6 md:mt-8">
             <motion.button 
               whileHover={{ scale: 1.02, translateY: -2 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleStart} 
               disabled={isGenerating || isFetchingQuestions || !prompt.trim() || showPreview}
-              className="w-full p-6 text-lg text-white bg-zinc-900 rounded-[24px] hover:bg-black font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-xl shadow-zinc-900/20"
+              className="w-full p-4 md:p-6 text-base md:text-lg text-white bg-zinc-900 rounded-[20px] md:rounded-[24px] hover:bg-black font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-xl shadow-zinc-900/20"
             >
               {isFetchingQuestions ? (
                 <>
