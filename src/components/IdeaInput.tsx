@@ -3,7 +3,6 @@ import { db, auth } from '../firebase';
 import { collection, addDoc, doc, updateDoc, setDoc } from 'firebase/firestore';
 import { Loader2, Sparkles, X, CheckCircle2, Circle, Wand2, Lightbulb } from 'lucide-react';
 import { User } from '../types';
-import { GoogleGenAI, Type } from "@google/genai";
 import { motion, AnimatePresence } from "motion/react";
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -78,15 +77,16 @@ export const IdeaInput = ({ user, onProjectCreated, initialPrompt }: { user: Use
           config: {
             responseMimeType: "application/json",
             responseSchema: {
-              type: Type.ARRAY,
-              items: { type: Type.STRING }
+              type: "ARRAY",
+              items: { type: "STRING" }
             }
           }
         })
       });
 
       if (!aiResponse.ok) {
-        throw new Error("AI Soruları oluşturulamadı.");
+        const errorData = await aiResponse.json().catch(() => ({}));
+        throw new Error(errorData.error || "AI Soruları oluşturulamadı.");
       }
       
       const data = await aiResponse.json();

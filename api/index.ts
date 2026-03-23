@@ -3,19 +3,11 @@ import path from "path";
 import dotenv from "dotenv";
 import { GoogleGenAI } from "@google/genai";
 
-dotenv.config();
+dotenv.config({ override: true });
 
 const app = express();
 
 app.use(express.json());
-
-app.get("/api/env", (req, res) => {
-  res.json({ keys: Object.keys(process.env).filter(k => k.includes('KEY') || k.includes('GEMINI') || k.includes('AI') || k.includes('GOOGLE')).map(k => `${k}=${process.env[k] ? process.env[k].substring(0, 10) : 'empty'}`) });
-});
-
-app.get("/api/env2", (req, res) => {
-  res.json({ keys: Object.keys(process.env).filter(k => k.includes('KEY') || k.includes('GEMINI') || k.includes('AI') || k.includes('GOOGLE')).map(k => `${k}=${process.env[k]}`) });
-});
 
 // AI Generation Endpoint
 app.post("/api/ai/generate", async (req, res) => {
@@ -25,7 +17,9 @@ app.post("/api/ai/generate", async (req, res) => {
     const keysToTry = [
       { name: "GEMINI_API_KEY", value: process.env.GEMINI_API_KEY },
       { name: "API_KEY", value: process.env.API_KEY },
-      { name: "NEXT_PUBLIC_GEMINI_API_KEY", value: process.env.NEXT_PUBLIC_GEMINI_API_KEY }
+      { name: "NEXT_PUBLIC_GEMINI_API_KEY", value: process.env.NEXT_PUBLIC_GEMINI_API_KEY },
+      { name: "VITE_GEMINI_API_KEY", value: process.env.VITE_GEMINI_API_KEY },
+      { name: "VITE_API_KEY", value: process.env.VITE_API_KEY }
     ];
 
     let foundKey = "";
@@ -34,7 +28,13 @@ app.post("/api/ai/generate", async (req, res) => {
     for (const item of keysToTry) {
       let val = item.value?.trim();
       
-      if (!val || val === "undefined" || val === "" || val.includes("YOUR_GEMINI_API_KEY")) {
+      if (!val || val === "undefined" || val === "") {
+        debugInfo += `[${item.name}: Boş] `;
+        continue;
+      }
+
+      if (val.includes("YOUR_GEMINI_API_KEY") || val.includes("MY_GEMINI_API_KEY")) {
+        debugInfo += `[${item.name}: Taslak değer ("${val}")] `;
         continue;
       }
 
@@ -63,13 +63,14 @@ app.post("/api/ai/generate", async (req, res) => {
       }
       
       foundKey = cleanVal;
+      console.log(`Using API key from ${item.name}: ${foundKey.substring(0, 4)}...${foundKey.substring(foundKey.length - 4)}`);
       break;
     }
 
     if (!foundKey) {
-      const statusMessage = debugInfo || "Tüm anahtarlar boş veya geçersiz.";
+      const statusMessage = debugInfo || "Tüm anahtarlar boş veya geçersiz. Lütfen Secrets panelinden GEMINI_API_KEY değişkenini kontrol edin.";
       return res.status(500).json({ 
-        error: `Geçerli bir Gemini API anahtarı bulunamadı. (Hata: API_KEY_INVALID)\n\nDurum: ${statusMessage}\n\nÇözüm:\n1. Sol taraftaki Secrets panelini açın.\n2. GEMINI_API_KEY ve NEXT_PUBLIC_GEMINI_API_KEY değişkenlerini tamamen SİLİN.\n3. Sayfayı yenileyin (F5).\n\nEğer hala düzelmiyorsa:\n1. https://aistudio.google.com/app/apikey adresinden yeni bir anahtar alın.\n2. Secrets paneline GEMINI_API_KEY adıyla ekleyin.` 
+        error: `Geçerli bir Gemini API anahtarı bulunamadı. (Hata: API_KEY_INVALID)\n\nDurum: ${statusMessage}\n\nÇözüm:\n1. Sol taraftaki Secrets panelini açın.\n2. GEMINI_API_KEY adıyla anahtarınızı ekleyin.\n3. Değerin "AIza" ile başladığından emin olun.` 
       });
     }
 

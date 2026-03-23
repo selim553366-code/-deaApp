@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Loader2, Sparkles, X, CheckCircle2, Circle, Wand2 } from 'lucide-react';
-import { GoogleGenAI, Type } from "@google/genai";
 
 interface Props {
   onNext: (prompt: string) => void;
@@ -29,6 +28,10 @@ export const AppCreationPrompt = ({ onNext }: Props) => {
   const handleStart = async () => {
     if (!prompt.trim() || isFetchingQuestions || isGenerating) return;
     
+    // Redirect to login if not logged in
+    onNext(prompt);
+    return;
+    
     setShowPreview(true);
     setPreviewMode('questions');
     setIsFetchingQuestions(true);
@@ -47,15 +50,16 @@ export const AppCreationPrompt = ({ onNext }: Props) => {
           config: {
             responseMimeType: "application/json",
             responseSchema: {
-              type: Type.ARRAY,
-              items: { type: Type.STRING }
+              type: "ARRAY",
+              items: { type: "STRING" }
             }
           }
         })
       });
 
       if (!aiResponse.ok) {
-        throw new Error("AI Soruları oluşturulamadı.");
+        const errorData = await aiResponse.json().catch(() => ({}));
+        throw new Error(errorData.error || "AI Soruları oluşturulamadı.");
       }
       
       const data = await aiResponse.json();

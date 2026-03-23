@@ -5,14 +5,20 @@ dotenv.config({ override: true });
 
 async function test() {
   const apiKey = process.env.GEMINI_API_KEY;
+  console.log("Using API key:", apiKey ? `${apiKey.substring(0, 4)}...${apiKey.substring(apiKey.length - 4)}` : "undefined");
+  
+  if (!apiKey || apiKey.includes("MY_GEMINI_API_KEY")) {
+    console.error("Error: Invalid API key in environment");
+    return;
+  }
+
   try {
-    if (!apiKey) throw new Error("GEMINI_API_KEY is not defined");
     const ai = new GoogleGenAI({ apiKey });
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: "Hello",
     });
-    console.log("Success:", response.text.substring(0, 20));
+    console.log("Success:", response.text);
   } catch (e: any) {
     console.error("Error:", e.message);
   }
