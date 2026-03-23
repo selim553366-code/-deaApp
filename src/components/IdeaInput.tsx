@@ -208,13 +208,13 @@ Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`
       className={`w-full transition-all duration-700 ease-in-out ${showPreview ? 'max-w-5xl' : 'max-w-2xl'} mx-auto flex flex-col md:flex-row gap-6`}
     >
       {/* Left Panel - Input */}
-      <div className="w-full md:w-[480px] p-6 md:p-8 bg-white/90 backdrop-blur-xl rounded-[32px] shadow-2xl shadow-indigo-500/5 border border-white flex flex-col relative z-10 shrink-0">
-        <h1 className="text-lg md:text-xl font-black text-center text-zinc-900 mb-1 tracking-tighter uppercase">{t('mainTitle')}</h1>
-        <h2 className="mb-6 text-xs md:text-sm font-medium text-center text-zinc-500 leading-relaxed">{t('subTitle')}</h2>
+      <div className="w-full md:w-[540px] p-6 md:p-10 bg-white/90 backdrop-blur-xl rounded-[32px] shadow-2xl shadow-indigo-500/5 border border-white flex flex-col relative z-10 shrink-0 mx-auto">
+        <h1 className="text-xl md:text-2xl font-black text-center text-zinc-900 mb-1 tracking-tighter uppercase">{t('mainTitle')}</h1>
+        <h2 className="mb-6 text-sm md:text-base font-medium text-center text-zinc-500 leading-relaxed">{t('subTitle')}</h2>
         <textarea
           value={idea}
           onChange={(e) => setIdea(e.target.value)}
-          className="w-full p-4 mb-4 text-sm md:text-base border-2 border-zinc-100 rounded-[24px] focus:ring-0 focus:border-indigo-500 outline-none transition-all resize-none bg-zinc-50/50 min-h-[100px] md:min-h-[120px] placeholder:text-zinc-300 font-medium"
+          className="w-full p-5 mb-5 text-base border-2 border-zinc-100 rounded-[24px] focus:ring-0 focus:border-indigo-500 outline-none transition-all resize-none bg-zinc-50/50 min-h-[110px] md:min-h-[140px] placeholder:text-zinc-300 font-medium"
           placeholder={t('placeholder')}
           disabled={isGenerating}
         />
@@ -224,7 +224,7 @@ Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`
             whileTap={{ scale: 0.98 }}
             onClick={handleStart} 
             disabled={isGenerating || isFetchingQuestions || !idea.trim() || showPreview}
-            className="w-full p-4 text-base text-white bg-indigo-600 rounded-[20px] hover:bg-indigo-700 font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-xl shadow-indigo-500/20"
+            className="w-full p-4 text-lg text-white bg-indigo-600 rounded-[20px] hover:bg-indigo-700 font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-xl shadow-indigo-500/20"
           >
             {isFetchingQuestions ? (
               <>
