@@ -3,7 +3,8 @@ import { onAuthStateChanged } from "firebase/auth";
 import { doc, setDoc, updateDoc, onSnapshot, collection, query, where } from "firebase/firestore";
 import { auth, db } from "./firebase";
 import { User, Project } from "./types";
-import { Loader2 } from "lucide-react";
+import { motion } from "motion/react";
+import { Loader2, Sparkles } from "lucide-react";
 import { AuthForm } from "./components/AuthForm";
 import { Header } from "./components/Header";
 import { IdeaInput } from "./components/IdeaInput";
@@ -34,7 +35,7 @@ function Builder() {
   const [showTemplates, setShowTemplates] = useState(false);
   const [templatePromptToApply, setTemplatePromptToApply] = useState('');
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [policyType, setPolicyType] = useState<'privacy' | 'terms' | 'refund' | null>(null);
   const pendingProjectIdRef = useRef<string | null>(null);
@@ -157,13 +158,13 @@ function Builder() {
       <Sidebar 
         projects={projects} 
         currentProject={currentProject} 
-        onSelectProject={(p) => { setCurrentProject(p); setShowTemplates(false); setIsMobileMenuOpen(false); }} 
-        onNewProject={() => { setCurrentProject(null); setShowTemplates(false); setIsMobileMenuOpen(false); }} 
+        onSelectProject={(p) => { setCurrentProject(p); setShowTemplates(false); setIsSidebarOpen(false); }} 
+        onNewProject={() => { setCurrentProject(null); setShowTemplates(false); setIsSidebarOpen(false); }} 
         user={user} 
-        onToggleAI={() => { setShowAI(!showAI); setIsMobileMenuOpen(false); }}
-        onShowTemplates={() => { setShowTemplates(true); setCurrentProject(null); setIsMobileMenuOpen(false); }}
-        isOpen={isMobileMenuOpen}
-        onClose={() => setIsMobileMenuOpen(false)}
+        onToggleAI={() => { setShowAI(!showAI); setIsSidebarOpen(false); }}
+        onShowTemplates={() => { setShowTemplates(true); setCurrentProject(null); setIsSidebarOpen(false); }}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
         isCollapsed={isSidebarCollapsed}
         onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
       />
@@ -174,7 +175,7 @@ function Builder() {
           onSignup={() => setShowAuth(true)} 
           onHelp={() => setShowHelp(true)} 
           onPremium={() => setShowPremium(true)} 
-          onMenuClick={() => setIsMobileMenuOpen(true)}
+          onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)}
           onPolicy={(type) => setPolicyType(type)}
         />
         <main className="w-full max-w-7xl mx-auto p-4 md:p-6">
@@ -212,24 +213,70 @@ function Builder() {
                 onClearInitialChatPrompt={() => setTemplatePromptToApply('')}
               />
             ) : (
-              <div className="space-y-10 max-w-5xl mx-auto">
-                <div className="text-center space-y-4 pt-8">
-                  <span className="text-sm font-bold uppercase tracking-widest text-indigo-600 bg-indigo-50 px-4 py-1.5 rounded-full inline-block mb-2">
-                    {t('welcomeSubTitle')}
-                  </span>
-                  <h2 className="text-5xl md:text-6xl font-extrabold tracking-tight text-zinc-900">
+              <div className="space-y-16 max-w-6xl mx-auto py-12">
+                <div className="text-center space-y-6">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100 mb-4"
+                  >
+                    <Sparkles size={16} />
+                    <span className="text-xs font-bold uppercase tracking-widest">
+                      {t('welcomeSubTitle')}
+                    </span>
+                  </motion.div>
+                  
+                  <motion.h2 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-2xl md:text-4xl font-black tracking-tighter text-zinc-900 leading-tight"
+                  >
                     {t('welcomeTitle')}
-                  </h2>
-                  <p className="text-lg text-zinc-500 max-w-2xl mx-auto">
+                  </motion.h2>
+                  
+                  <motion.p 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.2 }}
+                    className="text-xl text-zinc-500 max-w-2xl mx-auto leading-relaxed"
+                  >
                     {t('welcomeDesc')}
-                  </p>
+                  </motion.p>
                 </div>
 
-                <div className="pt-2 border-t border-zinc-100">
-                  <IdeaInput user={user} initialPrompt={prompt} onProjectCreated={(id) => {
-                    const newProj = projects.find(p => p.id === id);
-                    if (newProj) setCurrentProject(newProj);
-                  }} />
+                <motion.div 
+                  initial={{ opacity: 0, y: 40 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="relative"
+                >
+                  <div className="absolute -inset-4 bg-gradient-to-r from-indigo-500/5 to-purple-500/5 blur-3xl rounded-[40px] -z-10" />
+                  <div className="bg-white/80 backdrop-blur-xl border border-white shadow-2xl shadow-indigo-500/5 rounded-[40px] p-6 md:p-8">
+                    <IdeaInput user={user} initialPrompt={prompt} onProjectCreated={(id) => {
+                      const newProj = projects.find(p => p.id === id);
+                      if (newProj) setCurrentProject(newProj);
+                    }} />
+                  </div>
+                </motion.div>
+
+                {/* Quick Stats or Features could go here */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-8">
+                  {[
+                    { title: "Hızlı Kurulum", desc: "Saniyeler içinde projenizi başlatın." },
+                    { title: "AI Destekli", desc: "En gelişmiş yapay zeka modelleriyle kodlama." },
+                    { title: "Kolay Yayınlama", desc: "Tek tıkla sitenizi dünyaya açın." }
+                  ].map((feature, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.4 + (i * 0.1) }}
+                      className="p-6 rounded-3xl bg-zinc-50 border border-zinc-100 hover:border-indigo-200 transition-colors group"
+                    >
+                      <h4 className="font-bold text-zinc-900 mb-2 group-hover:text-indigo-600 transition-colors">{feature.title}</h4>
+                      <p className="text-sm text-zinc-500">{feature.desc}</p>
+                    </motion.div>
+                  ))}
                 </div>
               </div>
             )

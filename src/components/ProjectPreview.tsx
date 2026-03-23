@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Project, User } from '../types';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-import { Loader2, Globe, RefreshCw, Edit2, Check, Settings, Maximize2, Minimize2, Circle, CheckCircle2, Bot, Send, Paperclip, X, FileText, Image as ImageIcon, File } from 'lucide-react';
+import { Loader2, Globe, RefreshCw, Edit2, Check, Settings, Maximize2, Minimize2, Circle, CheckCircle2, Bot, Send, Paperclip, X, FileText, Image as ImageIcon, File, Wand2, Sparkles } from 'lucide-react';
 import { ProjectSettingsModal } from './ProjectSettingsModal';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -24,10 +24,21 @@ export const ProjectPreview = ({
   const [isChatLoading, setIsChatLoading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isDesignMode, setIsDesignMode] = useState(false);
   const [selectedFile, setSelectedFile] = useState<{ name: string; type: string; data: string } | null>(null);
+  const [draggedComponent, setDraggedComponent] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
+
+  const designComponents = [
+    { id: 'button', icon: <Circle size={20} />, label: 'Modern Buton', prompt: 'Sayfaya son derece modern, hover efektli bir buton ekle.' },
+    { id: 'search', icon: <Globe size={20} />, label: 'Arama Çubuğu', prompt: 'Üst kısma şık bir arama çubuğu ekle.' },
+    { id: 'social', icon: <Paperclip size={20} />, label: 'Sosyal Medya', prompt: 'Alt kısma sosyal medya ikonları (Instagram, Twitter, LinkedIn) ekle.' },
+    { id: 'card', icon: <FileText size={20} />, label: 'Özellik Kartı', prompt: 'Sayfaya yeni bir özellik kartı bölümü ekle.' },
+    { id: 'form', icon: <Send size={20} />, label: 'İletişim Formu', prompt: 'Sayfanın sonuna modern bir iletişim formu ekle.' },
+    { id: 'glass', icon: <Sparkles size={20} />, label: 'Cam Efekti', prompt: 'Tüm kartlara ve butonlara glassmorphism (cam) efekti uygula.' },
+  ];
 
   // Sadece proje ID değiştiğinde chat geçmişini sıfırla/yükle
   useEffect(() => {
@@ -81,8 +92,9 @@ export const ProjectPreview = ({
     reader.readAsDataURL(file);
   };
 
-  const handleSendMessage = async () => {
-    if ((!chatInput.trim() && !selectedFile) || isChatLoading) return;
+  const handleSendMessage = async (overridePrompt?: string) => {
+    const messageText = overridePrompt || chatInput;
+    if ((!messageText.trim() && !selectedFile) || isChatLoading) return;
 
     if (user && !user.isPremium && (user.updateCredits || 0) < 10) {
       window.dispatchEvent(new CustomEvent('show-premium-modal'));
@@ -91,7 +103,7 @@ export const ProjectPreview = ({
 
     const newUserMsg = { 
       role: 'user' as const, 
-      text: chatInput + (selectedFile ? `\n[Dosya eklendi: ${selectedFile.name}]` : '') 
+      text: messageText + (selectedFile ? `\n[Dosya eklendi: ${selectedFile.name}]` : '') 
     };
     const updatedMessages = [...chatMessages, newUserMsg];
     
@@ -102,10 +114,10 @@ export const ProjectPreview = ({
       updatedAt: new Date().toISOString() 
     }).catch(console.error);
     
-    const currentInput = chatInput;
+    const currentInput = messageText;
     const currentFile = selectedFile;
     
-    setChatInput('');
+    if (!overridePrompt) setChatInput('');
     setSelectedFile(null);
     setIsChatLoading(true);
 
@@ -141,7 +153,7 @@ export const ProjectPreview = ({
       const currentCode = project.code || "";
       lastMsg.parts[0].text = `Mevcut HTML Kodu:\n\`\`\`html\n${currentCode}\n\`\`\`\n\nKullanıcı Mesajı: ${currentInput}`;
 
-      const systemInstruction = "Sen uzman bir Frontend Geliştiricisi ve UI/UX Tasarımcısısın. Kullanıcının web sitesini güncellemesine yardımcı oluyorsun. Eğer kullanıcı bir dosya (resim, döküman vb.) gönderdiyse onu analiz et ve değişiklikleri ona göre yap.\n\nÖNEMLİ KURAL: Cevapların her zaman ÇOK KISA, ÖZ ve NET olmalı. Uzun açıklamalar yapma.\n\nKullanıcı bir değişiklik istediğinde, değişikliği yap ve güncellenmiş çalışabilir HTML kodunun TAMAMINI ```html ve ``` etiketleri arasına yazarak cevap ver. Kodun dışında sadece çok kısa bir açıklama yap. Türkçe konuş.";
+      const systemInstruction = "Sen uzman bir Frontend Geliştiricisi ve UI/UX Tasarımcısısın. Kullanıcının web sitesini güncellemesine yardımcı oluyorsun. Eğer kullanıcı bir dosya (resim, döküman vb.) gönderdiyse onu analiz et ve değişiklikleri ona göre yap.\n\nÖNEMLİ KURAL: Cevapların her zaman ÇOK BASİT, ANLAŞILIR ve teknik terimlerden uzak olmalı. Sanki teknik bilgisi olmayan birine anlatıyormuşsun gibi davran. Uzun açıklamalar yapma.\n\nKullanıcı bir değişiklik istediğinde:\n1. Değişikliği yap ve güncellenmiş çalışabilir HTML kodunun TAMAMINI ```html ve ``` etiketleri arasına yaz.\n2. Kodun dışında, yaptığın değişiklikleri bir çocuğun bile anlayabileceği kadar basit bir dille (örneğin: 'Arka planı mavi yaptım ve yazıları büyüttüm') açıkla. Türkçe konuş.";
 
       const aiResponse = await fetch("/api/ai/generate", {
         method: "POST",
@@ -267,6 +279,16 @@ export const ProjectPreview = ({
           <motion.button 
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            onClick={() => setIsDesignMode(!isDesignMode)}
+            className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-xl transition-all shadow-sm ${isDesignMode ? 'bg-indigo-600 text-white' : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'}`}
+            title="Tasarım Laboratuvarı"
+          >
+            <Wand2 className="w-4 h-4" />
+            <span className="hidden sm:inline">Tasarım Laboratuvarı</span>
+          </motion.button>
+          <motion.button 
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => setIsFullscreen(!isFullscreen)}
             className="flex items-center gap-2 px-3 py-2 bg-zinc-100 text-zinc-700 text-sm font-medium rounded-xl hover:bg-zinc-200 transition-all shadow-sm"
             title={isFullscreen ? "Küçült" : "Tam Ekran"}
@@ -298,6 +320,51 @@ export const ProjectPreview = ({
       </div>
 
       <div className="flex-1 flex flex-col md:flex-row gap-4 min-h-0">
+        {isDesignMode && (
+          <motion.div 
+            initial={{ x: -20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            className="w-64 bg-white rounded-2xl border border-zinc-200 shadow-sm p-4 flex flex-col gap-4 shrink-0"
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-1.5 bg-indigo-100 rounded-lg text-indigo-600">
+                <Wand2 size={16} />
+              </div>
+              <h3 className="font-bold text-sm text-zinc-800 uppercase tracking-wider">Bileşenler</h3>
+            </div>
+            <p className="text-[10px] text-zinc-400 font-medium mb-2">Sürükleyip önizleme alanına bırakın.</p>
+            <div className="grid grid-cols-1 gap-2">
+              {designComponents.map((comp) => (
+                <motion.div
+                  key={comp.id}
+                  drag
+                  dragSnapToOrigin
+                  onDragStart={() => setDraggedComponent(comp.id)}
+                  onDragEnd={(e, info) => {
+                    setDraggedComponent(null);
+                    // Check if dropped over the preview area (simple check based on x position)
+                    if (info.point.x > 300) {
+                      handleSendMessage(comp.prompt);
+                    }
+                  }}
+                  whileHover={{ scale: 1.02 }}
+                  whileDrag={{ scale: 1.1, zIndex: 100 }}
+                  className="p-3 bg-zinc-50 border border-zinc-100 rounded-xl cursor-grab active:cursor-grabbing flex items-center gap-3 group hover:border-indigo-200 hover:bg-white transition-all"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-white border border-zinc-100 flex items-center justify-center text-zinc-400 group-hover:text-indigo-500 transition-colors">
+                    {comp.icon}
+                  </div>
+                  <span className="text-xs font-semibold text-zinc-600 group-hover:text-zinc-900">{comp.label}</span>
+                </motion.div>
+              ))}
+            </div>
+            <div className="mt-auto p-3 bg-indigo-50 rounded-xl border border-indigo-100">
+              <p className="text-[10px] text-indigo-700 font-bold uppercase mb-1">AI Studio Özel</p>
+              <p className="text-[10px] text-indigo-600 leading-relaxed">Bu modda sürüklediğiniz her bileşen AI tarafından otomatik olarak sitenize entegre edilir.</p>
+            </div>
+          </motion.div>
+        )}
+
         <div className="flex-[2] bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden flex flex-col relative">
           <div className="bg-zinc-100 px-4 py-2 border-b border-zinc-200 flex items-center gap-2">
             <div className="flex gap-1.5">
@@ -313,6 +380,22 @@ export const ProjectPreview = ({
             className="w-full flex-1 border-none bg-white"
             sandbox="allow-scripts allow-same-origin"
           />
+          
+          <AnimatePresence>
+            {draggedComponent && (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-indigo-600/10 backdrop-blur-[1px] border-2 border-dashed border-indigo-500 flex items-center justify-center pointer-events-none z-50"
+              >
+                <div className="bg-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border border-indigo-100 animate-bounce">
+                  <Sparkles className="text-indigo-500 w-5 h-5" />
+                  <span className="font-bold text-indigo-600">Bileşeni Eklemek İçin Buraya Bırakın</span>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         <div className="flex-1 bg-white rounded-2xl border border-zinc-200 shadow-sm flex flex-col overflow-hidden max-w-md">

@@ -25,13 +25,13 @@ export const Header = ({ user, onLogin, onSignup, onHelp, onPremium, onMenuClick
   return (
     <header className="sticky top-0 z-30 flex items-center justify-between px-4 md:px-6 py-4 bg-white/80 backdrop-blur-md border-b border-zinc-200/80">
       <div className="flex items-center gap-3">
-        <button onClick={onMenuClick} className="md:hidden p-1 -ml-1 text-zinc-600 hover:text-zinc-900">
+        <button onClick={onMenuClick} className="p-2 -ml-2 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 rounded-xl transition-colors">
           <Menu className="w-6 h-6" />
         </button>
-        <div className="hidden sm:flex w-8 h-8 bg-indigo-600 rounded-xl items-center justify-center">
+        <div className="hidden sm:flex w-8 h-8 bg-indigo-600 rounded-xl items-center justify-center shadow-lg shadow-indigo-500/20">
           <Sparkles className="w-5 h-5 text-white" />
         </div>
-        <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+        <h1 className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 tracking-tight">
           İdea Ai
         </h1>
         

@@ -32,15 +32,15 @@ export function Sidebar({
 
   return (
     <>
-      {/* Mobile Overlay */}
+      {/* Overlay */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-sm" 
+          className="fixed inset-0 bg-black/20 z-40 backdrop-blur-[2px] transition-all duration-300" 
           onClick={onClose}
         />
       )}
       
-      <aside className={`fixed inset-y-0 left-0 z-50 bg-white border-r border-zinc-200 flex flex-col h-screen shrink-0 text-zinc-600 transition-all duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 ${isCollapsed ? 'w-16' : 'w-72'}`}>
+      <aside className={`fixed inset-y-0 left-0 z-50 bg-white border-r border-zinc-200 flex flex-col h-screen shrink-0 text-zinc-600 transition-all duration-300 ease-in-out ${isOpen ? 'translate-x-0 shadow-2xl shadow-indigo-500/10' : '-translate-x-full'} ${isCollapsed ? 'w-16' : 'w-72'}`}>
         <div className={`p-5 border-b border-zinc-100 flex items-center ${isCollapsed ? 'justify-center px-2' : 'justify-between'}`}>
           <motion.button 
             whileHover={{ scale: 1.02 }}
@@ -53,7 +53,7 @@ export function Sidebar({
             {!isCollapsed && <span>{t('newProject')}</span>}
           </motion.button>
           {!isCollapsed && (
-            <button onClick={onClose} className="md:hidden ml-4 text-zinc-400 hover:text-zinc-600 p-1">
+            <button onClick={onClose} className="ml-4 text-zinc-400 hover:text-zinc-600 p-1 hover:bg-zinc-50 rounded-lg transition-colors">
               <X className="w-6 h-6" />
             </button>
           )}
