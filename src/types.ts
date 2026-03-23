@@ -17,6 +17,7 @@ export interface Project {
   code: string;
   isPublished?: boolean;
   hasPaidForNameChange?: boolean;
+  customUrl?: string;
   chatHistory?: { role: 'user' | 'model', text: string }[];
   createdAt: string;
   updatedAt: string;

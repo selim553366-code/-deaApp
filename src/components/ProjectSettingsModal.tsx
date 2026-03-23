@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Globe, Eye, Lock, Unlock, Copy, Check, Trash2, Edit2 } from 'lucide-react';
 import { Project, User } from '../types';
-import { doc, updateDoc, collection, getDocs } from 'firebase/firestore';
+import { doc, updateDoc, collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -16,11 +16,13 @@ export const ProjectSettingsModal = ({ project, user, onClose }: Props) => {
   const [isPublished, setIsPublished] = useState(project.isPublished || false);
   const [hasPaid, setHasPaid] = useState(project.hasPaidForNameChange || false);
   const [newName, setNewName] = useState(project.title || '');
+  const [customUrl, setCustomUrl] = useState(project.customUrl || project.id);
   const [views, setViews] = useState<number>(0);
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [urlError, setUrlError] = useState('');
 
-  const siteUrl = `${window.location.origin}/p/${project.id}`;
+  const siteUrl = `${window.location.origin}/p/${project.customUrl || project.id}`;
 
   useEffect(() => {
     async function fetchViews() {
@@ -132,7 +134,7 @@ export const ProjectSettingsModal = ({ project, user, onClose }: Props) => {
           <section className="space-y-4">
             <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
               <Edit2 className="w-5 h-5 text-amber-500" />
-              {t('changeProjectName')}
+              {t('changeProjectName')} & URL
             </h3>
             {(!hasPaid && !user?.isPremium) ? (
               <div className="bg-amber-50 p-4 rounded-2xl border border-amber-200 flex items-center justify-between gap-4">
@@ -147,21 +149,69 @@ export const ProjectSettingsModal = ({ project, user, onClose }: Props) => {
                 </a>
               </div>
             ) : (
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  className="flex-1 px-4 py-2 rounded-xl border border-zinc-300 text-sm"
-                />
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm font-medium text-zinc-700">Proje Adı</label>
+                  <input
+                    type="text"
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    className="w-full px-4 py-2 rounded-xl border border-zinc-300 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
+                    placeholder="Proje Adı"
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm font-medium text-zinc-700">URL Bağlantısı (Sadece harf, rakam ve tire)</label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-zinc-500 text-sm bg-zinc-100 px-3 py-2 rounded-xl border border-zinc-200">
+                      /p/
+                    </span>
+                    <input
+                      type="text"
+                      value={customUrl}
+                      onChange={(e) => {
+                        const val = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+                        setCustomUrl(val);
+                        setUrlError('');
+                      }}
+                      className="flex-1 px-4 py-2 rounded-xl border border-zinc-300 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
+                      placeholder="ozel-url-ismi"
+                    />
+                  </div>
+                  {urlError && <p className="text-xs text-red-500 mt-1">{urlError}</p>}
+                </div>
                 <button
                   onClick={async () => {
-                    await updateDoc(doc(db, 'projects', project.id), { title: newName });
-                    alert(t('nameUpdated'));
+                    setLoading(true);
+                    setUrlError('');
+                    try {
+                      // Check if customUrl is unique
+                      if (customUrl !== project.id && customUrl !== project.customUrl) {
+                        const q = query(collection(db, 'projects'), where('customUrl', '==', customUrl));
+                        const snapshot = await getDocs(q);
+                        if (!snapshot.empty) {
+                          setUrlError('Bu URL ismi zaten kullanılıyor. Lütfen başka bir tane seçin.');
+                          setLoading(false);
+                          return;
+                        }
+                      }
+
+                      await updateDoc(doc(db, 'projects', project.id), { 
+                        title: newName,
+                        customUrl: customUrl
+                      });
+                      alert(t('nameUpdated'));
+                    } catch (err) {
+                      console.error(err);
+                      alert('Bir hata oluştu.');
+                    } finally {
+                      setLoading(false);
+                    }
                   }}
-                  className="px-4 py-2 bg-zinc-900 text-white rounded-xl text-sm font-medium"
+                  disabled={loading || !customUrl.trim()}
+                  className="w-full mt-2 px-4 py-2.5 bg-zinc-900 text-white rounded-xl text-sm font-medium hover:bg-zinc-800 transition-colors disabled:opacity-50"
                 >
-                  {t('save')}
+                  {loading ? 'Kaydediliyor...' : t('save')}
                 </button>
               </div>
             )}

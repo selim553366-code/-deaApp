@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { doc, getDoc, collection, addDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Project } from '../types';
 import { Loader2 } from 'lucide-react';
@@ -15,16 +15,31 @@ export function PublishedSite() {
     async function fetchProject() {
       if (!projectId) return;
       try {
-        const docRef = doc(db, 'projects', projectId);
-        const docSnap = await getDoc(docRef);
-        
+        let docSnap = await getDoc(doc(db, 'projects', projectId));
+        let data: Project | null = null;
+        let actualProjectId = projectId;
+
         if (docSnap.exists()) {
-          const data = docSnap.data() as Project;
+          data = docSnap.data() as Project;
+        } else {
+          // Try to find by customUrl
+          const q = query(
+            collection(db, 'projects'), 
+            where('customUrl', '==', projectId)
+          );
+          const querySnapshot = await getDocs(q);
+          if (!querySnapshot.empty) {
+            data = querySnapshot.docs[0].data() as Project;
+            actualProjectId = querySnapshot.docs[0].id;
+          }
+        }
+        
+        if (data) {
           if (data.isPublished) {
             setProject(data);
             // Record a page view
             try {
-              await addDoc(collection(db, 'projects', projectId, 'pageViews'), {
+              await addDoc(collection(db, 'projects', actualProjectId, 'pageViews'), {
                 timestamp: new Date().toISOString(),
                 userAgent: navigator.userAgent
               });
