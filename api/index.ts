@@ -17,8 +17,7 @@ app.post("/api/ai/generate", async (req, res) => {
     const keysToTry = [
       { name: "GEMINI_API_KEY", value: process.env.GEMINI_API_KEY },
       { name: "API_KEY", value: process.env.API_KEY },
-      { name: "NEXT_PUBLIC_GEMINI_API_KEY", value: process.env.NEXT_PUBLIC_GEMINI_API_KEY },
-      { name: "USER_PROVIDED_KEY", value: "AIzaSyDMpRCdDGN6gDnCqKkbnxrIdctSQ7wC1yU" }
+      { name: "NEXT_PUBLIC_GEMINI_API_KEY", value: process.env.NEXT_PUBLIC_GEMINI_API_KEY }
     ];
 
     let foundKey = "";
