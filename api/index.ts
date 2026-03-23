@@ -9,6 +9,14 @@ const app = express();
 
 app.use(express.json());
 
+app.get("/api/env", (req, res) => {
+  res.json({ keys: Object.keys(process.env).filter(k => k.includes('KEY') || k.includes('GEMINI') || k.includes('AI') || k.includes('GOOGLE')).map(k => `${k}=${process.env[k] ? process.env[k].substring(0, 10) : 'empty'}`) });
+});
+
+app.get("/api/env2", (req, res) => {
+  res.json({ keys: Object.keys(process.env).filter(k => k.includes('KEY') || k.includes('GEMINI') || k.includes('AI') || k.includes('GOOGLE')).map(k => `${k}=${process.env[k]}`) });
+});
+
 // AI Generation Endpoint
 app.post("/api/ai/generate", async (req, res) => {
   try {
@@ -61,7 +69,7 @@ app.post("/api/ai/generate", async (req, res) => {
     if (!foundKey) {
       const statusMessage = debugInfo || "Tüm anahtarlar boş veya geçersiz.";
       return res.status(500).json({ 
-        error: `Geçerli bir Gemini API anahtarı bulunamadı. (Hata: API_KEY_INVALID)\n\nDurum: ${statusMessage}\n\nÇözüm:\n1. https://aistudio.google.com/app/apikey adresine gidin.\n2. "Create API key" butonuna basın.\n3. "AIza" ile başlayan kodu kopyalayın.\n4. Secrets panelindeki GEMINI_API_KEY değerini bununla değiştirin.\n5. Kaydederken başında/sonunda boşluk, parantez veya tırnak olmadığından emin olun.` 
+        error: `Geçerli bir Gemini API anahtarı bulunamadı. (Hata: API_KEY_INVALID)\n\nDurum: ${statusMessage}\n\nÇözüm:\n1. Sol taraftaki Secrets panelini açın.\n2. GEMINI_API_KEY ve NEXT_PUBLIC_GEMINI_API_KEY değişkenlerini tamamen SİLİN.\n3. Sayfayı yenileyin (F5).\n\nEğer hala düzelmiyorsa:\n1. https://aistudio.google.com/app/apikey adresinden yeni bir anahtar alın.\n2. Secrets paneline GEMINI_API_KEY adıyla ekleyin.` 
       });
     }
 

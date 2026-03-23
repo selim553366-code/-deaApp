@@ -1,0 +1,1 @@
+console.log(Object.keys(process.env).filter(k => k.includes('KEY') || k.includes('GEMINI') || k.includes('AI') || k.includes('GOOGLE')).map(k => `${k}=${process.env[k] ? process.env[k].substring(0, 10) : 'empty'}`));
