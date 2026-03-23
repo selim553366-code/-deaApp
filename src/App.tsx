@@ -215,45 +215,15 @@ function Builder() {
                 onClearInitialChatPrompt={() => setTemplatePromptToApply('')}
               />
             ) : (
-              <div className="space-y-16 max-w-6xl mx-auto py-12">
-                <div className="text-center space-y-4">
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100 mb-2"
-                  >
-                    <Sparkles size={16} />
-                    <span className="text-xs font-bold uppercase tracking-widest">
-                      İdea Ai
-                    </span>
-                  </motion.div>
-                  
-                  <motion.h2 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-5xl font-black tracking-tighter text-zinc-900 leading-tight"
-                  >
-                    Türkiye'nin Tek Güvenilir Web Sitesi Oluşturucusu
-                  </motion.h2>
-                  
-                  <motion.p 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.2 }}
-                    className="text-xl text-zinc-500 max-w-2xl mx-auto leading-relaxed"
-                  >
-                    Fikirlerinizi saniyeler içinde çalışan prototiplere dönüştürün. Yapay zeka destekli geliştirme asistanınızla hemen üretmeye başlayın.
-                  </motion.p>
-                </div>
-
+              <div className="max-w-3xl mx-auto py-6">
                 <motion.div 
                   initial={{ opacity: 0, y: 40 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
-                  className="relative max-w-3xl mx-auto -mt-4"
+                  className="relative max-w-3xl mx-auto mt-8"
                 >
-                  <div className="absolute -inset-4 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 blur-3xl rounded-[40px] -z-10" />
-                  <div className="bg-white/90 backdrop-blur-xl border border-white shadow-2xl shadow-indigo-500/10 rounded-[40px] p-4 md:p-6">
+                  <div className="absolute -inset-4 bg-gradient-to-r from-primary/10 to-purple-500/10 blur-3xl rounded-[40px] -z-10" />
+                  <div className="bg-background/90 backdrop-blur-xl border border-border shadow-2xl shadow-primary/10 rounded-[40px] p-4 md:p-6">
                     <IdeaInput user={user} initialPrompt={prompt} onProjectCreated={(id) => {
                       const newProj = projects.find(p => p.id === id);
                       if (newProj) setCurrentProject(newProj);
@@ -262,7 +232,7 @@ function Builder() {
                 </motion.div>
 
                 {/* Quick Stats or Features could go here */}
-                <div className="grid grid-cols-3 gap-8 pt-8 overflow-x-auto">
+                <div className="grid grid-cols-3 gap-8 pt-16 overflow-x-auto">
                   {[
                     { title: "Hızlı Kurulum", desc: "Saniyeler içinde projenizi başlatın." },
                     { title: "AI Destekli", desc: "En gelişmiş yapay zeka modelleriyle kodlama." },
@@ -273,10 +243,10 @@ function Builder() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.4 + (i * 0.1) }}
-                      className="p-6 rounded-3xl bg-zinc-50 border border-zinc-100 hover:border-indigo-200 transition-colors group"
+                      className="p-6 rounded-3xl bg-muted border border-border hover:border-primary transition-colors group"
                     >
-                      <h4 className="font-bold text-zinc-900 mb-2 group-hover:text-indigo-600 transition-colors">{feature.title}</h4>
-                      <p className="text-sm text-zinc-500">{feature.desc}</p>
+                      <h4 className="font-bold text-foreground mb-2 group-hover:text-primary transition-colors">{feature.title}</h4>
+                      <p className="text-sm text-muted-foreground">{feature.desc}</p>
                     </motion.div>
                   ))}
                 </div>
