@@ -37,7 +37,7 @@ app.post("/api/ai/generate", async (req, res) => {
         { role: "system", content: systemInstruction || "You are a helpful assistant." },
         ...contents.map((c: any) => ({ 
           role: ['system', 'assistant', 'user', 'function', 'tool', 'developer'].includes(c.role) ? c.role : 'user', 
-          content: c.text 
+          content: c.text || "" 
         }))
       ];
     } else if (typeof contents === 'string') {
