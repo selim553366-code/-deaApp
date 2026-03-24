@@ -58,6 +58,8 @@ app.post("/api/ai/generate", async (req, res) => {
       }
     });
 
+    console.log("AI Response:", JSON.stringify(response, null, 2));
+
     if (isUnexpected(response)) {
       throw response.body.error;
     }
