@@ -35,7 +35,10 @@ app.post("/api/ai/generate", async (req, res) => {
     if (Array.isArray(contents)) {
       messages = [
         { role: "system", content: systemInstruction || "You are a helpful assistant." },
-        ...contents.map((c: any) => ({ role: c.role, content: c.text }))
+        ...contents.map((c: any) => ({ 
+          role: ['system', 'assistant', 'user', 'function', 'tool', 'developer'].includes(c.role) ? c.role : 'user', 
+          content: c.text 
+        }))
       ];
     } else if (typeof contents === 'string') {
       messages = [
