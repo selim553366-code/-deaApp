@@ -1,124 +1,58 @@
 import express from "express";
 import path from "path";
 import dotenv from "dotenv";
-import { GoogleGenAI } from "@google/genai";
 
 dotenv.config({ override: true });
-
-console.log("Environment check - NODE_ENV:", process.env.NODE_ENV);
-console.log("Environment check - APP_URL:", process.env.APP_URL);
-console.log("Environment check - GEMINI_API_KEY present:", !!process.env.GEMINI_API_KEY);
-console.log("Environment check - API_KEY present:", !!process.env.API_KEY);
 
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-  next();
-});
-
-// AI Generation Endpoint
+// AI Generation Endpoint using Hugging Face
 app.post("/api/ai/generate", async (req, res) => {
-  console.log(`[${new Date().toISOString()}] POST /api/ai/generate - Body keys:`, Object.keys(req.body));
   try {
-    const { contents, systemInstruction, model = "gemini-3-flash-preview", config = {} } = req.body;
+    const { contents, systemInstruction } = req.body;
     
     if (!contents) {
-      console.error("Missing contents in request body");
       return res.status(400).json({ error: "İstek gövdesinde 'contents' eksik." });
     }
-    const keysToTry = [
-      { name: "GEMINI_API_KEY", value: process.env.GEMINI_API_KEY },
-      { name: "API_KEY", value: process.env.API_KEY },
-      { name: "NEXT_PUBLIC_GEMINI_API_KEY", value: process.env.NEXT_PUBLIC_GEMINI_API_KEY },
-      { name: "VITE_GEMINI_API_KEY", value: process.env.VITE_GEMINI_API_KEY },
-      { name: "VITE_API_KEY", value: process.env.VITE_API_KEY },
-      { name: "MY_GEMINI_API_KEY", value: process.env.MY_GEMINI_API_KEY }
-    ];
 
-    let foundKey = "";
-    let debugInfo = "";
-
-    for (const item of keysToTry) {
-      let val = item.value?.trim();
-      
-      if (!val || val === "undefined" || val === "") {
-        debugInfo += `[${item.name}: Boş] `;
-        continue;
-      }
-
-      if (val.includes("YOUR_GEMINI_API_KEY") || val.includes("MY_GEMINI_API_KEY")) {
-        debugInfo += `[${item.name}: Taslak değer ("${val}")] `;
-        continue;
-      }
-
-      // Remove any accidental quotes or parentheses
-      const cleanVal = val.replace(/['"()]/g, "").trim();
-      
-      // Check for common mistakes
-      const upperVal = cleanVal.toUpperCase();
-      
-      if (!cleanVal.startsWith("AIza")) {
-        if (upperVal.startsWith("A1ZA")) {
-          debugInfo += `[${item.name}: "AIza" yerine "a1za" (1 rakamı) kullanılmış!] `;
-        } else if (upperVal.startsWith("AIZA")) {
-          debugInfo += `[${item.name}: Büyük/Küçük harf hatası (Tam olarak "AIza" olmalı)] `;
-        } else if (cleanVal.length < 20) {
-          debugInfo += `[${item.name}: Çok kısa (${cleanVal.length} karakter)] `;
-        } else {
-          debugInfo += `[${item.name}: "AIza" ile başlamıyor (Şu anki başlangıç: "${cleanVal.substring(0, 4)}")] `;
-        }
-        continue;
-      }
-
-      if (cleanVal.length < 30) {
-        debugInfo += `[${item.name}: Anahtar çok kısa görünüyor, eksik kopyalanmış olabilir.] `;
-        continue;
-      }
-      
-      foundKey = cleanVal;
-      console.log(`Using API key from ${item.name}: ${foundKey.substring(0, 4)}...${foundKey.substring(foundKey.length - 4)}`);
-      break;
+    const token = process.env.HUGGING_FACE_TOKEN;
+    if (!token) {
+      return res.status(500).json({ error: "HUGGING_FACE_TOKEN bulunamadı. Lütfen Secrets panelinden ekleyin." });
     }
 
-    if (!foundKey) {
-      const statusMessage = debugInfo || "Tüm anahtarlar boş veya geçersiz. Lütfen Secrets panelinden GEMINI_API_KEY değişkenini kontrol edin.";
-      return res.status(500).json({ 
-        error: `Geçerli bir Gemini API anahtarı bulunamadı. (Hata: API_KEY_INVALID)\n\nDurum: ${statusMessage}\n\nÇözüm:\n1. Sol taraftaki Secrets panelini açın.\n2. GEMINI_API_KEY adıyla anahtarınızı ekleyin.\n3. Değerin "AIza" ile başladığından emin olun.` 
-      });
-    }
+    // Hugging Face API URL
+    const modelId = "Qwen/Qwen3-Coder-Next";
+    const apiUrl = `https://router.huggingface.co/hf-inference/models/${modelId}`;
 
-    const ai = new GoogleGenAI({ apiKey: foundKey });
-    
-    // Helper function for retries
-    async function generateWithRetry(params: any, retries = 3, delay = 1000): Promise<any> {
-      try {
-        return await ai.models.generateContent(params);
-      } catch (error: any) {
-        // Check if error is 503 (Service Unavailable) or has a status code of 503
-        const is503 = error.status === 503 || (error.message && error.message.includes("503"));
-        if (retries > 0 && is503) {
-          console.log(`Gemini API busy (503). Retrying... Retries left: ${retries}. Delay: ${delay}ms`);
-          await new Promise(resolve => setTimeout(resolve, delay));
-          return generateWithRetry(params, retries - 1, delay * 2);
-        }
-        throw error;
-      }
-    }
+    // Combine system instruction and contents
+    const prompt = systemInstruction ? `${systemInstruction}\n\n${contents}` : contents;
 
-    const response = await generateWithRetry({
-      model,
-      contents,
-      config: {
-        ...config,
-        systemInstruction,
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
+      body: JSON.stringify({
+        inputs: prompt,
+        parameters: { max_new_tokens: 4000, return_full_text: false },
+      }),
     });
 
-    res.json({ text: response.text });
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Hugging Face Error:", errorText);
+      throw new Error(`Hugging Face API hatası (${response.status}).`);
+    }
+    
+    const data = await response.json();
+    // Hugging Face returns an array of objects
+    const text = Array.isArray(data) ? data[0].generated_text : data.generated_text;
+
+    res.json({ text });
   } catch (error: any) {
     console.error("AI Generation Error:", error);
     res.status(500).json({ error: error.message || "Yapay zeka yanıt verirken bir hata oluştu." });
