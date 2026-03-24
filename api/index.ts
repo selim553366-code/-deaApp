@@ -1,6 +1,7 @@
 import express from "express";
 import path from "path";
 import dotenv from "dotenv";
+import { OpenAI } from "openai";
 
 dotenv.config({ override: true });
 
@@ -9,7 +10,7 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// AI Generation Endpoint using Hugging Face
+// AI Generation Endpoint using OpenAI SDK with Hugging Face Router
 app.post("/api/ai/generate", async (req, res) => {
   try {
     const { contents, systemInstruction } = req.body;
@@ -23,34 +24,25 @@ app.post("/api/ai/generate", async (req, res) => {
       return res.status(500).json({ error: "HUGGING_FACE_TOKEN bulunamadı. Lütfen Secrets panelinden ekleyin." });
     }
 
-    // Hugging Face API URL
-    const modelId = "Qwen/Qwen3-Coder-Next";
-    const apiUrl = `https://router.huggingface.co/hf-inference/models/${modelId}`;
-
-    // Combine system instruction and contents
-    const prompt = systemInstruction ? `${systemInstruction}\n\n${contents}` : contents;
-
-    const response = await fetch(apiUrl, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        inputs: prompt,
-        parameters: { max_new_tokens: 4000, return_full_text: false },
-      }),
+    const client = new OpenAI({
+      baseURL: "https://router.huggingface.co/v1",
+      apiKey: token,
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Hugging Face Error:", errorText);
-      throw new Error(`Hugging Face API hatası (${response.status}).`);
+    // Combine system instruction and contents
+    const messages: any[] = [];
+    if (systemInstruction) {
+      messages.push({ role: "system", content: systemInstruction });
     }
-    
-    const data = await response.json();
-    // Hugging Face returns an array of objects
-    const text = Array.isArray(data) ? data[0].generated_text : data.generated_text;
+    messages.push({ role: "user", content: contents });
+
+    const completion = await client.chat.completions.create({
+      model: "Qwen/Qwen3-Coder-Next",
+      messages: messages,
+      max_tokens: 4000,
+    });
+
+    const text = completion.choices[0].message.content;
 
     res.json({ text });
   } catch (error: any) {
