@@ -36,7 +36,7 @@ app.post("/api/ai/generate", async (req, res) => {
       messages = [
         { role: "system", content: systemInstruction || "You are a helpful assistant." },
         ...contents.map((c: any) => ({ 
-          role: ['system', 'assistant', 'user', 'function', 'tool', 'developer'].includes(c.role) ? c.role : 'user', 
+          role: ['system', 'assistant', 'user', 'function', 'tool', 'developer'].includes(c.role) ? c.role : (c.role === 'model' ? 'assistant' : 'user'), 
           content: c.text || "" 
         }))
       ];

@@ -193,7 +193,7 @@ KESİN KURALLAR (BUNLARA UYMAZSAN SİSTEM ÇÖKER):
    </kodu_bitir>
 8. Sadece Türkçe konuş. Başka dil KULLANMA.`;
       
-      lastMsg.parts[0].text = `SİSTEM TALİMATI: ${systemInstruction}\n\nMevcut HTML Kodu:\n\`\`\`html\n${currentCode}\n\`\`\`\n\nKullanıcı Mesajı: ${currentInput}`;
+      lastMsg.parts[0].text = `Mevcut HTML Kodu:\n\`\`\`html\n${currentCode}\n\`\`\`\n\nKullanıcı Mesajı: ${currentInput}`;
 
       const aiResponse = await fetch("/api/ai/generate", {
         method: "POST",
