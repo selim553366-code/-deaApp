@@ -93,7 +93,7 @@ export const ProjectPreview = ({
   };
 
   const handleSendMessage = async (overridePrompt?: string) => {
-    const messageText = overridePrompt || chatInput;
+    const messageText = (overridePrompt || chatInput) || '';
     if ((!messageText.trim() && !selectedFile) || isChatLoading) return;
 
     if (user && !user.isPremium && (user.updateCredits || 0) < 10) {
