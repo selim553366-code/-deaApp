@@ -513,7 +513,18 @@ export function TemplatesView({
                 </div>
                 <div className="flex-1 relative bg-white">
                   <iframe 
-                    srcDoc={selectedTemplate.previewCode || getDefaultPreview(selectedTemplate)} 
+                    srcDoc={(selectedTemplate.previewCode || getDefaultPreview(selectedTemplate)) + `
+<script>
+  document.addEventListener('click', function(e) {
+    const link = e.target.closest('a');
+    if (link) {
+      e.preventDefault();
+    }
+  });
+  document.addEventListener('submit', function(e) {
+    e.preventDefault();
+  });
+</script>`} 
                     className="absolute inset-0 w-full h-full border-none" 
                     title="Template Preview"
                   />

@@ -38,6 +38,7 @@ export const ProjectPreview = ({
     { id: 'card', icon: <FileText size={20} />, label: 'Özellik Kartı', prompt: 'Sayfaya yeni bir özellik kartı bölümü ekle.' },
     { id: 'form', icon: <Send size={20} />, label: 'İletişim Formu', prompt: 'Sayfanın sonuna modern bir iletişim formu ekle.' },
     { id: 'glass', icon: <Sparkles size={20} />, label: 'Cam Efekti', prompt: 'Tüm kartlara ve butonlara glassmorphism (cam) efekti uygula.' },
+    { id: 'steam', icon: <Globe size={20} />, label: 'Steam Tasarımı', prompt: 'Sayfayı modern bir Steam oyun mağazası sayfasına çevir. Koyu tema, büyük bir oyun görseli, oyun detayları ve temiz bir ızgara düzeni kullan.' },
   ];
 
   // Sadece proje ID değiştiğinde chat geçmişini sıfırla/yükle
@@ -92,8 +93,20 @@ export const ProjectPreview = ({
     reader.readAsDataURL(file);
   };
 
-  const handleSendMessage = async (overridePrompt?: string) => {
-    const messageText = (overridePrompt || chatInput) || '';
+  const handleSendMessage = async (overridePrompt?: string | React.MouseEvent | React.FormEvent) => {
+    // If overridePrompt is an event object, ignore it and use chatInput
+    if (overridePrompt && typeof overridePrompt === 'object' && 'preventDefault' in overridePrompt) {
+      overridePrompt.preventDefault();
+      overridePrompt = undefined;
+    }
+    
+    const messageText = (typeof overridePrompt === 'string' ? overridePrompt : chatInput) || '';
+    
+    if (typeof messageText !== 'string') {
+      console.error("messageText is not a string:", messageText);
+      return;
+    }
+
     if ((!messageText.trim() && !selectedFile) || isChatLoading) return;
 
     if (user && !user.isPremium && (user.updateCredits || 0) < 10) {
@@ -151,9 +164,36 @@ export const ProjectPreview = ({
       // Inject the current HTML code into the last message context
       const lastMsg = contents[contents.length - 1];
       const currentCode = project.code || "";
-      lastMsg.parts[0].text = `Mevcut HTML Kodu:\n\`\`\`html\n${currentCode}\n\`\`\`\n\nKullanıcı Mesajı: ${currentInput}`;
+      
+      const systemInstruction = `SEN UZMAN BİR FRONTEND GELİŞTİRİCİSİ VE UI/UX TASARIMCISISIN.
+GÖREVİN: Kullanıcının web sitesini en üst düzey modern tasarımla oluşturmak ve güncellemek.
 
-      const systemInstruction = "Sen uzman bir Frontend Geliştiricisi ve UI/UX Tasarımcısısın. Kullanıcının web sitesini güncellemesine yardımcı oluyorsun. Eğer kullanıcı bir dosya (resim, döküman vb.) gönderdiyse onu analiz et ve değişiklikleri ona göre yap.\n\nÖNEMLİ KURAL: Cevapların her zaman ÇOK BASİT, ANLAŞILIR ve teknik terimlerden uzak olmalı. Sanki teknik bilgisi olmayan birine anlatıyormuşsun gibi davran. Uzun açıklamalar yapma.\n\nKullanıcı bir değişiklik istediğinde:\n1. Değişikliği yap ve güncellenmiş çalışabilir HTML kodunun TAMAMINI ```html ve ``` etiketleri arasına yaz.\n2. Kodun dışında, yaptığın değişiklikleri bir çocuğun bile anlayabileceği kadar basit bir dille (örneğin: 'Arka planı mavi yaptım ve yazıları büyüttüm') açıkla. Türkçe konuş.";
+KESİN KURALLAR (BUNLARA UYMAZSAN SİSTEM ÇÖKER):
+1. KULLANICIYA ASLA SORU SORMA. "Anlamadım", "Detay ver", "Nasıl olsun?" gibi ifadeler KESİNLİKLE YASAKTIR.
+2. MEVCUT KOD ZATEN SİSTEMDE VE ELİNİN ALTINDA. Kullanıcıdan ASLA kod, dosya, specification veya URL isteme.
+3. TASARIM STANDARTLARI (ÇOK ÖNEMLİ):
+   - DAİMA Tailwind CSS (CDN üzerinden) kullan.
+   - Modern UI trendlerini KESİNLİKLE uygula (Glassmorphism, soft shadows, modern tipografi, gradientler).
+   - Etkileşim ve animasyonlar ekle (hover efektleri, smooth transitions, fade-in/out).
+   - Tasarım %100 Responsive (mobil uyumlu) olmalı.
+   - İkonlar için FontAwesome veya Lucide (CDN) kullan.
+   - Ortaya çıkan iş GÖZ ALICI, profesyonel ve premium hissettirmeli. Sıradan ve basit tasarımlar KABUL EDİLEMEZ.
+4. Eğer mevcut kod boşsa veya kullanıcının isteği belirsizse, yukarıdaki standartlarda harika, modern ve kullanıma hazır bir HTML şablonu oluştur.
+5. Kullanıcının anlattığı özellikleri mevcut koda en güzel tasarımla uygula.
+6. Mevcut kodu ASLA silme, sadece geliştir ve güzelleştir.
+7. YANIT FORMATI ÇOK ÖNEMLİ:
+   - Yanıtın SADECE iki bölümden oluşmalıdır:
+   - 1. Bölüm: Yaptığın değişiklikleri anlatan 1-2 cümlelik ÇOK KISA bir mesaj. Bu mesajı KESİNLİKLE <message> ve </message> etiketleri arasına yaz.
+   - 2. Bölüm: Güncellenmiş HTML kodunun TAMAMI. Bu kodu KESİNLİKLE <kodu_baslat> ve <kodu_bitir> etiketleri arasına yaz.
+   - ÖRNEK YANIT:
+   <message>Arka planı siyah yaptım ve yazıları beyaza çevirdim.</message>
+   <kodu_baslat>
+   <!DOCTYPE html>
+   <html>...</html>
+   </kodu_bitir>
+8. Sadece Türkçe konuş. Başka dil KULLANMA.`;
+      
+      lastMsg.parts[0].text = `SİSTEM TALİMATI: ${systemInstruction}\n\nMevcut HTML Kodu:\n\`\`\`html\n${currentCode}\n\`\`\`\n\nKullanıcı Mesajı: ${currentInput}`;
 
       const aiResponse = await fetch("/api/ai/generate", {
         method: "POST",
@@ -161,7 +201,7 @@ export const ProjectPreview = ({
         body: JSON.stringify({
           contents,
           systemInstruction,
-          model: "gemini-3-flash-preview"
+          model: "gemini-3.1-pro-preview"
         })
       });
 
@@ -183,20 +223,39 @@ export const ProjectPreview = ({
       if (!responseText) {
         throw new Error("Yapay zekadan boş cevap döndü. Lütfen tekrar deneyin.");
       }
-      const htmlMatch = responseText.match(/```html([\s\S]*?)```/);
-      
       let newCode = project.code;
       let aiMessageText = responseText;
 
-      if (htmlMatch) {
-        newCode = htmlMatch[1].trim();
-        aiMessageText = responseText.replace(/```html[\s\S]*?```/, '').trim() || "Kod güncellendi! Sol taraftan önizleyebilirsiniz.";
-      } else if (responseText.includes('```')) {
-         const fallbackMatch = responseText.match(/```([\s\S]*?)```/);
-         if (fallbackMatch && fallbackMatch[1].includes('<html')) {
-           newCode = fallbackMatch[1].trim();
-           aiMessageText = responseText.replace(/```[\s\S]*?```/, '').trim() || "Kod güncellendi! Sol taraftan önizleyebilirsiniz.";
-         }
+      const messageMatch = responseText.match(/<message>([\s\S]*?)<\/message>/i);
+      if (messageMatch) {
+        aiMessageText = messageMatch[1].trim();
+      } else {
+        // Fallback to removing code blocks if <message> tag is missing
+        aiMessageText = responseText.replace(/<kodu_baslat>[\s\S]*?<\/kodu_bitir>/i, '')
+                                    .replace(/```[\s\S]*?```/g, '')
+                                    .replace(/(<!DOCTYPE html>[\s\S]*<\/html>|<html[\s\S]*<\/html>)/i, '')
+                                    .trim() || "Kod güncellendi! Sol taraftan önizleyebilirsiniz.";
+      }
+
+      const codeMatch = responseText.match(/<kodu_baslat>([\s\S]*?)<\/kodu_bitir>/i);
+      if (codeMatch) {
+        newCode = codeMatch[1].trim();
+      } else {
+        // Fallback to old regexes
+        const htmlMatch = responseText.match(/```html([\s\S]*?)```/);
+        if (htmlMatch) {
+          newCode = htmlMatch[1].trim();
+        } else if (responseText.includes('```')) {
+           const fallbackMatch = responseText.match(/```([\s\S]*?)```/);
+           if (fallbackMatch && fallbackMatch[1].includes('<html')) {
+             newCode = fallbackMatch[1].trim();
+           }
+        } else {
+           const rawHtmlMatch = responseText.match(/(<!DOCTYPE html>[\s\S]*<\/html>|<html[\s\S]*<\/html>)/i);
+           if (rawHtmlMatch) {
+             newCode = rawHtmlMatch[1].trim();
+           }
+        }
       }
 
       const newAiMsg = { role: 'model' as const, text: aiMessageText };
@@ -383,7 +442,18 @@ export const ProjectPreview = ({
           </div>
           <iframe 
             ref={iframeRef}
-            srcDoc={project.code}
+            srcDoc={project.code ? project.code + `
+<script>
+  document.addEventListener('click', function(e) {
+    const link = e.target.closest('a');
+    if (link) {
+      e.preventDefault();
+    }
+  });
+  document.addEventListener('submit', function(e) {
+    e.preventDefault();
+  });
+</script>` : ''}
             className="w-full flex-1 border-none bg-white"
             sandbox="allow-scripts allow-same-origin"
           />
@@ -411,7 +481,7 @@ export const ProjectPreview = ({
               <Bot className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="font-semibold text-zinc-800 text-sm">AI Asistan ile Güncelle</h3>
+              <h3 className="font-semibold text-zinc-800 text-sm">İdea Ai 1.0 ile Güncelle</h3>
               <p className="text-xs text-zinc-500">Ne değiştirmek istediğinizi yazın veya fikir alışverişi yapın.</p>
             </div>
           </div>

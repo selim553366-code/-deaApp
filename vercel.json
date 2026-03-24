@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "functions": {
     "api/index.ts": {
@@ -7,6 +7,7 @@
     }
   },
   "rewrites": [
-    { "source": "/(.*)", "destination": "/api/index.ts" }
+    { "source": "/api/(.*)", "destination": "/api/index.ts" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

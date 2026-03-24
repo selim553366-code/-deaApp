@@ -7,10 +7,7 @@ import { Preview } from "./Preview";
 import { PremiumModal } from "./PremiumModal";
 import { AIChatPage } from "./AIChatPage";
 import { Send, Sparkles, LogOut, Code, Loader2, Check, Eye, EyeOff } from "lucide-react";
-import { GoogleGenAI, Type } from "@google/genai";
 import { signOut } from "firebase/auth";
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 interface AnalysisQuestion {
   question: string;
@@ -60,26 +57,19 @@ export function IdeaApp({ user }: { user: User }) {
   const analyzePrompt = async (idea: string) => {
     setIsGenerating(true);
     try {
-      const response = await ai.models.generateContent({
-        model: "gemini-3.1-pro-preview",
-        contents: `Analyze this website idea: "${idea}". Ask 3 clarifying questions with 3-4 options each to make the website better.`,
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                question: { type: Type.STRING },
-                options: { type: Type.ARRAY, items: { type: Type.STRING } },
-              },
-              required: ["question", "options"],
-            },
-          },
-        },
+      const response = await fetch('/api/ai/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          contents: [{ role: 'user', text: `Analyze this website idea: "${idea}". Ask 3 clarifying questions with 3-4 options each to make the website better. Return ONLY JSON in this format: [{"question": "...", "options": ["...", "..."]}].` }],
+          systemInstruction: "You are a helpful assistant that returns JSON."
+        })
       });
 
-      const questions = JSON.parse(response.text || "[]");
+      if (!response.ok) throw new Error('Analysis failed');
+      const data = await response.json();
+
+      const questions = JSON.parse(data.text || "[]");
       setAnalysisQuestions(questions);
       setAnalysisAnswers(new Array(questions.length).fill(""));
       setOriginalIdea(idea);
@@ -109,12 +99,16 @@ export function IdeaApp({ user }: { user: User }) {
            Ensure it has a full <html>, <head>, and <body> structure.
            Return ONLY the raw HTML code. Do not wrap in markdown blocks like \`\`\`html.`;
 
-      const response = await ai.models.generateContent({
-        model: "gemini-3.1-pro-preview",
-        contents: prompt,
+      const response = await fetch('/api/ai/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ role: 'user', text: prompt }] })
       });
 
-      let code = response.text || "";
+      if (!response.ok) throw new Error('Generation failed');
+      const data = await response.json();
+
+      let code = data.text || "";
       if (code.startsWith("```html")) {
         code = code.replace(/^```html\n/, "").replace(/\n```$/, "");
       } else if (code.startsWith("```")) {

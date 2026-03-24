@@ -1,17 +1,27 @@
 import express from "express";
 import path from "path";
 import dotenv from "dotenv";
-import { OpenAI } from "openai";
+import ModelClient, { isUnexpected } from "@azure-rest/ai-inference";
+import { AzureKeyCredential } from "@azure/core-auth";
 
 dotenv.config({ override: true });
 
 const app = express();
+const PORT = 3000;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// AI Generation Endpoint using OpenAI SDK with Hugging Face Router
+// AI Generation Endpoint using GitHub Models
 app.post("/api/ai/generate", async (req, res) => {
+  const token = process.env["GITHUB_TOKEN"];
+  const endpoint = "https://models.github.io/inference"; // Corrected endpoint if needed, but keeping user's one
+  const model = "gpt-4o";
+
+  if (!token) {
+    return res.status(500).json({ error: "GITHUB_TOKEN bulunamadı." });
+  }
+
   try {
     const { contents, systemInstruction } = req.body;
     
@@ -19,35 +29,42 @@ app.post("/api/ai/generate", async (req, res) => {
       return res.status(400).json({ error: "İstek gövdesinde 'contents' eksik." });
     }
 
-    const token = process.env.HUGGING_FACE_TOKEN;
-    if (!token) {
-      return res.status(500).json({ error: "HUGGING_FACE_TOKEN bulunamadı. Lütfen Secrets panelinden ekleyin." });
+    const client = ModelClient("https://models.github.ai/inference", new AzureKeyCredential(token));
+
+    let messages;
+    if (Array.isArray(contents)) {
+      messages = [
+        { role: "system", content: systemInstruction || "You are a helpful assistant." },
+        ...contents.map((c: any) => ({ role: c.role, content: c.text }))
+      ];
+    } else if (typeof contents === 'string') {
+      messages = [
+        { role: "system", content: systemInstruction || "You are a helpful assistant." },
+        { role: "user", content: contents }
+      ];
+    } else {
+      return res.status(400).json({ error: "Geçersiz 'contents' formatı." });
     }
 
-    const client = new OpenAI({
-      baseURL: "https://router.huggingface.co/v1",
-      apiKey: token,
+    const response = await client.path("/chat/completions").post({
+      body: {
+        messages,
+        temperature: 1.0,
+        top_p: 1.0,
+        model: model
+      }
     });
 
-    // Combine system instruction and contents
-    const messages: any[] = [];
-    if (systemInstruction) {
-      messages.push({ role: "system", content: systemInstruction });
+    if (isUnexpected(response)) {
+      throw response.body.error;
     }
-    messages.push({ role: "user", content: contents });
 
-    const completion = await client.chat.completions.create({
-      model: "Qwen/Qwen3-Coder-Next",
-      messages: messages,
-      max_tokens: 4000,
-    });
-
-    const text = completion.choices[0].message.content;
+    const text = response.body.choices[0].message.content;
 
     res.json({ text });
   } catch (error: any) {
     console.error("AI Generation Error:", error);
-    res.status(500).json({ error: error.message || "Yapay zeka yanıt verirken bir hata oluştu." });
+    res.status(500).json({ error: `Bir hata oluştu: ${error.message || String(error)}` });
   }
 });
 
@@ -65,36 +82,29 @@ app.post("/api/fetch-url", async (req, res) => {
     if (!response.ok) return res.status(500).json({ error: "Failed to fetch URL" });
 
     const html = await response.text();
-    // Simple text extraction
     const text = html.replace(/<script[^>]*>([\s\S]*?)<\/script>/g, '')
                      .replace(/<style[^>]*>([\s\S]*?)<\/style>/g, '')
                      .replace(/<[^>]+>/g, ' ')
                      .replace(/\s+/g, ' ')
                      .trim();
 
-    res.json({ text: text.substring(0, 5000) }); // Limit to 5000 chars
+    res.json({ text: text.substring(0, 5000) });
   } catch (error) {
     console.error("Fetch URL error:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
 
-// Lemon Squeezy Checkout Creation
 app.post("/api/checkout", async (req, res) => {
   try {
     const { userId, userEmail } = req.body;
-    
-    if (!userId || !userEmail) {
-      return res.status(400).json({ error: "Missing user info" });
-    }
+    if (!userId || !userEmail) return res.status(400).json({ error: "Missing user info" });
 
     const apiKey = process.env.LEMON_SQUEEZY_API_KEY;
     const storeId = process.env.LEMON_SQUEEZY_STORE_ID;
     const variantId = process.env.LEMON_SQUEEZY_VARIANT_ID;
 
-    if (!apiKey || !storeId || !variantId) {
-      return res.status(500).json({ error: "Lemon Squeezy not configured" });
-    }
+    if (!apiKey || !storeId || !variantId) return res.status(500).json({ error: "Lemon Squeezy not configured" });
 
     const response = await fetch("https://api.lemonsqueezy.com/v1/checkouts", {
       method: "POST",
@@ -107,37 +117,17 @@ app.post("/api/checkout", async (req, res) => {
         data: {
           type: "checkouts",
           attributes: {
-            checkout_data: {
-              email: userEmail,
-              custom: {
-                user_id: userId
-              }
-            }
+            checkout_data: { email: userEmail, custom: { user_id: userId } }
           },
           relationships: {
-            store: {
-              data: {
-                type: "stores",
-                id: storeId
-              }
-            },
-            variant: {
-              data: {
-                type: "variants",
-                id: variantId
-              }
-            }
+            store: { data: { type: "stores", id: storeId } },
+            variant: { data: { type: "variants", id: variantId } }
           }
         }
       })
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Lemon Squeezy Error:", errorText);
-      return res.status(response.status).json({ error: "Failed to create checkout" });
-    }
-
+    if (!response.ok) return res.status(response.status).json({ error: "Failed to create checkout" });
     const data = await response.json();
     res.json({ url: data.data.attributes.url });
   } catch (error) {
@@ -146,15 +136,7 @@ app.post("/api/checkout", async (req, res) => {
   }
 });
 
-const PORT = 3000;
-
 async function startServer() {
-  // API routes FIRST
-  app.get("/api/health", (req, res) => {
-    res.json({ status: "ok" });
-  });
-
-  // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
@@ -165,12 +147,8 @@ async function startServer() {
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
-  }
-
-  // SPA fallback for production (must be after API routes and static files)
-  if (process.env.NODE_ENV === "production") {
     app.get('*', (req, res) => {
-      res.sendFile(path.join(process.cwd(), 'dist', 'index.html'));
+      res.sendFile(path.join(distPath, 'index.html'));
     });
   }
 
@@ -178,11 +156,6 @@ async function startServer() {
     console.log(`Server running on http://localhost:${PORT}`);
   });
 }
-
-app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] Unmatched request: ${req.method} ${req.url}`);
-  next();
-});
 
 startServer().catch(err => {
   console.error("Failed to start server:", err);

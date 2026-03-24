@@ -95,7 +95,16 @@ export const AuthForm = ({ prompt, onProjectCreated }: Props) => {
         className="w-full max-w-sm p-8 bg-white rounded-3xl shadow-xl border border-zinc-100"
       >
         <h2 className="mb-6 text-2xl font-bold text-center text-zinc-900">{isSignUp ? 'Kayıt Ol' : 'Giriş Yap'}</h2>
-        {error && <p className="mb-4 text-red-500 text-sm bg-red-50 p-3 rounded-xl border border-red-100">{error}</p>}
+        {error && (
+          <div className="mb-4">
+            <p className="text-red-500 text-sm bg-red-50 p-3 rounded-xl border border-red-100">{error}</p>
+            {error.includes('cookie') && (
+              <p className="mt-2 text-xs text-zinc-500 italic">
+                Safari/iOS kullanıyorsanız "Siteler Arası Takibi Engelle" ayarını kapatmayı deneyebilir veya e-posta ile giriş yapabilirsiniz.
+              </p>
+            )}
+          </div>
+        )}
         
         <motion.button 
           whileHover={{ scale: 1.02 }}
