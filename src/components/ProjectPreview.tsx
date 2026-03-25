@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { GoogleGenAI } from "@google/genai";
 import { Project, User } from '../types';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -25,6 +26,7 @@ export const ProjectPreview = ({
   const [showSettings, setShowSettings] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isDesignMode, setIsDesignMode] = useState(false);
+  const [activeTab, setActiveTab] = useState<'preview' | 'chat'>('preview');
   const [selectedFile, setSelectedFile] = useState<{ name: string; type: string; data: string } | null>(null);
   const [draggedComponent, setDraggedComponent] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -165,60 +167,34 @@ export const ProjectPreview = ({
       const lastMsg = contents[contents.length - 1];
       const currentCode = project.code || "";
       
-      const systemInstruction = `SEN UZMAN BİR FRONTEND GELİŞTİRİCİSİ VE UI/UX TASARIMCISISIN.
-GÖREVİN: Kullanıcının web sitesini en üst düzey modern tasarımla oluşturmak ve güncellemek.
+      const systemInstruction = `Sen bir Kıdemli Yaratıcı Teknoloji Uzmanısın.
+Görevin: Kullanıcının isteğine göre web sitesini veya oyunu güncellemek.
 
-KESİN KURALLAR (BUNLARA UYMAZSAN SİSTEM ÇÖKER):
-1. KULLANICIYA ASLA SORU SORMA. "Anlamadım", "Detay ver", "Nasıl olsun?" gibi ifadeler KESİNLİKLE YASAKTIR.
-2. MEVCUT KOD ZATEN SİSTEMDE VE ELİNİN ALTINDA. Kullanıcıdan ASLA kod, dosya, specification veya URL isteme.
-3. TASARIM STANDARTLARI (ÇOK ÖNEMLİ):
-   - DAİMA Tailwind CSS (CDN üzerinden) kullan.
-   - Modern UI trendlerini KESİNLİKLE uygula (Glassmorphism, soft shadows, modern tipografi, gradientler).
-   - Etkileşim ve animasyonlar ekle (hover efektleri, smooth transitions, fade-in/out).
-   - Tasarım %100 Responsive (mobil uyumlu) olmalı.
-   - İkonlar için FontAwesome veya Lucide (CDN) kullan.
-   - Ortaya çıkan iş GÖZ ALICI, profesyonel ve premium hissettirmeli. Sıradan ve basit tasarımlar KABUL EDİLEMEZ.
-4. Eğer mevcut kod boşsa veya kullanıcının isteği belirsizse, yukarıdaki standartlarda harika, modern ve kullanıma hazır bir HTML şablonu oluştur.
-5. Kullanıcının anlattığı özellikleri mevcut koda en güzel tasarımla uygula.
-6. Mevcut kodu ASLA silme, sadece geliştir ve güzelleştir.
-7. YANIT FORMATI ÇOK ÖNEMLİ:
-   - Yanıtın SADECE iki bölümden oluşmalıdır:
-   - 1. Bölüm: Yaptığın değişiklikleri anlatan 1-2 cümlelik ÇOK KISA bir mesaj. Bu mesajı KESİNLİKLE <message> ve </message> etiketleri arasına yaz.
-   - 2. Bölüm: Güncellenmiş HTML kodunun TAMAMI. Bu kodu KESİNLİKLE <kodu_baslat> ve <kodu_bitir> etiketleri arasına yaz.
-   - ÖRNEK YANIT:
-   <message>Arka planı siyah yaptım ve yazıları beyaza çevirdim.</message>
-   <kodu_baslat>
-   <!DOCTYPE html>
-   <html>...</html>
-   </kodu_bitir>
-8. Sadece Türkçe konuş. Başka dil KULLANMA.`;
+KESİN KURALLAR:
+1. ASLA SORU SORMA.
+2. INCREMENTAL (KADEMELİ) GÜNCELLEME YAP: Tüm kodu yeniden yazma. Sadece kullanıcının istediği değişikliği yap, mevcut kodun geri kalanını olduğu gibi koru.
+3. Eğer "oyun yap" derse: HTML5/JS/CSS kullanarak, mobil uyumlu, akıcı animasyonlara sahip, bağımlılık yapıcı ve modern bir oyun tasarla.
+4. Eğer web sitesi güncelleme isterse: Glassmorphism, yumuşak gölgeler, canlı gradientler kullanarak premium bir UI oluştur.
+5. YANIT FORMATI (ZORUNLU):
+   - Yanıtın SADECE şu iki bölümden oluşmalı:
+   - <message>Yaptığın değişikliği anlatan 1 cümlelik mesaj</message>
+   - <kodu_baslat>GÜNCELLENMİŞ TÜM HTML/CSS/JS KODU</kodu_bitir>
+6. BAŞKA HİÇBİR AÇIKLAMA YAZMA.`;
       
       lastMsg.parts[0].text = `Mevcut HTML Kodu:\n\`\`\`html\n${currentCode}\n\`\`\`\n\nKullanıcı Mesajı: ${currentInput}`;
 
-      const aiResponse = await fetch("/api/ai/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents,
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+
+      const aiResponse = await ai.models.generateContent({
+        model: "gemini-3.1-pro-preview",
+        contents: contents,
+        config: {
           systemInstruction,
-          model: "gemini-3.1-pro-preview"
-        })
+          temperature: 1.0,
+        }
       });
 
-      if (!aiResponse.ok) {
-        const contentType = aiResponse.headers.get("content-type");
-        if (contentType && contentType.includes("application/json")) {
-          const errorData = await aiResponse.json();
-          throw new Error(errorData.error || "Yapay zeka sunucusuna bağlanılamadı.");
-        } else {
-          const errorText = await aiResponse.text();
-          console.error("Non-JSON error response:", errorText);
-          throw new Error(`Sunucu hatası (${aiResponse.status}). Lütfen daha sonra tekrar deneyin.`);
-        }
-      }
-
-      const data = await aiResponse.json();
-      let responseText = data.text || '';
+      const responseText = aiResponse.text || '';
       
       if (!responseText) {
         throw new Error("Yapay zekadan boş cevap döndü. Lütfen tekrar deneyin.");
@@ -408,7 +384,6 @@ KESİN KURALLAR (BUNLARA UYMAZSAN SİSTEM ÇÖKER):
                   onDragStart={() => setDraggedComponent(comp.id)}
                   onDragEnd={(e, info) => {
                     setDraggedComponent(null);
-                    // Check if dropped over the preview area (simple check based on x position)
                     if (info.point.x > 300) {
                       handleSendMessage(comp.prompt);
                     }
@@ -431,14 +406,20 @@ KESİN KURALLAR (BUNLARA UYMAZSAN SİSTEM ÇÖKER):
           </motion.div>
         )}
 
-        <div className="flex-[2] bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden flex flex-col relative">
-          <div className="bg-zinc-100 px-4 py-2 border-b border-zinc-200 flex items-center gap-2">
-            <div className="flex gap-1.5">
-              <div className="w-3 h-3 rounded-full bg-red-400"></div>
-              <div className="w-3 h-3 rounded-full bg-amber-400"></div>
-              <div className="w-3 h-3 rounded-full bg-emerald-400"></div>
+        <div className={`flex-[3] min-h-[600px] bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden flex flex-col relative ${activeTab === 'chat' ? 'hidden md:flex' : 'flex'}`}>
+          <div className="bg-zinc-100 px-4 py-2 border-b border-zinc-200 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="flex gap-1.5">
+                <div className="w-3 h-3 rounded-full bg-red-400"></div>
+                <div className="w-3 h-3 rounded-full bg-amber-400"></div>
+                <div className="w-3 h-3 rounded-full bg-emerald-400"></div>
+              </div>
+              <div className="ml-4 text-xs text-zinc-500 font-medium">Önizleme (Test Ekranı)</div>
             </div>
-            <div className="ml-4 text-xs text-zinc-500 font-medium">Önizleme (Test Ekranı)</div>
+            <div className="md:hidden flex bg-zinc-200 p-0.5 rounded-lg">
+              <button onClick={() => setActiveTab('preview')} className={`px-3 py-1 text-xs font-medium rounded-md ${activeTab === 'preview' ? 'bg-white shadow-sm' : ''}`}>Önizleme</button>
+              <button onClick={() => setActiveTab('chat')} className={`px-3 py-1 text-xs font-medium rounded-md ${activeTab === 'chat' ? 'bg-white shadow-sm' : ''}`}>Chat</button>
+            </div>
           </div>
           <iframe 
             ref={iframeRef}
@@ -475,14 +456,20 @@ KESİN KURALLAR (BUNLARA UYMAZSAN SİSTEM ÇÖKER):
           </AnimatePresence>
         </div>
 
-        <div className="flex-1 bg-white rounded-2xl border border-zinc-200 shadow-sm flex flex-col overflow-hidden max-w-md">
-          <div className="p-4 border-b border-zinc-100 bg-zinc-50/50 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
-              <Bot className="w-4 h-4" />
+        <div className={`flex-1 bg-white rounded-2xl border border-zinc-200 shadow-sm flex flex-col overflow-hidden max-w-md ${activeTab === 'preview' ? 'hidden md:flex' : 'flex'}`}>
+          <div className="p-4 border-b border-zinc-100 bg-zinc-50/50 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
+                <Bot className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-zinc-800 text-sm">İdea Ai 1.0 ile Güncelle</h3>
+                <p className="text-xs text-zinc-500">Ne değiştirmek istediğinizi yazın.</p>
+              </div>
             </div>
-            <div>
-              <h3 className="font-semibold text-zinc-800 text-sm">İdea Ai 1.0 ile Güncelle</h3>
-              <p className="text-xs text-zinc-500">Ne değiştirmek istediğinizi yazın veya fikir alışverişi yapın.</p>
+            <div className="md:hidden flex bg-zinc-100 p-0.5 rounded-lg">
+              <button onClick={() => setActiveTab('preview')} className={`px-3 py-1 text-xs font-medium rounded-md ${activeTab === 'preview' ? 'bg-white shadow-sm' : ''}`}>Önizleme</button>
+              <button onClick={() => setActiveTab('chat')} className={`px-3 py-1 text-xs font-medium rounded-md ${activeTab === 'chat' ? 'bg-white shadow-sm' : ''}`}>Chat</button>
             </div>
           </div>
           

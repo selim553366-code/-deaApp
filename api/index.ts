@@ -1,8 +1,6 @@
 import express from "express";
 import path from "path";
 import dotenv from "dotenv";
-import ModelClient, { isUnexpected } from "@azure-rest/ai-inference";
-import { AzureKeyCredential } from "@azure/core-auth";
 
 dotenv.config({ override: true });
 
@@ -11,67 +9,6 @@ const PORT = 3000;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// AI Generation Endpoint using GitHub Models
-app.post("/api/ai/generate", async (req, res) => {
-  const token = process.env["GITHUB_TOKEN"];
-  const endpoint = "https://models.github.io/inference"; // Corrected endpoint if needed, but keeping user's one
-  const model = "gpt-4o";
-
-  if (!token) {
-    return res.status(500).json({ error: "GITHUB_TOKEN bulunamadı." });
-  }
-
-  try {
-    const { contents, systemInstruction } = req.body;
-    
-    if (!contents) {
-      return res.status(400).json({ error: "İstek gövdesinde 'contents' eksik." });
-    }
-
-    const client = ModelClient("https://models.github.ai/inference", new AzureKeyCredential(token));
-
-    let messages;
-    if (Array.isArray(contents)) {
-      messages = [
-        { role: "system", content: systemInstruction || "You are a helpful assistant." },
-        ...contents.map((c: any) => ({ 
-          role: ['system', 'assistant', 'user', 'function', 'tool', 'developer'].includes(c.role) ? c.role : (c.role === 'model' ? 'assistant' : 'user'), 
-          content: c.text || "" 
-        }))
-      ];
-    } else if (typeof contents === 'string') {
-      messages = [
-        { role: "system", content: systemInstruction || "You are a helpful assistant." },
-        { role: "user", content: contents }
-      ];
-    } else {
-      return res.status(400).json({ error: "Geçersiz 'contents' formatı." });
-    }
-
-    const response = await client.path("/chat/completions").post({
-      body: {
-        messages,
-        temperature: 1.0,
-        top_p: 1.0,
-        model: model
-      }
-    });
-
-    console.log("AI Response:", JSON.stringify(response, null, 2));
-
-    if (isUnexpected(response)) {
-      throw response.body.error;
-    }
-
-    const text = response.body.choices[0].message.content;
-
-    res.json({ text });
-  } catch (error: any) {
-    console.error("AI Generation Error:", error);
-    res.status(500).json({ error: `Bir hata oluştu: ${error.message || String(error)}` });
-  }
-});
 
 // API routes
 app.get("/api/health", (req, res) => {

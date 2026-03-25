@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { onAuthStateChanged } from "firebase/auth";
-import { doc, setDoc, updateDoc, onSnapshot, collection, query, where } from "firebase/firestore";
+import { doc, setDoc, updateDoc, onSnapshot, collection, query, where, deleteDoc } from "firebase/firestore";
 import { auth, db } from "./firebase";
 import { User, Project } from "./types";
 import { motion } from "motion/react";
@@ -39,6 +39,15 @@ function Builder() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [policyType, setPolicyType] = useState<'privacy' | 'terms' | 'refund' | null>(null);
   const pendingProjectIdRef = useRef<string | null>(null);
+
+  const deleteProject = async (projectId: string) => {
+    if (confirm("Bu projeyi silmek istediğinize emin misiniz?")) {
+      await deleteDoc(doc(db, "projects", projectId));
+      if (currentProject?.id === projectId) {
+        setCurrentProject(null);
+      }
+    }
+  };
 
   useEffect(() => {
     const handleShowPremium = () => setShowPremium(true);
@@ -160,6 +169,7 @@ function Builder() {
         currentProject={currentProject} 
         onSelectProject={(p) => { setCurrentProject(p); setShowTemplates(false); setIsSidebarOpen(false); }} 
         onNewProject={() => { setCurrentProject(null); setShowTemplates(false); setIsSidebarOpen(false); }} 
+        onDeleteProject={deleteProject}
         user={user} 
         onToggleAI={() => { setShowAI(!showAI); setIsSidebarOpen(false); }}
         onShowTemplates={() => { setShowTemplates(true); setCurrentProject(null); setIsSidebarOpen(false); }}

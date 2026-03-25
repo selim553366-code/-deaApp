@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { User, Project } from "../types";
 import { db, auth } from "../firebase";
-import { collection, query, where, orderBy, onSnapshot, doc, setDoc, updateDoc } from "firebase/firestore";
+import { collection, query, where, orderBy, onSnapshot, doc, setDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import { Sidebar } from "./Sidebar";
 import { Preview } from "./Preview";
 import { PremiumModal } from "./PremiumModal";
@@ -171,6 +171,15 @@ export function IdeaApp({ user }: { user: User }) {
     }
   };
 
+  const deleteProject = async (projectId: string) => {
+    if (confirm("Bu projeyi silmek istediğinize emin misiniz?")) {
+      await deleteDoc(doc(db, "projects", projectId));
+      if (currentProject?.id === projectId) {
+        setCurrentProject(null);
+      }
+    }
+  };
+
   return (
     <div className="flex h-screen bg-zinc-950 text-zinc-100 overflow-hidden">
       <Sidebar 
@@ -178,6 +187,7 @@ export function IdeaApp({ user }: { user: User }) {
         currentProject={currentProject} 
         onSelectProject={(p) => { setCurrentProject(p); setShowTemplates(false); }}
         onNewProject={() => { setCurrentProject(null); setShowAI(false); setShowTemplates(false); }}
+        onDeleteProject={deleteProject}
         user={user}
         onToggleAI={() => setShowAI(!showAI)}
         onShowTemplates={() => setShowTemplates(true)}

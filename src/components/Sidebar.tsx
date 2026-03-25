@@ -1,5 +1,5 @@
 import { Project, User } from "../types";
-import { Plus, LayoutTemplate, Clock, Home, Bot, Sparkles, FolderKanban, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, LayoutTemplate, Clock, Home, Bot, Sparkles, FolderKanban, X, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import { motion } from "motion/react";
 import { useLanguage } from "../contexts/LanguageContext";
 
@@ -8,6 +8,7 @@ export function Sidebar({
   currentProject, 
   onSelectProject, 
   onNewProject,
+  onDeleteProject,
   user,
   onToggleAI,
   onShowTemplates,
@@ -20,6 +21,7 @@ export function Sidebar({
   currentProject: Project | null, 
   onSelectProject: (p: Project | null) => void,
   onNewProject: () => void,
+  onDeleteProject: (projectId: string) => void,
   user: User | null,
   onToggleAI: () => void,
   onShowTemplates: () => void,
@@ -121,19 +123,29 @@ export function Sidebar({
                 )
               ) : (
                 projects.map(project => (
-                  <button
-                    key={project.id}
-                    onClick={() => { onSelectProject(project); onClose(); }}
-                    title={project.title || project.idea}
-                    className={`w-full text-left py-2.5 rounded-xl text-sm transition-colors flex items-center gap-3 group ${isCollapsed ? 'justify-center px-0' : 'px-3'} ${
-                      currentProject?.id === project.id 
-                        ? "bg-primary/10 text-primary" 
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                    }`}
-                  >
-                    <LayoutTemplate className={`w-4 h-4 shrink-0 ${currentProject?.id === project.id ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} />
-                    {!isCollapsed && <span className="truncate">{project.title || project.idea.substring(0, 28) + "..."}</span>}
-                  </button>
+                  <div key={project.id} className="flex items-center gap-1">
+                    <button
+                      onClick={() => { onSelectProject(project); onClose(); }}
+                      title={project.title || project.idea}
+                      className={`flex-1 text-left py-2.5 rounded-xl text-sm transition-colors flex items-center gap-3 group ${isCollapsed ? 'justify-center px-0' : 'px-3'} ${
+                        currentProject?.id === project.id 
+                          ? "bg-primary/10 text-primary" 
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      }`}
+                    >
+                      <LayoutTemplate className={`w-4 h-4 shrink-0 ${currentProject?.id === project.id ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} />
+                      {!isCollapsed && <span className="truncate">{project.title || project.idea.substring(0, 28) + "..."}</span>}
+                    </button>
+                    {!isCollapsed && (
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); onDeleteProject(project.id); }}
+                        className="p-2 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                        title="Projeyi Sil"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
                 ))
               )}
             </div>
