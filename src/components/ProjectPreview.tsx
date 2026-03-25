@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { GoogleGenAI } from "@google/genai";
 import { Project, User } from '../types';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -183,18 +182,20 @@ KESİN KURALLAR:
       
       lastMsg.parts[0].text = `Mevcut HTML Kodu:\n\`\`\`html\n${currentCode}\n\`\`\`\n\nKullanıcı Mesajı: ${currentInput}`;
 
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
-
-      const aiResponse = await ai.models.generateContent({
-        model: "gemini-3.1-pro-preview",
-        contents: contents,
-        config: {
+      const response = await fetch('/api/ai/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          contents: contents,
           systemInstruction,
-          temperature: 1.0,
-        }
+          model: "gemini-3.1-pro-preview"
+        })
       });
 
-      const responseText = aiResponse.text || '';
+      if (!response.ok) throw new Error('Generation failed');
+      const data = await response.json();
+
+      const responseText = data.text || '';
       
       if (!responseText) {
         throw new Error("Yapay zekadan boş cevap döndü. Lütfen tekrar deneyin.");
