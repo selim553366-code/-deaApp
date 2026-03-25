@@ -1,7 +1,7 @@
 import express from "express";
 import path from "path";
 import dotenv from "dotenv";
-import OpenAI from "openai";
+import { GoogleGenAI } from "@google/genai";
 
 dotenv.config({ override: true });
 
@@ -18,68 +18,50 @@ app.get("/api/health", (req, res) => {
 
 app.post("/api/ai/generate", async (req, res) => {
   try {
-    const { contents, systemInstruction, model = "gpt-4o-mini" } = req.body;
-    const githubToken = process.env.GITHUB_TOKEN;
+    const { contents, systemInstruction, model = "gemini-3-flash-preview" } = req.body;
+    const geminiKey = process.env.GEMINI_API_KEY;
 
-    if (!githubToken) {
-      return res.status(500).json({ error: "GITHUB_TOKEN is not configured in environment variables." });
+    if (!geminiKey) {
+      return res.status(500).json({ error: "GEMINI_API_KEY is not configured in environment variables." });
     }
 
-    const client = new OpenAI({
-      apiKey: githubToken,
-      baseURL: "https://models.inference.ai.azure.com"
-    });
-
-    // Convert contents to OpenAI format
-    const messages: any[] = [];
-    if (systemInstruction) {
-      messages.push({ role: "system", content: systemInstruction });
-    }
-
+    const ai = new GoogleGenAI({ apiKey: geminiKey });
+    
+    // Format contents for Gemini
+    let formattedContents: any;
+    
     if (Array.isArray(contents)) {
-      contents.forEach((msg: any) => {
+      formattedContents = contents.map((msg: any) => {
         if (typeof msg === 'string') {
-          messages.push({ role: "user", content: msg });
-        } else if (msg.parts && Array.isArray(msg.parts)) {
-          // If there are images, github models might not support them well or we just extract text
-          const content = msg.parts.map((p: any) => p.text || "").join("\n");
-          if (content.trim()) {
-            messages.push({ role: msg.role === 'ai' ? 'assistant' : 'user', content });
-          }
-        } else if (msg.role && msg.text) {
-          messages.push({ role: msg.role === 'ai' ? 'assistant' : 'user', content: msg.text });
+          return { role: 'user', parts: [{ text: msg }] };
         }
+        
+        const parts = Array.isArray(msg.parts) 
+          ? msg.parts.map((p: any) => typeof p === 'string' ? { text: p } : p)
+          : [{ text: msg.text || "" }];
+          
+        return {
+          role: msg.role === 'ai' || msg.role === 'assistant' || msg.role === 'model' ? 'model' : 'user',
+          parts
+        };
       });
     } else if (typeof contents === 'string') {
-      messages.push({ role: "user", content: contents });
+      formattedContents = [{ role: 'user', parts: [{ text: contents }] }];
+    } else if (contents.parts) {
+       formattedContents = [contents];
     }
 
-    // Truncate messages to prevent 413 Payload Too Large (8k token limit for gpt-4o-mini on github models)
-    // We'll keep the system prompt and the last few messages, and truncate the content of the last message if it's too long.
-    let finalMessages = [...messages];
-    
-    // If the last message is very long (e.g. contains full HTML), truncate it to ~60000 chars
-    if (finalMessages.length > 0) {
-      const lastMsg = finalMessages[finalMessages.length - 1];
-      if (typeof lastMsg.content === 'string' && lastMsg.content.length > 60000) {
-        lastMsg.content = lastMsg.content.substring(0, 60000) + "\n...[TRUNCATED DUE TO LENGTH]...";
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: formattedContents,
+      config: {
+        systemInstruction: systemInstruction,
       }
-    }
-
-    const response = await client.chat.completions.create({
-      messages: finalMessages,
-      model: "gpt-4o-mini",
-      temperature: 1,
-      max_tokens: 16384,
-      top_p: 1
     });
 
-    res.json({ text: response.choices[0].message.content });
+    res.json({ text: response.text });
   } catch (error: any) {
     console.error("AI Generate error:", error);
-    if (error.status === 413 || (error.message && error.message.includes('too large'))) {
-      return res.status(413).json({ error: "Projeniz çok büyüdüğü için yapay zeka tarafından işlenemiyor (Token sınırı aşıldı). Lütfen kodu manuel olarak düzenleyin veya projeyi küçültün." });
-    }
     res.status(500).json({ error: error.message || "Internal server error" });
   }
 });
