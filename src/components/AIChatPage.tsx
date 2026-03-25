@@ -47,7 +47,10 @@ export const AIChatPage = ({ onOpenPremium }: { onOpenPremium: () => void }) => 
       const response = await fetch('/api/ai/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ role: 'user', text: promptTemplate }] })
+        body: JSON.stringify({ 
+          contents: [{ role: 'user', text: promptTemplate }],
+          model: "gemini-3-flash-preview"
+        })
       });
 
       if (!response.ok) throw new Error('Generation failed');

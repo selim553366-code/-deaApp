@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db, auth } from '../firebase';
-import { collection, addDoc, doc, updateDoc, setDoc } from 'firebase/firestore';
+import { collection, doc, updateDoc, setDoc } from 'firebase/firestore';
 import { Loader2, Sparkles, X, CheckCircle2, Circle, Wand2, Lightbulb } from 'lucide-react';
 import { User } from '../types';
 import { motion, AnimatePresence } from "motion/react";
@@ -69,35 +69,19 @@ export const IdeaInput = ({ user, onProjectCreated, initialPrompt }: { user: Use
     setCurrentAnswer('');
 
     try {
-      const aiResponse = await fetch("/api/ai/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      const response = await fetch('/api/ai/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          contents: [{ role: 'user', text: `Kullanıcı şu uygulamayı yapmak istiyor: "${idea}". Bu uygulamayı daha iyi tasarlayabilmek için kullanıcıya sorulacak en önemli 3 soruyu oluştur. Sorular kısa ve net olmalı. Sadece JSON formatında bir string array döndür. Örnek: ["Soru 1?", "Soru 2?", "Soru 3?"].` }],
           model: "gemini-3-flash-preview",
-          contents: `Kullanıcı şu uygulamayı yapmak istiyor: "${idea}". Bu uygulamayı daha iyi tasarlayabilmek için kullanıcıya sorulacak en önemli 3 soruyu oluştur. Sorular kısa ve net olmalı. Sadece JSON formatında bir string array döndür. Örnek: ["Soru 1?", "Soru 2?", "Soru 3?"].`,
-          config: {
-            responseMimeType: "application/json",
-            responseSchema: {
-              type: "ARRAY",
-              items: { type: "STRING" }
-            }
-          }
+          systemInstruction: "You are a helpful assistant that returns JSON."
         })
       });
 
-      if (!aiResponse.ok) {
-        const contentType = aiResponse.headers.get("content-type");
-        if (contentType && contentType.includes("application/json")) {
-          const errorData = await aiResponse.json();
-          throw new Error(errorData.error || "AI Soruları oluşturulamadı.");
-        } else {
-          const errorText = await aiResponse.text();
-          console.error("Non-JSON error response:", errorText);
-          throw new Error(`Sunucu hatası (${aiResponse.status}). Lütfen daha sonra tekrar deneyin.`);
-        }
-      }
-      
-      const data = await aiResponse.json();
+      if (!response.ok) throw new Error('Generation failed');
+      const data = await response.json();
+
       const result = JSON.parse(data.text || "[]");
       setQuestions(result.slice(0, 3)); // Ensure max 3 questions
     } catch (err) {
@@ -158,38 +142,23 @@ export const IdeaInput = ({ user, onProjectCreated, initialPrompt }: { user: Use
       }
 
       // Generate code
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 seconds timeout
-
-      const aiResponse = await fetch("/api/ai/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        signal: controller.signal,
-        body: JSON.stringify({
-          model: "gemini-3-flash-preview",
-          contents: `Sen uzman bir Frontend Geliştiricisi ve UI/UX Tasarımcısısın. Kullanıcının fikri ve detayları: "${finalPrompt}". 
+      const response = await fetch('/api/ai/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          contents: [{ role: 'user', text: `Sen uzman bir Frontend Geliştiricisi ve UI/UX Tasarımcısısın. Kullanıcının fikri ve detayları: "${finalPrompt}". 
 Bu fikir için tek sayfalık, son derece modern, estetik, çok hızlı çalışan ve responsive (mobil uyumlu) bir HTML kodu oluştur. 
 Tailwind CSS (CDN üzerinden) ve gerekiyorsa FontAwesome veya Lucide ikonları (CDN üzerinden) kullan. 
 Modern UI trendlerini (glassmorphism, soft shadow, modern tipografi, gradientler) uygula. 
 Kullanıcı deneyimi (UX) en üst düzeyde olmalı. 
-Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`\`html vb.) KULLANMA. Kod <html> ile başlayıp </html> ile bitmeli.`
+Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`\`html vb.) KULLANMA. Kod <html> ile başlayıp </html> ile bitmeli.` }],
+          model: "gemini-3-flash-preview"
         })
       });
-      clearTimeout(timeoutId);
 
-      if (!aiResponse.ok) {
-        const contentType = aiResponse.headers.get("content-type");
-        if (contentType && contentType.includes("application/json")) {
-          const errorData = await aiResponse.json();
-          throw new Error(errorData.error || "Web sitesi kodu oluşturulamadı.");
-        } else {
-          const errorText = await aiResponse.text();
-          console.error("Non-JSON error response:", errorText);
-          throw new Error(`Sunucu hatası (${aiResponse.status}). Lütfen daha sonra tekrar deneyin.`);
-        }
-      }
-      
-      const data = await aiResponse.json();
+      if (!response.ok) throw new Error('Generation failed');
+      const data = await response.json();
+
       let code = data.text || '<h1>Hata oluştu</h1>';
       code = code.replace(/```html/g, '').replace(/```/g, '').trim();
 

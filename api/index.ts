@@ -1,6 +1,7 @@
 import express from "express";
 import path from "path";
 import dotenv from "dotenv";
+import OpenAI from "openai";
 
 dotenv.config({ override: true });
 
@@ -13,6 +14,56 @@ app.use(express.urlencoded({ extended: true }));
 // API routes
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
+});
+
+app.post("/api/ai/generate", async (req, res) => {
+  try {
+    const { contents, systemInstruction, model = "gpt-4o" } = req.body;
+    const githubToken = process.env.GITHUB_TOKEN;
+
+    if (!githubToken) {
+      return res.status(500).json({ error: "GITHUB_TOKEN is not configured in environment variables." });
+    }
+
+    const client = new OpenAI({
+      apiKey: githubToken,
+      baseURL: "https://models.inference.ai.azure.com"
+    });
+
+    // Convert contents to OpenAI format
+    const messages: any[] = [];
+    if (systemInstruction) {
+      messages.push({ role: "system", content: systemInstruction });
+    }
+
+    if (Array.isArray(contents)) {
+      contents.forEach((msg: any) => {
+        if (typeof msg === 'string') {
+          messages.push({ role: "user", content: msg });
+        } else if (msg.parts && Array.isArray(msg.parts)) {
+          const content = msg.parts.map((p: any) => p.text).join("\n");
+          messages.push({ role: msg.role === 'ai' ? 'assistant' : 'user', content });
+        } else if (msg.role && msg.text) {
+          messages.push({ role: msg.role === 'ai' ? 'assistant' : 'user', content: msg.text });
+        }
+      });
+    } else if (typeof contents === 'string') {
+      messages.push({ role: "user", content: contents });
+    }
+
+    const response = await client.chat.completions.create({
+      messages,
+      model: model === "gemini-3.1-pro-preview" ? "gpt-4o" : "gpt-4o-mini",
+      temperature: 1,
+      max_tokens: 4096,
+      top_p: 1
+    });
+
+    res.json({ text: response.choices[0].message.content });
+  } catch (error: any) {
+    console.error("AI Generate error:", error);
+    res.status(500).json({ error: error.message || "Internal server error" });
+  }
 });
 
 app.post("/api/fetch-url", async (req, res) => {

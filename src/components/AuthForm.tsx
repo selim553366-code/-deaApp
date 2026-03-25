@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, db, signInWithPopup, googleProvider } from '../firebase';
-import { collection, addDoc, doc, updateDoc, setDoc } from 'firebase/firestore';
-import { GoogleGenAI } from '@google/genai';
+import { collection, doc, setDoc } from 'firebase/firestore';
 import { Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
 
@@ -19,21 +18,18 @@ export const AuthForm = ({ prompt, onProjectCreated }: Props) => {
 
   const handleAuthSuccess = async (userCredential: any) => {
     if (prompt) {
-      const aiResponse = await fetch("/api/ai/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "gemini-3-flash-preview",
-          contents: `Sen uzman bir Frontend Geliştiricisi ve UI/UX Tasarımcısısın. Kullanıcının fikri: "${prompt}". Bu fikir için tek sayfalık, son derece modern, estetik, çok hızlı çalışan ve responsive (mobil uyumlu) bir HTML kodu oluştur. Tailwind CSS (CDN üzerinden) ve gerekiyorsa FontAwesome veya Lucide ikonları (CDN üzerinden) kullan. Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`\`html vb.) KULLANMA. Kod <html> ile başlayıp </html> ile bitmeli.`
+      const response = await fetch('/api/ai/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          contents: [{ role: 'user', text: `Sen uzman bir Frontend Geliştiricisi ve UI/UX Tasarımcısısın. Kullanıcının fikri: "${prompt}". Bu fikir için tek sayfalık, son derece modern, estetik, çok hızlı çalışan ve responsive (mobil uyumlu) bir HTML kodu oluştur. Tailwind CSS (CDN üzerinden) ve gerekiyorsa FontAwesome veya Lucide ikonları (CDN üzerinden) kullan. Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`\`html vb.) KULLANMA. Kod <html> ile başlayıp </html> ile bitmeli.` }],
+          model: "gemini-3-flash-preview"
         })
       });
 
-      if (!aiResponse.ok) {
-        const errorData = await aiResponse.json();
-        throw new Error(errorData.error || "Web sitesi kodu oluşturulamadı.");
-      }
-      
-      const data = await aiResponse.json();
+      if (!response.ok) throw new Error('Generation failed');
+      const data = await response.json();
+
       let code = data.text || '<h1>Hata oluştu</h1>';
       code = code.replace(/```html/g, '').replace(/```/g, '').trim();
 

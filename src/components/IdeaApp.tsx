@@ -102,7 +102,10 @@ export function IdeaApp({ user }: { user: User }) {
       const response = await fetch('/api/ai/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ role: 'user', text: prompt }] })
+        body: JSON.stringify({ 
+          contents: [{ role: 'user', text: prompt }],
+          model: "gemini-3.1-pro-preview"
+        })
       });
 
       if (!response.ok) throw new Error('Generation failed');

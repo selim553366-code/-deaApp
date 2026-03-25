@@ -50,22 +50,19 @@ export const AIHelper = ({ user }: { user: User | null }) => {
         });
       }
 
-      const aiResponse = await fetch("/api/ai/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      const fetchResponse = await fetch('/api/ai/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
           contents: [{ role: "user", parts }],
           systemInstruction: "Sen yardımcı bir AI asistanısın. Kullanıcılara web sitesi fikirleri ve teknik konularda yardımcı oluyorsun. Eğer kullanıcı bir dosya (resim, döküman vb.) gönderdiyse onu analiz et ve yardımcı ol. Kısa ve öz cevaplar ver.",
           model: "gemini-3-flash-preview"
         })
       });
 
-      if (!aiResponse.ok) {
-        const errorData = await aiResponse.json();
-        throw new Error(errorData.error || "Yapay zeka sunucusuna bağlanılamadı.");
-      }
+      if (!fetchResponse.ok) throw new Error('Generation failed');
+      const data = await fetchResponse.json();
 
-      const data = await aiResponse.json();
       setResponse(data.text || 'Cevap alınamadı.');
     } catch (err: any) {
       console.error(err);
