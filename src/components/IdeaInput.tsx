@@ -7,9 +7,12 @@ import { motion, AnimatePresence } from "motion/react";
 import { useLanguage } from '../contexts/LanguageContext';
 import { GoogleGenAI, Type } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+const getGeminiKey = () => {
+  return import.meta.env.VITE_GEMINI_API_KEY || (typeof process !== 'undefined' ? process.env.GEMINI_API_KEY : undefined);
+};
 
 export const IdeaInput = ({ user, onProjectCreated, initialPrompt }: { user: User | null, onProjectCreated?: (id: string) => void, initialPrompt?: string }) => {
+  const ai = new GoogleGenAI({ apiKey: getGeminiKey() || "" });
   const { t, language } = useLanguage();
   const [idea, setIdea] = useState(initialPrompt || '');
   const [showPreview, setShowPreview] = useState(false);

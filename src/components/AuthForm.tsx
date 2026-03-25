@@ -37,8 +37,9 @@ export const AuthForm = ({ prompt, onProjectCreated }: Props) => {
 
       if (cacheSnap.exists()) {
         code = cacheSnap.data().code;
-      } else {
-        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    } else {
+        const geminiKey = import.meta.env.VITE_GEMINI_API_KEY || (typeof process !== 'undefined' ? process.env.GEMINI_API_KEY : undefined);
+        const ai = new GoogleGenAI({ apiKey: geminiKey || "" });
         const response = await ai.models.generateContent({
           model: "gemini-3-flash-preview",
           contents: `Create a modern, responsive single-page website about: "${prompt}". Return ONLY the raw HTML code. Do not wrap in markdown blocks.`

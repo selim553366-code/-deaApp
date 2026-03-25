@@ -68,7 +68,8 @@ export function IdeaApp({ user }: { user: User }) {
   const analyzePrompt = async (idea: string) => {
     setIsGenerating(true);
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const geminiKey = import.meta.env.VITE_GEMINI_API_KEY || (typeof process !== 'undefined' ? process.env.GEMINI_API_KEY : undefined);
+      const ai = new GoogleGenAI({ apiKey: geminiKey || "" });
       const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
         contents: `Analyze this website idea: "${idea}". Ask 3 clarifying questions with 3-4 options each to make the website better. Return ONLY JSON in this format: [{"question": "...", "options": ["...", "..."]}].`,
@@ -112,7 +113,8 @@ export function IdeaApp({ user }: { user: User }) {
       if (cacheSnap.exists()) {
         code = cacheSnap.data().code;
       } else {
-        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+        const geminiKey = import.meta.env.VITE_GEMINI_API_KEY || (typeof process !== 'undefined' ? process.env.GEMINI_API_KEY : undefined);
+        const ai = new GoogleGenAI({ apiKey: geminiKey || "" });
         const response = await ai.models.generateContent({
           model: "gemini-3-flash-preview",
           contents: prompt
