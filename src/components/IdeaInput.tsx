@@ -153,6 +153,7 @@ Bu fikir için tek sayfalık, son derece modern, estetik, çok hızlı çalışa
 Tailwind CSS (CDN üzerinden) ve gerekiyorsa FontAwesome veya Lucide ikonları (CDN üzerinden) kullan. 
 Modern UI trendlerini (glassmorphism, soft shadow, modern tipografi, gradientler) uygula. 
 Kullanıcı deneyimi (UX) en üst düzeyde olmalı. 
+ÖNEMLİ: Eğer tasarımda butonlar, sekmeler (tabs), modallar, açılır menüler (dropdowns) veya formlar gibi etkileşimli öğeler varsa, bunların çalışması için gerekli JavaScript kodunu da <script> etiketleri içinde HTML'e dahil et. Tüm butonlar ve etkileşimli alanlar işlevsel olmalı.
 Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`\`html vb.) KULLANMA. Kod <html> ile başlayıp </html> ile bitmeli.` }],
           model: "gpt-4o-mini"
         })

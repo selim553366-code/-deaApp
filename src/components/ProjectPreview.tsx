@@ -174,11 +174,12 @@ KESİN KURALLAR:
 2. INCREMENTAL (KADEMELİ) GÜNCELLEME YAP: Tüm kodu yeniden yazma. Sadece kullanıcının istediği değişikliği yap, mevcut kodun geri kalanını olduğu gibi koru.
 3. Eğer "oyun yap" derse: HTML5/JS/CSS kullanarak, mobil uyumlu, akıcı animasyonlara sahip, bağımlılık yapıcı ve modern bir oyun tasarla.
 4. Eğer web sitesi güncelleme isterse: Glassmorphism, yumuşak gölgeler, canlı gradientler kullanarak premium bir UI oluştur.
-5. YANIT FORMATI (ZORUNLU):
+5. ETKİLEŞİM (INTERACTIVITY): Eğer butonlar, sekmeler (tabs), modallar, açılır menüler (dropdowns) veya formlar gibi etkileşimli öğeler varsa, bunların çalışması için gerekli JavaScript kodunu da <script> etiketleri içinde HTML'e dahil et. Tüm butonlar ve etkileşimli alanlar işlevsel olmalı.
+6. YANIT FORMATI (ZORUNLU):
    - Yanıtın SADECE şu iki bölümden oluşmalı:
    - <message>Yaptığın değişikliği anlatan 1 cümlelik mesaj</message>
    - <kodu_baslat>GÜNCELLENMİŞ TÜM HTML/CSS/JS KODU</kodu_bitir>
-6. BAŞKA HİÇBİR AÇIKLAMA YAZMA.`;
+7. BAŞKA HİÇBİR AÇIKLAMA YAZMA.`;
       
       lastMsg.parts[0].text = `Mevcut HTML Kodu:\n\`\`\`html\n${currentCode}\n\`\`\`\n\nKullanıcı Mesajı: ${currentInput}`;
 
@@ -450,7 +451,7 @@ KESİN KURALLAR:
   });
 </script>` : ''}
             className="w-full flex-1 border-none bg-white"
-            sandbox="allow-scripts allow-same-origin"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
           />
           
           <AnimatePresence>

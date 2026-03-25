@@ -22,7 +22,7 @@ export const AuthForm = ({ prompt, onProjectCreated }: Props) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          contents: [{ role: 'user', text: `Sen uzman bir Frontend Geliştiricisi ve UI/UX Tasarımcısısın. Kullanıcının fikri: "${prompt}". Bu fikir için tek sayfalık, son derece modern, estetik, çok hızlı çalışan ve responsive (mobil uyumlu) bir HTML kodu oluştur. Tailwind CSS (CDN üzerinden) ve gerekiyorsa FontAwesome veya Lucide ikonları (CDN üzerinden) kullan. Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`\`html vb.) KULLANMA. Kod <html> ile başlayıp </html> ile bitmeli.` }],
+          contents: [{ role: 'user', text: `Sen uzman bir Frontend Geliştiricisi ve UI/UX Tasarımcısısın. Kullanıcının fikri: "${prompt}". Bu fikir için tek sayfalık, son derece modern, estetik, çok hızlı çalışan ve responsive (mobil uyumlu) bir HTML kodu oluştur. Tailwind CSS (CDN üzerinden) ve gerekiyorsa FontAwesome veya Lucide ikonları (CDN üzerinden) kullan. ÖNEMLİ: Eğer tasarımda butonlar, sekmeler (tabs), modallar, açılır menüler (dropdowns) veya formlar gibi etkileşimli öğeler varsa, bunların çalışması için gerekli JavaScript kodunu da <script> etiketleri içinde HTML'e dahil et. Tüm butonlar ve etkileşimli alanlar işlevsel olmalı. Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`\`html vb.) KULLANMA. Kod <html> ile başlayıp </html> ile bitmeli.` }],
           model: "gpt-4o-mini"
         })
       });
