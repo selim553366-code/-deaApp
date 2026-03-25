@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Loader2, Sparkles, X, CheckCircle2, Circle, Wand2 } from 'lucide-react';
+import { GoogleGenAI, Type } from "@google/genai";
 
 interface Props {
   onNext: (prompt: string) => void;
@@ -42,29 +43,20 @@ export const AppCreationPrompt = ({ onNext }: Props) => {
     setCurrentAnswer('');
 
     try {
-      const aiResponse = await fetch("/api/ai/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "gemini-3-flash-preview",
-          contents: `Kullanıcı şu uygulamayı yapmak istiyor: "${prompt}". Bu uygulamayı daha iyi tasarlayabilmek için kullanıcıya sorulacak en önemli 3 soruyu oluştur. Sorular kısa ve net olmalı. Sadece JSON formatında bir string array döndür. Örnek: ["Soru 1?", "Soru 2?", "Soru 3?"].`,
-          config: {
-            responseMimeType: "application/json",
-            responseSchema: {
-              type: "ARRAY",
-              items: { type: "STRING" }
-            }
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const aiResponse = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: `Kullanıcı şu uygulamayı yapmak istiyor: "${prompt}". Bu uygulamayı daha iyi tasarlayabilmek için kullanıcıya sorulacak en önemli 3 soruyu oluştur. Sorular kısa ve net olmalı. Sadece JSON formatında bir string array döndür. Örnek: ["Soru 1?", "Soru 2?", "Soru 3?"].`,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.ARRAY,
+            items: { type: Type.STRING }
           }
-        })
+        }
       });
 
-      if (!aiResponse.ok) {
-        const errorData = await aiResponse.json().catch(() => ({}));
-        throw new Error(errorData.error || "AI Soruları oluşturulamadı.");
-      }
-      
-      const data = await aiResponse.json();
-      const result = JSON.parse(data.text || "[]");
+      const result = JSON.parse(aiResponse.text || "[]");
       setQuestions(result.slice(0, 3)); // Ensure max 3 questions
     } catch (err) {
       console.error(err);

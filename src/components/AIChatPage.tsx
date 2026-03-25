@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Send, Loader2, Bot, User as UserIcon, Sparkles } from "lucide-react";
 import { useLanguage } from '../contexts/LanguageContext';
+import { GoogleGenAI } from "@google/genai";
 
 export const AIChatPage = ({ onOpenPremium }: { onOpenPremium: () => void }) => {
   const { t, language } = useLanguage();
@@ -44,22 +45,18 @@ export const AIChatPage = ({ onOpenPremium }: { onOpenPremium: () => void }) => 
             ? `Analyze the data from the following website and update the current calendar according to the user's request. Keep old features and do not break them.\n\nWebsite content:\n${fetchedContent}\n\nUser request:\n${prompt}`
             : `Update the current calendar. Keep old features and do not break them. User request:\n${prompt}`);
 
-      const response = await fetch('/api/ai/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          contents: [{ role: 'user', text: promptTemplate }],
-          model: "gemini-3-flash-preview"
-        })
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: promptTemplate
       });
 
-      if (!response.ok) throw new Error('Generation failed');
-      const data = await response.json();
+      const data = { text: response.text };
       
       setMessages([...newMessages, { role: 'ai' as const, text: data.text || t('noResponse') }]);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setMessages([...newMessages, { role: 'ai' as const, text: t('errorOccurred') }]);
+      setMessages([...newMessages, { role: 'ai' as const, text: err.message || t('errorOccurred') }]);
     } finally {
       setLoading(false);
     }

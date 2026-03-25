@@ -5,6 +5,7 @@ import { Loader2, Sparkles, X, CheckCircle2, Circle, Wand2, Lightbulb } from 'lu
 import { User } from '../types';
 import { motion, AnimatePresence } from "motion/react";
 import { useLanguage } from '../contexts/LanguageContext';
+import { GoogleGenAI } from "@google/genai";
 
 export const IdeaInput = ({ user, onProjectCreated, initialPrompt }: { user: User | null, onProjectCreated?: (id: string) => void, initialPrompt?: string }) => {
   const { t, language } = useLanguage();
@@ -69,20 +70,16 @@ export const IdeaInput = ({ user, onProjectCreated, initialPrompt }: { user: Use
     setCurrentAnswer('');
 
     try {
-      const response = await fetch('/api/ai/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          contents: [{ role: 'user', text: `Kullanıcı şu uygulamayı yapmak istiyor: "${idea}". Bu uygulamayı daha iyi tasarlayabilmek için kullanıcıya sorulacak en önemli 3 soruyu oluştur. Sorular kısa ve net olmalı. Sadece JSON formatında bir string array döndür. Örnek: ["Soru 1?", "Soru 2?", "Soru 3?"].` }],
-          model: "gemini-3-flash-preview",
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: `Kullanıcı şu uygulamayı yapmak istiyor: "${idea}". Bu uygulamayı daha iyi tasarlayabilmek için kullanıcıya sorulacak en önemli 3 soruyu oluştur. Sorular kısa ve net olmalı. Sadece JSON formatında bir string array döndür. Örnek: ["Soru 1?", "Soru 2?", "Soru 3?"].`,
+        config: {
           systemInstruction: "You are a helpful assistant that returns JSON."
-        })
+        }
       });
 
-      if (!response.ok) throw new Error('Generation failed');
-      const data = await response.json();
-
-      const result = JSON.parse(data.text || "[]");
+      const result = JSON.parse(response.text || "[]");
       setQuestions(result.slice(0, 3)); // Ensure max 3 questions
     } catch (err) {
       console.error(err);
@@ -142,24 +139,18 @@ export const IdeaInput = ({ user, onProjectCreated, initialPrompt }: { user: Use
       }
 
       // Generate code
-      const response = await fetch('/api/ai/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          contents: [{ role: 'user', text: `Sen uzman bir Frontend Geliştiricisi ve UI/UX Tasarımcısısın. Kullanıcının fikri ve detayları: "${finalPrompt}". 
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: `Sen uzman bir Frontend Geliştiricisi ve UI/UX Tasarımcısısın. Kullanıcının fikri ve detayları: "${finalPrompt}". 
 Bu fikir için tek sayfalık, son derece modern, estetik, çok hızlı çalışan ve responsive (mobil uyumlu) bir HTML kodu oluştur. 
 Tailwind CSS (CDN üzerinden) ve gerekiyorsa FontAwesome veya Lucide ikonları (CDN üzerinden) kullan. 
 Modern UI trendlerini (glassmorphism, soft shadow, modern tipografi, gradientler) uygula. 
 Kullanıcı deneyimi (UX) en üst düzeyde olmalı. 
-Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`\`html vb.) KULLANMA. Kod <html> ile başlayıp </html> ile bitmeli.` }],
-          model: "gemini-3-flash-preview"
-        })
+Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`\`html vb.) KULLANMA. Kod <html> ile başlayıp </html> ile bitmeli.`
       });
 
-      if (!response.ok) throw new Error('Generation failed');
-      const data = await response.json();
-
-      let code = data.text || '<h1>Hata oluştu</h1>';
+      let code = response.text || '<h1>Hata oluştu</h1>';
       code = code.replace(/```html/g, '').replace(/```/g, '').trim();
 
       const newProjectRef = doc(collection(db, 'projects'));

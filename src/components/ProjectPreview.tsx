@@ -5,6 +5,7 @@ import { db } from '../firebase';
 import { Loader2, Globe, RefreshCw, Edit2, Check, Settings, Maximize2, Minimize2, Circle, CheckCircle2, Bot, Send, Paperclip, X, FileText, Image as ImageIcon, File, Wand2, Sparkles } from 'lucide-react';
 import { ProjectSettingsModal } from './ProjectSettingsModal';
 import { motion, AnimatePresence } from 'motion/react';
+import { GoogleGenAI } from "@google/genai";
 
 export const ProjectPreview = ({ 
   project, 
@@ -182,20 +183,16 @@ KESİN KURALLAR:
       
       lastMsg.parts[0].text = `Mevcut HTML Kodu:\n\`\`\`html\n${currentCode}\n\`\`\`\n\nKullanıcı Mesajı: ${currentInput}`;
 
-      const response = await fetch('/api/ai/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          contents: contents,
-          systemInstruction,
-          model: "gemini-3.1-pro-preview"
-        })
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const response = await ai.models.generateContent({
+        model: "gemini-3.1-pro-preview",
+        contents: contents,
+        config: {
+          systemInstruction: systemInstruction
+        }
       });
 
-      if (!response.ok) throw new Error('Generation failed');
-      const data = await response.json();
-
-      const responseText = data.text || '';
+      const responseText = response.text || '';
       
       if (!responseText) {
         throw new Error("Yapay zekadan boş cevap döndü. Lütfen tekrar deneyin.");

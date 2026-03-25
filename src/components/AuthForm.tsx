@@ -3,6 +3,7 @@ import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, db, s
 import { collection, doc, setDoc } from 'firebase/firestore';
 import { Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { GoogleGenAI } from "@google/genai";
 
 interface Props {
   prompt: string;
@@ -18,19 +19,13 @@ export const AuthForm = ({ prompt, onProjectCreated }: Props) => {
 
   const handleAuthSuccess = async (userCredential: any) => {
     if (prompt) {
-      const response = await fetch('/api/ai/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          contents: [{ role: 'user', text: `Sen uzman bir Frontend Geliştiricisi ve UI/UX Tasarımcısısın. Kullanıcının fikri: "${prompt}". Bu fikir için tek sayfalık, son derece modern, estetik, çok hızlı çalışan ve responsive (mobil uyumlu) bir HTML kodu oluştur. Tailwind CSS (CDN üzerinden) ve gerekiyorsa FontAwesome veya Lucide ikonları (CDN üzerinden) kullan. Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`\`html vb.) KULLANMA. Kod <html> ile başlayıp </html> ile bitmeli.` }],
-          model: "gemini-3-flash-preview"
-        })
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: `Sen uzman bir Frontend Geliştiricisi ve UI/UX Tasarımcısısın. Kullanıcının fikri: "${prompt}". Bu fikir için tek sayfalık, son derece modern, estetik, çok hızlı çalışan ve responsive (mobil uyumlu) bir HTML kodu oluştur. Tailwind CSS (CDN üzerinden) ve gerekiyorsa FontAwesome veya Lucide ikonları (CDN üzerinden) kullan. Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`\`html vb.) KULLANMA. Kod <html> ile başlayıp </html> ile bitmeli.`
       });
 
-      if (!response.ok) throw new Error('Generation failed');
-      const data = await response.json();
-
-      let code = data.text || '<h1>Hata oluştu</h1>';
+      let code = response.text || '<h1>Hata oluştu</h1>';
       code = code.replace(/```html/g, '').replace(/```/g, '').trim();
 
       const newProjectRef = doc(collection(db, 'projects'));

@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { User } from '../types';
 import { Paperclip, X, FileText, Image as ImageIcon, File } from 'lucide-react';
+import { GoogleGenAI } from "@google/genai";
 
 export const AIHelper = ({ user }: { user: User | null }) => {
   const [prompt, setPrompt] = useState('');
@@ -50,20 +51,16 @@ export const AIHelper = ({ user }: { user: User | null }) => {
         });
       }
 
-      const fetchResponse = await fetch('/api/ai/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          contents: [{ role: "user", parts }],
-          systemInstruction: "Sen yardımcı bir AI asistanısın. Kullanıcılara web sitesi fikirleri ve teknik konularda yardımcı oluyorsun. Eğer kullanıcı bir dosya (resim, döküman vb.) gönderdiyse onu analiz et ve yardımcı ol. Kısa ve öz cevaplar ver.",
-          model: "gemini-3-flash-preview"
-        })
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const responseObj = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: [{ role: "user", parts }],
+        config: {
+          systemInstruction: "Sen yardımcı bir AI asistanısın. Kullanıcılara web sitesi fikirleri ve teknik konularda yardımcı oluyorsun. Eğer kullanıcı bir dosya (resim, döküman vb.) gönderdiyse onu analiz et ve yardımcı ol. Kısa ve öz cevaplar ver."
+        }
       });
 
-      if (!fetchResponse.ok) throw new Error('Generation failed');
-      const data = await fetchResponse.json();
-
-      setResponse(data.text || 'Cevap alınamadı.');
+      setResponse(responseObj.text || 'Cevap alınamadı.');
     } catch (err: any) {
       console.error(err);
       setResponse(err.message || 'Bir hata oluştu.');

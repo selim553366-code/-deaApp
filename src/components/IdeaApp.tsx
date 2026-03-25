@@ -8,6 +8,7 @@ import { PremiumModal } from "./PremiumModal";
 import { AIChatPage } from "./AIChatPage";
 import { Send, Sparkles, LogOut, Code, Loader2, Check, Eye, EyeOff } from "lucide-react";
 import { signOut } from "firebase/auth";
+import { GoogleGenAI } from "@google/genai";
 
 interface AnalysisQuestion {
   question: string;
@@ -57,19 +58,16 @@ export function IdeaApp({ user }: { user: User }) {
   const analyzePrompt = async (idea: string) => {
     setIsGenerating(true);
     try {
-      const response = await fetch('/api/ai/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          contents: [{ role: 'user', text: `Analyze this website idea: "${idea}". Ask 3 clarifying questions with 3-4 options each to make the website better. Return ONLY JSON in this format: [{"question": "...", "options": ["...", "..."]}].` }],
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: `Analyze this website idea: "${idea}". Ask 3 clarifying questions with 3-4 options each to make the website better. Return ONLY JSON in this format: [{"question": "...", "options": ["...", "..."]}].`,
+        config: {
           systemInstruction: "You are a helpful assistant that returns JSON."
-        })
+        }
       });
 
-      if (!response.ok) throw new Error('Analysis failed');
-      const data = await response.json();
-
-      const questions = JSON.parse(data.text || "[]");
+      const questions = JSON.parse(response.text || "[]");
       setAnalysisQuestions(questions);
       setAnalysisAnswers(new Array(questions.length).fill(""));
       setOriginalIdea(idea);
@@ -99,19 +97,13 @@ export function IdeaApp({ user }: { user: User }) {
            Ensure it has a full <html>, <head>, and <body> structure.
            Return ONLY the raw HTML code. Do not wrap in markdown blocks like \`\`\`html.`;
 
-      const response = await fetch('/api/ai/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          contents: [{ role: 'user', text: prompt }],
-          model: "gemini-3.1-pro-preview"
-        })
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const response = await ai.models.generateContent({
+        model: "gemini-3.1-pro-preview",
+        contents: prompt
       });
 
-      if (!response.ok) throw new Error('Generation failed');
-      const data = await response.json();
-
-      let code = data.text || "";
+      let code = response.text || "";
       if (code.startsWith("```html")) {
         code = code.replace(/^```html\n/, "").replace(/\n```$/, "");
       } else if (code.startsWith("```")) {
