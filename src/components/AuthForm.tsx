@@ -1,8 +1,19 @@
 import React, { useState } from 'react';
 import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, db, signInWithPopup, googleProvider } from '../firebase';
-import { collection, doc, setDoc } from 'firebase/firestore';
+import { collection, doc, setDoc, getDoc } from 'firebase/firestore';
 import { Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { GoogleGenAI } from "@google/genai";
+
+function hashCode(str: string) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return hash.toString();
+}
 
 interface Props {
   prompt: string;
@@ -18,20 +29,27 @@ export const AuthForm = ({ prompt, onProjectCreated }: Props) => {
 
   const handleAuthSuccess = async (userCredential: any) => {
     if (prompt) {
-      const response = await fetch('/api/ai/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          contents: [{ role: 'user', text: `Sen uzman bir Frontend Geliştiricisi ve UI/UX Tasarımcısısın. Kullanıcının fikri: "${prompt}". Bu fikir için tek sayfalık, son derece modern, estetik, çok hızlı çalışan ve responsive (mobil uyumlu) bir HTML kodu oluştur. Tailwind CSS (CDN üzerinden) ve gerekiyorsa FontAwesome veya Lucide ikonları (CDN üzerinden) kullan. ÖNEMLİ: Eğer tasarımda butonlar, sekmeler (tabs), modallar, açılır menüler (dropdowns) veya formlar gibi etkileşimli öğeler varsa, bunların çalışması için gerekli JavaScript kodunu da <script> etiketleri içinde HTML'e dahil et. Tüm butonlar ve etkileşimli alanlar işlevsel olmalı. Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`\`html vb.) KULLANMA. Kod <html> ile başlayıp </html> ile bitmeli.` }],
-          model: "gpt-4o-mini"
-        })
-      });
+      const cacheKey = hashCode(prompt);
+      const cacheRef = doc(db, "cache", cacheKey);
+      const cacheSnap = await getDoc(cacheRef);
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Generation failed');
+      let code = "";
 
-      let code = data.text || '<h1>Hata oluştu</h1>';
-      code = code.replace(/```html/g, '').replace(/```/g, '').trim();
+      if (cacheSnap.exists()) {
+        code = cacheSnap.data().code;
+      } else {
+        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+        const response = await ai.models.generateContent({
+          model: "gemini-3-flash-preview",
+          contents: `Create a modern, responsive single-page website about: "${prompt}". Return ONLY the raw HTML code. Do not wrap in markdown blocks.`
+        });
+        
+        code = response.text || '<h1>Hata oluştu</h1>';
+        // Robust cleaning: remove markdown blocks if they exist
+        code = code.replace(/```html/g, '').replace(/```/g, '').trim();
+        
+        await setDoc(cacheRef, { code, createdAt: new Date().toISOString() });
+      }
 
       const newProjectRef = doc(collection(db, 'projects'));
       const newProject = {

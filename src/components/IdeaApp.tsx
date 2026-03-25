@@ -1,13 +1,24 @@
 import { useState, useEffect } from "react";
 import { User, Project } from "../types";
 import { db, auth } from "../firebase";
-import { collection, query, where, orderBy, onSnapshot, doc, setDoc, updateDoc, deleteDoc } from "firebase/firestore";
+import { collection, query, where, orderBy, onSnapshot, doc, setDoc, updateDoc, deleteDoc, getDoc } from "firebase/firestore";
 import { Sidebar } from "./Sidebar";
 import { Preview } from "./Preview";
 import { PremiumModal } from "./PremiumModal";
 import { AIChatPage } from "./AIChatPage";
 import { Send, Sparkles, LogOut, Code, Loader2, Check, Eye, EyeOff } from "lucide-react";
 import { signOut } from "firebase/auth";
+import { GoogleGenAI } from "@google/genai";
+
+function hashCode(str: string) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return hash.toString();
+}
 
 interface AnalysisQuestion {
   question: string;
@@ -57,20 +68,16 @@ export function IdeaApp({ user }: { user: User }) {
   const analyzePrompt = async (idea: string) => {
     setIsGenerating(true);
     try {
-      const response = await fetch('/api/ai/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          contents: [{ role: 'user', text: `Analyze this website idea: "${idea}". Ask 3 clarifying questions with 3-4 options each to make the website better. Return ONLY JSON in this format: [{"question": "...", "options": ["...", "..."]}].` }],
-          systemInstruction: "You are a helpful assistant that returns JSON.",
-          model: "gpt-4o-mini"
-        })
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: `Analyze this website idea: "${idea}". Ask 3 clarifying questions with 3-4 options each to make the website better. Return ONLY JSON in this format: [{"question": "...", "options": ["...", "..."]}].`,
+        config: {
+          responseMimeType: "application/json",
+        }
       });
 
-      if (!response.ok) throw new Error('Analysis failed');
-      const data = await response.json();
-
-      let jsonText = data.text || "[]";
+      let jsonText = response.text || "[]";
       jsonText = jsonText.replace(/```json/gi, '').replace(/```/g, '').trim();
       const questions = JSON.parse(jsonText);
       setAnalysisQuestions(questions);
@@ -78,6 +85,10 @@ export function IdeaApp({ user }: { user: User }) {
       setOriginalIdea(idea);
     } catch (error) {
       console.error("Analysis failed:", error);
+      if (error instanceof Error) {
+        console.error("Error message:", error.message);
+        console.error("Error stack:", error.stack);
+      }
       handleGenerate(idea);
     } finally {
       setIsGenerating(false);
@@ -89,38 +100,29 @@ export function IdeaApp({ user }: { user: User }) {
     
     try {
       const prompt = currentProject 
-        ? `Update this website based on the following request: "${idea}". 
-           Current code:
-           \`\`\`html
-           ${currentProject.code}
-           \`\`\`
-           IMPORTANT: If there are interactive elements like buttons, tabs, modals, dropdowns, or forms, include the necessary JavaScript inside <script> tags to make them functional.
-           Return ONLY the complete, updated HTML file with Tailwind CSS via CDN. Ensure it has a full <html>, <head>, and <body> structure. No markdown formatting, no explanations.`
-        : `Create a modern, beautiful, responsive single-page website using HTML and Tailwind CSS (via CDN) based on this idea: "${idea}". 
-           ${answers ? `Additional context: ${answers.join(", ")}.` : ""}
-           ${showReviews ? "Include a customer review section." : "Do NOT include any customer review section."}
-           Include a nice UI, good typography, and placeholder images if needed. 
-           IMPORTANT: If there are interactive elements like buttons, tabs, modals, dropdowns, or forms, include the necessary JavaScript inside <script> tags to make them functional.
-           Ensure it has a full <html>, <head>, and <body> structure.
-           Return ONLY the raw HTML code. Do not wrap in markdown blocks like \`\`\`html.`;
+        ? `Update this website based on: "${idea}". Current code: ${currentProject.code}. Return ONLY the complete, updated HTML file. No markdown formatting.`
+        : `Create a modern, responsive single-page website about: "${idea}". ${answers ? `Additional context: ${answers.join(", ")}.` : ""} Return ONLY the raw HTML code. Do not wrap in markdown blocks.`;
 
-      const response = await fetch('/api/ai/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          contents: [{ role: 'user', text: prompt }],
-          model: "gpt-4o-mini"
-        })
-      });
+      const cacheKey = hashCode(prompt);
+      const cacheRef = doc(db, "cache", cacheKey);
+      const cacheSnap = await getDoc(cacheRef);
 
-      if (!response.ok) throw new Error('Generation failed');
-      const data = await response.json();
+      let code = "";
 
-      let code = data.text || "";
-      if (code.startsWith("```html")) {
-        code = code.replace(/^```html\n/, "").replace(/\n```$/, "");
-      } else if (code.startsWith("```")) {
-        code = code.replace(/^```\n/, "").replace(/\n```$/, "");
+      if (cacheSnap.exists()) {
+        code = cacheSnap.data().code;
+      } else {
+        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+        const response = await ai.models.generateContent({
+          model: "gemini-3-flash-preview",
+          contents: prompt
+        });
+        
+        code = response.text || "";
+        // Robust cleaning: remove markdown blocks if they exist
+        code = code.replace(/```html/g, '').replace(/```/g, '').trim();
+        
+        await setDoc(cacheRef, { code, createdAt: new Date().toISOString() });
       }
 
       if (currentProject && currentProject.id) {
@@ -151,6 +153,11 @@ export function IdeaApp({ user }: { user: User }) {
       }
     } catch (error) {
       console.error("Generation failed:", error);
+      if (error instanceof Error) {
+        console.error("Error message:", error.message);
+        console.error("Error stack:", error.stack);
+      }
+      alert("Üzgünüm, site oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.");
     } finally {
       setIsGenerating(false);
       setAnalysisQuestions(null);
