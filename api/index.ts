@@ -58,11 +58,11 @@ app.post("/api/ai/generate", async (req, res) => {
     // We'll keep the system prompt and the last few messages, and truncate the content of the last message if it's too long.
     let finalMessages = [...messages];
     
-    // If the last message is very long (e.g. contains full HTML), truncate it to ~20000 chars
+    // If the last message is very long (e.g. contains full HTML), truncate it to ~60000 chars
     if (finalMessages.length > 0) {
       const lastMsg = finalMessages[finalMessages.length - 1];
-      if (typeof lastMsg.content === 'string' && lastMsg.content.length > 20000) {
-        lastMsg.content = lastMsg.content.substring(0, 20000) + "\n...[TRUNCATED DUE TO LENGTH]...";
+      if (typeof lastMsg.content === 'string' && lastMsg.content.length > 60000) {
+        lastMsg.content = lastMsg.content.substring(0, 60000) + "\n...[TRUNCATED DUE TO LENGTH]...";
       }
     }
 
@@ -70,7 +70,7 @@ app.post("/api/ai/generate", async (req, res) => {
       messages: finalMessages,
       model: "gpt-4o-mini",
       temperature: 1,
-      max_tokens: 4096,
+      max_tokens: 16384,
       top_p: 1
     });
 

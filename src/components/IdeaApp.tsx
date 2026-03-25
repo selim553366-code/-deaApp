@@ -70,7 +70,9 @@ export function IdeaApp({ user }: { user: User }) {
       if (!response.ok) throw new Error('Analysis failed');
       const data = await response.json();
 
-      const questions = JSON.parse(data.text || "[]");
+      let jsonText = data.text || "[]";
+      jsonText = jsonText.replace(/```json/gi, '').replace(/```/g, '').trim();
+      const questions = JSON.parse(jsonText);
       setAnalysisQuestions(questions);
       setAnalysisAnswers(new Array(questions.length).fill(""));
       setOriginalIdea(idea);

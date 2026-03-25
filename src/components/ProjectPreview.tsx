@@ -214,25 +214,38 @@ KESİN KURALLAR:
                                     .trim() || "Kod güncellendi! Sol taraftan önizleyebilirsiniz.";
       }
 
-      const codeMatch = responseText.match(/<kodu_baslat>([\s\S]*?)<\/kodu_bitir>/i);
+      const codeMatch = responseText.match(/<kodu_baslat>([\s\S]*?)<\/kodu_bitir>/i) || responseText.match(/<kodu_baslat>([\s\S]*)/i);
       if (codeMatch) {
         newCode = codeMatch[1].trim();
       } else {
         // Fallback to old regexes
-        const htmlMatch = responseText.match(/```html([\s\S]*?)```/);
+        const htmlMatch = responseText.match(/```html([\s\S]*?)```/i) || responseText.match(/```html([\s\S]*)/i);
         if (htmlMatch) {
           newCode = htmlMatch[1].trim();
         } else if (responseText.includes('```')) {
-           const fallbackMatch = responseText.match(/```([\s\S]*?)```/);
+           const fallbackMatch = responseText.match(/```([\s\S]*?)```/) || responseText.match(/```([\s\S]*)/);
            if (fallbackMatch && fallbackMatch[1].includes('<html')) {
              newCode = fallbackMatch[1].trim();
            }
         } else {
-           const rawHtmlMatch = responseText.match(/(<!DOCTYPE html>[\s\S]*<\/html>|<html[\s\S]*<\/html>)/i);
+           const rawHtmlMatch = responseText.match(/(<!DOCTYPE html>[\s\S]*<\/html>|<html[\s\S]*<\/html>)/i) || responseText.match(/(<!DOCTYPE html>[\s\S]*|<html[\s\S]*)/i);
            if (rawHtmlMatch) {
              newCode = rawHtmlMatch[1].trim();
            }
         }
+      }
+
+      // Clean up any remaining markdown blocks
+      newCode = newCode.replace(/^```html\n?/i, '').replace(/\n?```$/i, '').trim();
+      newCode = newCode.replace(/^```\n?/i, '').replace(/\n?```$/i, '').trim();
+
+      if (newCode.length < 50) {
+        newCode = project.code;
+        if (aiMessageText === responseText) {
+           aiMessageText = "Üzgünüm, kodu güncellerken bir hata oluştu. Lütfen tekrar deneyin.";
+        }
+      } else if (responseText.length > 10000 && !responseText.includes('</kodu_bitir>') && !responseText.includes('</html>') && !responseText.endsWith('```')) {
+        aiMessageText += " (Uyarı: Kod çok uzun olduğu için tamamı oluşturulamadı, sayfa eksik görünebilir.)";
       }
 
       const newAiMsg = { role: 'model' as const, text: aiMessageText };

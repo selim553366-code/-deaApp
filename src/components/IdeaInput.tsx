@@ -82,7 +82,9 @@ export const IdeaInput = ({ user, onProjectCreated, initialPrompt }: { user: Use
       if (!response.ok) throw new Error('Analysis failed');
       const data = await response.json();
 
-      const result = JSON.parse(data.text || "[]");
+      let jsonText = data.text || "[]";
+      jsonText = jsonText.replace(/```json/gi, '').replace(/```/g, '').trim();
+      const result = JSON.parse(jsonText);
       setQuestions(result.slice(0, 3)); // Ensure max 3 questions
     } catch (err) {
       console.error(err);

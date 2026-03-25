@@ -57,7 +57,9 @@ export const AppCreationPrompt = ({ onNext }: Props) => {
       }
       
       const data = await aiResponse.json();
-      const result = JSON.parse(data.text || "[]");
+      let jsonText = data.text || "[]";
+      jsonText = jsonText.replace(/```json/gi, '').replace(/```/g, '').trim();
+      const result = JSON.parse(jsonText);
       setQuestions(result.slice(0, 3)); // Ensure max 3 questions
     } catch (err) {
       console.error(err);
