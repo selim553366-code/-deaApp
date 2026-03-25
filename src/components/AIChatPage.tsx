@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Send, Loader2, Bot, User as UserIcon, Sparkles } from "lucide-react";
 import { useLanguage } from '../contexts/LanguageContext';
-import { GoogleGenAI } from "@google/genai";
 
 export const AIChatPage = ({ onOpenPremium }: { onOpenPremium: () => void }) => {
   const { t, language } = useLanguage();
@@ -45,13 +44,17 @@ export const AIChatPage = ({ onOpenPremium }: { onOpenPremium: () => void }) => 
             ? `Analyze the data from the following website and update the current calendar according to the user's request. Keep old features and do not break them.\n\nWebsite content:\n${fetchedContent}\n\nUser request:\n${prompt}`
             : `Update the current calendar. Keep old features and do not break them. User request:\n${prompt}`);
 
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: promptTemplate
+      const response = await fetch('/api/ai/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          contents: promptTemplate,
+          model: "gpt-4o-mini"
+        })
       });
 
-      const data = { text: response.text };
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Generation failed');
       
       setMessages([...newMessages, { role: 'ai' as const, text: data.text || t('noResponse') }]);
     } catch (err: any) {
