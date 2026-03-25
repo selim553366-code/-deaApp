@@ -14,7 +14,7 @@ export const ProjectPreview = ({
 }: { 
   project: Project, 
   user: User | null,
-  initialChatPrompt?: string,
+  initialChatPrompt?: string, 
   onClearInitialChatPrompt ?: () => void
 }) => {
   const [title, setTitle] = useState(project.title || 'İsimsiz Proje');
