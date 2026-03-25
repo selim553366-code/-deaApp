@@ -51,12 +51,18 @@ export const AppCreationPrompt = ({ onNext }: Props) => {
         })
       });
 
-      if (!aiResponse.ok) {
-        const errorData = await aiResponse.json().catch(() => ({}));
-        throw new Error(errorData.error || "AI Soruları oluşturulamadı.");
+      let data;
+      const contentType = aiResponse.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        data = await aiResponse.json();
+      } else {
+        const text = await aiResponse.text();
+        throw new Error(text || `Server error: ${aiResponse.status}`);
       }
-      
-      const data = await aiResponse.json();
+
+      if (!aiResponse.ok) {
+        throw new Error(data.error || "AI Soruları oluşturulamadı.");
+      }
       let jsonText = data.text || "[]";
       jsonText = jsonText.replace(/```json/gi, '').replace(/```/g, '').trim();
       const result = JSON.parse(jsonText);

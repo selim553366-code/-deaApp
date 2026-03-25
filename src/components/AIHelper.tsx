@@ -60,7 +60,15 @@ export const AIHelper = ({ user }: { user: User | null }) => {
         })
       });
 
-      const data = await fetchResponse.json();
+      let data;
+      const contentType = fetchResponse.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        data = await fetchResponse.json();
+      } else {
+        const text = await fetchResponse.text();
+        throw new Error(text || `Server error: ${fetchResponse.status}`);
+      }
+
       if (!fetchResponse.ok) throw new Error(data.error || 'Generation failed');
 
       setResponse(data.text || 'Cevap alınamadı.');

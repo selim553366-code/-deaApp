@@ -23,7 +23,16 @@ export const AIChatPage = ({ onOpenPremium }: { onOpenPremium: () => void }) => 
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ url: urls[0] })
         });
-        const data = await response.json();
+        
+        let data;
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          data = await response.json();
+        } else {
+          const text = await response.text();
+          console.error("URL fetch failed with non-JSON response:", text);
+          data = { text: "" };
+        }
         fetchedContent = data.text || "";
       } catch (err) {
         console.error("URL fetch failed", err);
@@ -53,7 +62,15 @@ export const AIChatPage = ({ onOpenPremium }: { onOpenPremium: () => void }) => 
         })
       });
 
-      const data = await response.json();
+      let data;
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        throw new Error(text || `Server error: ${response.status}`);
+      }
+
       if (!response.ok) throw new Error(data.error || 'Generation failed');
       
       setMessages([...newMessages, { role: 'ai' as const, text: data.text || t('noResponse') }]);
