@@ -171,6 +171,8 @@ Bu fikir için tek sayfalık, son derece modern, estetik, çok hızlı çalışa
    - 3D FPS oyunları için PointerLock API kullanarak fareyi kilitle, WASD kontrollerini, zıplama ve yerçekimi mekaniklerini (raycaster veya basit fizik) ekle.
    - Silah ateşleme, parçacık efektleri (particle systems), düşmanlar veya hedefler ekleyerek "Valorant" veya benzeri rekabetçi oyun hissini tarayıcı sınırları içinde en iyi şekilde simüle et.
    - Yüksek çözünürlüklü dokular (procedural generation veya renkler) ve gölgelendirmeler (shadow map) kullan.
+   - GELİŞMİŞ FİZİK: Eğer "parçalanma", "ragdoll", "gerçekçi fizik" veya "kutu kırma" istenirse, Cannon.js veya Ammo.js kütüphanelerini CDN üzerinden dahil et ve Three.js ile entegre ederek destructible (yıkılabilir) çevreler ve ragdoll fizikli düşmanlar oluştur.
+   - ÇOK OYUNCULU / LİDERLİK TABLOSU: Eğer "multiplayer", "online", "liderlik tablosu" veya "skor tablosu" istenirse, Firebase Realtime Database veya Firestore CDN'lerini (<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script> vb.) kullanarak basit bir eşzamanlı oyuncu desteği veya canlı skor tablosu (leaderboard) ekle (Firebase config'i mocklayabilir veya anonim auth kullanabilirsin).
 2. Eğer kullanıcı bir web sitesi istiyorsa:
    - Tailwind CSS (<script src="https://cdn.tailwindcss.com"></script>) ve DaisyUI (<link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />) kullan.
    - Glassmorphism, soft shadow, modern tipografi ve gradientler uygula.

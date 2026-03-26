@@ -2,9 +2,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Project, User } from '../types';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-import { Loader2, Globe, RefreshCw, Edit2, Check, Settings, Maximize2, Minimize2, Circle, CheckCircle2, Bot, Send, Paperclip, X, FileText, Image as ImageIcon, File, Wand2, Sparkles } from 'lucide-react';
+import { Loader2, Globe, RefreshCw, Edit2, Check, Settings, Maximize2, Minimize2, Circle, CheckCircle2, Bot, Send, Paperclip, X, FileText, Image as ImageIcon, File, Wand2, Sparkles, Download } from 'lucide-react';
 import { ProjectSettingsModal } from './ProjectSettingsModal';
 import { motion, AnimatePresence } from 'motion/react';
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 
 export const ProjectPreview = ({ 
   project, 
@@ -178,6 +180,8 @@ KESİN KURALLAR:
    - PointerLock API ile fareyi kilitle, WASD tuşlarıyla akıcı hareket (momentum, sürtünme, yerçekimi) sağla.
    - Silah mekanikleri (raycasting ile ateş etme, geri tepme/recoil, mermi izleri), parçacık efektleri (kan veya kıvılcım), düşman yapay zekası (basit takip veya devriye) ve skor sistemi ekle.
    - Gölgelendirme (shadows) ve yüksek kaliteli materyaller kullanarak grafikleri en üst düzeye çıkar. Tarayıcı sınırlarını zorla.
+   - GELİŞMİŞ FİZİK: Eğer "parçalanma", "ragdoll", "gerçekçi fizik" veya "kutu kırma" istenirse, Cannon.js veya Ammo.js kütüphanelerini CDN üzerinden dahil et ve Three.js ile entegre ederek destructible (yıkılabilir) çevreler ve ragdoll fizikli düşmanlar oluştur.
+   - ÇOK OYUNCULU / LİDERLİK TABLOSU: Eğer "multiplayer", "online", "liderlik tablosu" veya "skor tablosu" istenirse, Firebase Realtime Database veya Firestore CDN'lerini kullanarak basit bir eşzamanlı oyuncu desteği veya canlı skor tablosu (leaderboard) ekle.
 5. Eğer web sitesi güncelleme isterse: Glassmorphism, yumuşak gölgeler, canlı gradientler kullanarak premium bir UI oluştur.
 6. ETKİLEŞİM (INTERACTIVITY): Tüm butonlar, oyun mekanikleri ve UI elemanları için gerekli JavaScript kodunu <script> etiketleri içinde HTML'e dahil et.
 7. YANIT FORMATI (ZORUNLU):
@@ -302,6 +306,22 @@ KESİN KURALLAR:
     }
   };
 
+  const handleExportZip = async () => {
+    if (!project.code) return;
+    
+    const zip = new JSZip();
+    
+    // Add index.html
+    zip.file("index.html", project.code);
+    
+    // Generate ZIP file
+    const content = await zip.generateAsync({ type: "blob" });
+    
+    // Trigger download
+    const safeTitle = (project.title || "project").toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    saveAs(content, `${safeTitle}.zip`);
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0, scale: 0.98 }}
@@ -374,6 +394,15 @@ KESİN KURALLAR:
           >
             <Settings className="w-4 h-4" />
             <span className="hidden sm:inline">Ayarlar & Analiz</span>
+          </motion.button>
+          <motion.button 
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleExportZip}
+            className="flex items-center gap-2 px-4 py-2 bg-zinc-100 text-zinc-700 text-sm font-medium rounded-xl hover:bg-zinc-200 transition-all shadow-sm"
+          >
+            <Download className="w-4 h-4" />
+            <span className="hidden sm:inline">İndir (ZIP)</span>
           </motion.button>
           {!project.isPublished && (
             <motion.button 
