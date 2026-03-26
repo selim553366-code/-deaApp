@@ -19,10 +19,10 @@ app.get("/api/health", (req, res) => {
 app.post("/api/ai/generate", async (req, res) => {
   try {
     const { contents, systemInstruction, model = "gemini-3-flash-preview" } = req.body;
-    const geminiKey = process.env.GEMINI_API_KEY;
+    const geminiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
 
     if (!geminiKey) {
-      return res.status(500).json({ error: "GEMINI_API_KEY is not configured in environment variables." });
+      return res.status(500).json({ error: "GEMINI_API_KEY or VITE_GEMINI_API_KEY is not configured in environment variables." });
     }
 
     const ai = new GoogleGenAI({ apiKey: geminiKey });
