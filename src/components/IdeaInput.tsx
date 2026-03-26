@@ -5,14 +5,8 @@ import { Loader2, Sparkles, X, CheckCircle2, Circle, Wand2, Lightbulb } from 'lu
 import { User } from '../types';
 import { motion, AnimatePresence } from "motion/react";
 import { useLanguage } from '../contexts/LanguageContext';
-import { GoogleGenAI, Type } from "@google/genai";
-
-const getGeminiKey = () => {
-  return import.meta.env.VITE_GEMINI_API_KEY || (typeof process !== 'undefined' ? process.env.GEMINI_API_KEY : undefined);
-};
 
 export const IdeaInput = ({ user, onProjectCreated, initialPrompt }: { user: User | null, onProjectCreated?: (id: string) => void, initialPrompt?: string }) => {
-  const ai = new GoogleGenAI({ apiKey: getGeminiKey() || "" });
   const { t, language } = useLanguage();
   const [idea, setIdea] = useState(initialPrompt || '');
   const [showPreview, setShowPreview] = useState(false);
@@ -75,20 +69,35 @@ export const IdeaInput = ({ user, onProjectCreated, initialPrompt }: { user: Use
     setCurrentAnswer('');
 
     try {
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: `Kullanıcı şu uygulamayı yapmak istiyor: "${idea}". Bu uygulamayı daha iyi tasarlayabilmek için kullanıcıya sorulacak en önemli 3 soruyu oluştur. Sorular kısa ve net olmalı. Sadece JSON formatında bir string array döndür. Örnek: ["Soru 1?", "Soru 2?", "Soru 3?"].`,
-        config: {
-          systemInstruction: "You are a helpful assistant that returns JSON.",
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: Type.ARRAY,
-            items: { type: Type.STRING }
+      const response = await fetch("/api/ai/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "gemini-3-flash-preview",
+          contents: `Kullanıcı şu uygulamayı yapmak istiyor: "${idea}". Bu uygulamayı daha iyi tasarlayabilmek için kullanıcıya sorulacak en önemli 3 soruyu oluştur. Sorular kısa ve net olmalı. Sadece JSON formatında bir string array döndür. Örnek: ["Soru 1?", "Soru 2?", "Soru 3?"].`,
+          config: {
+            systemInstruction: "You are a helpful assistant that returns JSON.",
+            responseMimeType: "application/json",
+            responseSchema: {
+              type: "ARRAY",
+              items: { type: "STRING" }
+            }
           }
-        }
+        })
       });
 
-      const result = JSON.parse(response.text || "[]");
+      let data;
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        throw new Error(text || `Server error: ${response.status}`);
+      }
+
+      if (!response.ok) throw new Error(data.error || 'Generation failed');
+
+      const result = JSON.parse(data.text || "[]");
       setQuestions(result.slice(0, 3)); // Ensure max 3 questions
     } catch (err) {
       console.error(err);
@@ -148,21 +157,43 @@ export const IdeaInput = ({ user, onProjectCreated, initialPrompt }: { user: Use
       }
 
       // Generate code
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: `Sen uzman bir Frontend Geliştiricisi ve UI/UX Tasarımcısısın. Kullanıcının fikri ve detayları: "${finalPrompt}". 
+      const response = await fetch("/api/ai/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "gemini-3-flash-preview",
+          contents: `Sen uzman bir Frontend Geliştiricisi, UI/UX Tasarımcısı ve İleri Düzey Web Oyun Geliştiricisisin. Kullanıcının fikri ve detayları: "${finalPrompt}". 
 Bu fikir için tek sayfalık, son derece modern, estetik, çok hızlı çalışan ve responsive (mobil uyumlu) bir HTML kodu oluştur. 
-ÖNEMLİ: Sen MUST include the following CDN links in the <head> of the generated HTML:
-- Tailwind CSS: <script src="https://cdn.tailwindcss.com"></script>
-- DaisyUI: <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
-Use DaisyUI components (like cards, buttons, navbars) for a professional look.
-Modern UI trendlerini (glassmorphism, soft shadow, modern tipografi, gradientler) uygula. 
-Kullanıcı deneyimi (UX) en üst düzeyde olmalı. 
-ÖNEMLİ: Eğer tasarımda butonlar, sekmeler (tabs), modallar, açılır menüler (dropdowns) veya formlar gibi etkileşimli öğeler varsa, bunların çalışması için gerekli JavaScript kodunu da <script> etiketleri içinde HTML'e dahil et. Tüm butonlar ve etkileşimli alanlar işlevsel olmalı.
-Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`\`html vb.) KULLANMA. Kod <html> ile başlayıp </html> ile bitmeli.`
+
+ÖNEMLİ KURALLAR:
+1. Eğer kullanıcı bir "oyun" (özellikle 3D, FPS, yüksek çözünürlüklü veya mekanikli) istiyorsa:
+   - Three.js, Babylon.js, Matter.js veya Phaser gibi kütüphaneleri CDN üzerinden dahil et (<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>).
+   - 3D FPS oyunları için PointerLock API kullanarak fareyi kilitle, WASD kontrollerini, zıplama ve yerçekimi mekaniklerini (raycaster veya basit fizik) ekle.
+   - Silah ateşleme, parçacık efektleri (particle systems), düşmanlar veya hedefler ekleyerek "Valorant" veya benzeri rekabetçi oyun hissini tarayıcı sınırları içinde en iyi şekilde simüle et.
+   - Yüksek çözünürlüklü dokular (procedural generation veya renkler) ve gölgelendirmeler (shadow map) kullan.
+2. Eğer kullanıcı bir web sitesi istiyorsa:
+   - Tailwind CSS (<script src="https://cdn.tailwindcss.com"></script>) ve DaisyUI (<link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />) kullan.
+   - Glassmorphism, soft shadow, modern tipografi ve gradientler uygula.
+3. ETKİLEŞİM: Tüm butonlar, oyun mekanikleri, formlar ve UI elemanları için gerekli JavaScript kodunu <script> etiketleri içinde yaz.
+4. Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`\`html vb.) KULLANMA. Kod <html> ile başlayıp </html> ile bitmeli.`,
+          config: {
+            maxOutputTokens: 16000
+          }
+        })
       });
 
-      let code = response.text || '<h1>Hata oluştu</h1>';
+      let data;
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        throw new Error(text || `Server error: ${response.status}`);
+      }
+
+      if (!response.ok) throw new Error(data.error || 'Generation failed');
+
+      let code = data.text || '<h1>Hata oluştu</h1>';
       code = code.replace(/```html/g, '').replace(/```/g, '').trim();
 
       const newProjectRef = doc(collection(db, 'projects'));

@@ -58,7 +58,7 @@ export const AIChatPage = ({ onOpenPremium }: { onOpenPremium: () => void }) => 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           contents: promptTemplate,
-          model: "gpt-4o-mini"
+          model: "gemini-3-flash-preview"
         })
       });
 

@@ -46,8 +46,8 @@ export const AppCreationPrompt = ({ onNext }: Props) => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "gpt-4o-mini",
-          contents: `Kullanıcı şu uygulamayı yapmak istiyor: "${prompt}". Bu uygulamayı daha iyi tasarlayabilmek için kullanıcıya sorulacak en önemli 3 soruyu oluştur. Sorular kısa ve net olmalı. Sadece JSON formatında bir string array döndür. Örnek: ["Soru 1?", "Soru 2?", "Soru 3?"].`
+          model: "gemini-3-flash-preview",
+          contents: `Kullanıcı şu uygulamayı yapmak istiyor: "${prompt}". Bu uygulamayı daha iyi tasarlayabilmek için kullanıcıya sorulacak en önemli 3 soruyu oluştur. Eğer kullanıcı 3D veya FPS (First Person Shooter) oyunu istiyorsa, Three.js veya Babylon.js gibi kütüphanelerle ilgili sorular sorabilirsin. Sorular kısa ve net olmalı. Sadece JSON formatında bir string array döndür. Örnek: ["Soru 1?", "Soru 2?", "Soru 3?"].`
         })
       });
 

@@ -56,7 +56,7 @@ export const AIHelper = ({ user }: { user: User | null }) => {
         body: JSON.stringify({ 
           contents: [{ role: "user", parts }],
           systemInstruction: "Sen yardımcı bir AI asistanısın. Kullanıcılara web sitesi fikirleri ve teknik konularda yardımcı oluyorsun. Eğer kullanıcı bir dosya (resim, döküman vb.) gönderdiyse onu analiz et ve yardımcı ol. Kısa ve öz cevaplar ver.",
-          model: "gpt-4o-mini"
+          model: "gemini-3-flash-preview"
         })
       });
 

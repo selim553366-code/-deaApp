@@ -8,7 +8,6 @@ import { PremiumModal } from "./PremiumModal";
 import { AIChatPage } from "./AIChatPage";
 import { Send, Sparkles, LogOut, Code, Loader2, Check, Eye, EyeOff } from "lucide-react";
 import { signOut } from "firebase/auth";
-import { GoogleGenAI } from "@google/genai";
 
 function hashCode(str: string) {
   let hash = 0;
@@ -68,17 +67,30 @@ export function IdeaApp({ user }: { user: User }) {
   const analyzePrompt = async (idea: string) => {
     setIsGenerating(true);
     try {
-      const geminiKey = import.meta.env.VITE_GEMINI_API_KEY || (typeof process !== 'undefined' ? process.env.GEMINI_API_KEY : undefined);
-      const ai = new GoogleGenAI({ apiKey: geminiKey || "" });
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: `Analyze this website idea: "${idea}". Ask 3 clarifying questions with 3-4 options each to make the website better. Return ONLY JSON in this format: [{"question": "...", "options": ["...", "..."]}].`,
-        config: {
-          responseMimeType: "application/json",
-        }
+      const response = await fetch("/api/ai/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "gemini-3-flash-preview",
+          contents: `Analyze this website idea: "${idea}". Ask 3 clarifying questions with 3-4 options each to make the website better. Return ONLY JSON in this format: [{"question": "...", "options": ["...", "..."]}].`,
+          config: {
+            responseMimeType: "application/json",
+          }
+        })
       });
 
-      let jsonText = response.text || "[]";
+      let data;
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        throw new Error(text || `Server error: ${response.status}`);
+      }
+
+      if (!response.ok) throw new Error(data.error || 'Generation failed');
+
+      let jsonText = data.text || "[]";
       jsonText = jsonText.replace(/```json/gi, '').replace(/```/g, '').trim();
       const questions = JSON.parse(jsonText);
       setAnalysisQuestions(questions);
@@ -102,7 +114,7 @@ export function IdeaApp({ user }: { user: User }) {
     try {
       const prompt = currentProject 
         ? `Update this website based on: "${idea}". Current code: ${currentProject.code}. Return ONLY the complete, updated HTML file. No markdown formatting.`
-        : `Create a modern, responsive single-page website about: "${idea}". ${answers ? `Additional context: ${answers.join(", ")}.` : ""} Return ONLY the raw HTML code. Do not wrap in markdown blocks.`;
+        : `Create a modern, responsive single-page website or game about: "${idea}". ${answers ? `Additional context: ${answers.join(", ")}.` : ""} If the user asks for a 3D or FPS game, use Three.js or Babylon.js via CDN to create a working 3D environment with WASD and mouse controls. Return ONLY the raw HTML code. Do not wrap in markdown blocks.`;
 
       const cacheKey = hashCode(prompt);
       const cacheRef = doc(db, "cache", cacheKey);
@@ -113,14 +125,30 @@ export function IdeaApp({ user }: { user: User }) {
       if (cacheSnap.exists()) {
         code = cacheSnap.data().code;
       } else {
-        const geminiKey = import.meta.env.VITE_GEMINI_API_KEY || (typeof process !== 'undefined' ? process.env.GEMINI_API_KEY : undefined);
-        const ai = new GoogleGenAI({ apiKey: geminiKey || "" });
-        const response = await ai.models.generateContent({
-          model: "gemini-3-flash-preview",
-          contents: prompt
+        const response = await fetch("/api/ai/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: "gemini-3-flash-preview",
+            contents: prompt,
+            config: {
+              maxOutputTokens: 16000
+            }
+          })
         });
+
+        let data;
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          data = await response.json();
+        } else {
+          const text = await response.text();
+          throw new Error(text || `Server error: ${response.status}`);
+        }
+
+        if (!response.ok) throw new Error(data.error || 'Generation failed');
         
-        code = response.text || "";
+        code = data.text || "";
         // Robust cleaning: remove markdown blocks if they exist
         code = code.replace(/```html/g, '').replace(/```/g, '').trim();
         

@@ -3,7 +3,6 @@ import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, db, s
 import { collection, doc, setDoc, getDoc } from 'firebase/firestore';
 import { Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { GoogleGenAI } from "@google/genai";
 
 function hashCode(str: string) {
   let hash = 0;
@@ -38,14 +37,27 @@ export const AuthForm = ({ prompt, onProjectCreated }: Props) => {
       if (cacheSnap.exists()) {
         code = cacheSnap.data().code;
     } else {
-        const geminiKey = import.meta.env.VITE_GEMINI_API_KEY || (typeof process !== 'undefined' ? process.env.GEMINI_API_KEY : undefined);
-        const ai = new GoogleGenAI({ apiKey: geminiKey || "" });
-        const response = await ai.models.generateContent({
-          model: "gemini-3-flash-preview",
-          contents: `Create a modern, responsive single-page website about: "${prompt}". Return ONLY the raw HTML code. Do not wrap in markdown blocks.`
+        const response = await fetch("/api/ai/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: "gemini-3-flash-preview",
+            contents: `Create a modern, responsive single-page website about: "${prompt}". Return ONLY the raw HTML code. Do not wrap in markdown blocks.`
+          })
         });
-        
-        code = response.text || '<h1>Hata oluştu</h1>';
+
+        let data;
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          data = await response.json();
+        } else {
+          const text = await response.text();
+          throw new Error(text || `Server error: ${response.status}`);
+        }
+
+        if (!response.ok) throw new Error(data.error || 'Generation failed');
+
+        code = data.text || '<h1>Hata oluştu</h1>';
         // Robust cleaning: remove markdown blocks if they exist
         code = code.replace(/```html/g, '').replace(/```/g, '').trim();
         

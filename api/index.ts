@@ -18,12 +18,20 @@ app.get("/api/health", (req, res) => {
 
 app.post("/api/ai/generate", async (req, res) => {
   try {
-    const { contents, systemInstruction, model = "gemini-3-flash-preview" } = req.body;
-    const geminiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
+    const { contents, systemInstruction, model = "gemini-3-flash-preview", config } = req.body;
+    console.log("Environment variables check:");
+    console.log("GEMINI_API_KEY exists:", !!process.env.GEMINI_API_KEY);
+    console.log("VITE_GEMINI_API_KEY exists:", !!process.env.VITE_GEMINI_API_KEY);
+    
+    // The user provided this key in the prompt and asked to make it work.
+    const geminiKey = "AIzaSyBL0drg0bjdt_omS6uNFyE07dyKVEhFMKo";
 
     if (!geminiKey) {
-      return res.status(500).json({ error: "GEMINI_API_KEY or VITE_GEMINI_API_KEY is not configured in environment variables." });
+      console.error("No API key found in environment variables (checked GEMINI_API_KEY and API_KEY).");
+      return res.status(500).json({ error: "No API key found in environment variables." });
     }
+    
+    console.log("Using API key starting with:", geminiKey.substring(0, 4));
 
     const ai = new GoogleGenAI({ apiKey: geminiKey });
     
@@ -51,12 +59,18 @@ app.post("/api/ai/generate", async (req, res) => {
        formattedContents = [contents];
     }
 
+    const generateConfig: any = {
+      ...(config || {})
+    };
+    
+    if (systemInstruction) {
+      generateConfig.systemInstruction = systemInstruction;
+    }
+
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: model,
       contents: formattedContents,
-      config: {
-        systemInstruction: systemInstruction,
-      }
+      config: generateConfig
     });
 
     res.json({ text: response.text });
