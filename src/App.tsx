@@ -223,6 +223,7 @@ function Builder() {
                 user={user} 
                 initialChatPrompt={templatePromptToApply}
                 onClearInitialChatPrompt={() => setTemplatePromptToApply('')}
+                onClose={() => setCurrentProject(null)}
               />
             ) : (
               <div className="max-w-3xl mx-auto py-6">

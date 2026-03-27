@@ -23,13 +23,13 @@ export const Header = ({ user, onLogin, onSignup, onHelp, onPremium, onMenuClick
   ];
 
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between px-4 md:px-6 py-4 bg-background/80 backdrop-blur-md border-b border-border">
-      <div className="flex items-center gap-3">
-        <button onClick={onMenuClick} className="p-2 -ml-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-colors">
-          <Menu className="w-6 h-6" />
+    <header className="sticky top-0 z-30 flex items-center justify-between px-3 md:px-6 py-3 md:py-4 bg-background/80 backdrop-blur-md border-b border-border">
+      <div className="flex items-center gap-2 md:gap-3">
+        <button onClick={onMenuClick} className="p-2 -ml-1 text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-colors">
+          <Menu className="w-5 h-5 md:w-6 md:h-6" />
         </button>
-        <div className="hidden sm:flex w-8 h-8 bg-primary rounded-xl items-center justify-center shadow-lg shadow-primary/20">
-          <Sparkles className="w-5 h-5 text-primary-foreground" />
+        <div className="hidden xs:flex w-7 h-7 md:w-8 md:h-8 bg-primary rounded-lg md:rounded-xl items-center justify-center shadow-lg shadow-primary/20">
+          <Sparkles className="w-4 h-4 md:w-5 md:h-5 text-primary-foreground" />
         </div>
         
         <nav className="hidden lg:flex items-center gap-6 ml-8 border-l border-border pl-8">
@@ -45,21 +45,21 @@ export const Header = ({ user, onLogin, onSignup, onHelp, onPremium, onMenuClick
         </nav>
       </div>
 
-      <div className="flex items-center justify-center flex-1 px-2">
-        <h1 className="text-xl md:text-3xl font-black text-foreground tracking-tighter whitespace-nowrap px-2">
+      <div className="flex items-center justify-center flex-1 px-1 md:px-2">
+        <h1 className="text-lg md:text-3xl font-black text-foreground tracking-tighter whitespace-nowrap px-1 md:px-2">
           İdea Ai
         </h1>
       </div>
 
-      <div className="flex items-center gap-2 md:gap-3">
-        <div className="flex items-center gap-1.5 mr-1 md:mr-2">
+      <div className="flex items-center gap-1.5 md:gap-3">
+        <div className="hidden xs:flex items-center gap-1 md:gap-1.5 mr-1 md:mr-2">
           {languages.map((lang) => (
             <motion.button
               key={lang.code}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={() => setLanguage(lang.code as any)}
-              className={`w-8 h-8 rounded-full overflow-hidden border-2 transition-all ${
+              className={`w-7 h-7 md:w-8 md:h-8 rounded-full overflow-hidden border-2 transition-all ${
                 language === lang.code ? 'border-primary scale-110 shadow-sm' : 'border-transparent opacity-60 hover:opacity-100'
               }`}
               title={lang.label}
@@ -74,9 +74,9 @@ export const Header = ({ user, onLogin, onSignup, onHelp, onPremium, onMenuClick
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={onPremium} 
-            className="flex items-center gap-2 px-3 md:px-4 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-xl hover:bg-primary/90 transition-all shadow-sm"
+            className="flex items-center gap-1.5 px-2.5 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium text-primary-foreground bg-primary rounded-lg md:rounded-xl hover:bg-primary/90 transition-all shadow-sm"
           >
-            <Sparkles className="w-4 h-4" /> <span className="hidden sm:inline">{t('premium')}</span>
+            <Sparkles className="w-3.5 h-3.5 md:w-4 md:h-4" /> <span className="hidden sm:inline">{t('premium')}</span>
           </motion.button>
         )}
         <motion.button 

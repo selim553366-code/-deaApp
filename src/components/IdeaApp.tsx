@@ -74,7 +74,7 @@ export function IdeaApp({ user }: { user: User }) {
           model: "gemini-3-flash-preview",
           contents: `Analyze this website idea: "${idea}". Ask 3 clarifying questions with 3-4 options each to make the website better. Return ONLY JSON in this format: [{"question": "...", "options": ["...", "..."]}].`,
           config: {
-            responseMimeType: "application/json",
+            response_format: { type: "json_object" },
           }
         })
       });
@@ -130,9 +130,10 @@ export function IdeaApp({ user }: { user: User }) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             model: "gemini-3-flash-preview",
+            systemInstruction: "Sen bir Kıdemli Web Geliştiricisisin. Görevin: Kullanıcının isteğine göre modern, şık ve tamamen işlevsel bir web sitesi veya oyun oluşturmak. SADECE ham HTML/CSS/JS kodunu döndür. Markdown blokları (```html gibi) kullanma. Başka hiçbir açıklama veya metin ekleme.",
             contents: prompt,
             config: {
-              maxOutputTokens: 16000
+              max_tokens: 16000
             }
           })
         });

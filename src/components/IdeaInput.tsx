@@ -77,11 +77,7 @@ export const IdeaInput = ({ user, onProjectCreated, initialPrompt }: { user: Use
           contents: `Kullanıcı şu uygulamayı yapmak istiyor: "${idea}". Bu uygulamayı daha iyi tasarlayabilmek için kullanıcıya sorulacak en önemli 3 soruyu oluştur. Sorular kısa ve net olmalı. Sadece JSON formatında bir string array döndür. Örnek: ["Soru 1?", "Soru 2?", "Soru 3?"].`,
           config: {
             systemInstruction: "You are a helpful assistant that returns JSON.",
-            responseMimeType: "application/json",
-            responseSchema: {
-              type: "ARRAY",
-              items: { type: "STRING" }
-            }
+            response_format: { type: "json_object" }
           }
         })
       });
@@ -162,6 +158,7 @@ export const IdeaInput = ({ user, onProjectCreated, initialPrompt }: { user: Use
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "gemini-3-flash-preview",
+          systemInstruction: "Sen bir Kıdemli Web Geliştiricisisin. Görevin: Kullanıcının isteğine göre modern, şık ve tamamen işlevsel bir web sitesi veya oyun oluşturmak. SADECE ham HTML/CSS/JS kodunu döndür. Markdown blokları (```html gibi) kullanma. Başka hiçbir açıklama veya metin ekleme.",
           contents: `Sen uzman bir Frontend Geliştiricisi, UI/UX Tasarımcısı ve İleri Düzey Web Oyun Geliştiricisisin. Kullanıcının fikri ve detayları: "${finalPrompt}". 
 Bu fikir için tek sayfalık, son derece modern, estetik, çok hızlı çalışan ve responsive (mobil uyumlu) bir HTML kodu oluştur. 
 
@@ -179,7 +176,7 @@ Bu fikir için tek sayfalık, son derece modern, estetik, çok hızlı çalışa
 3. ETKİLEŞİM: Tüm butonlar, oyun mekanikleri, formlar ve UI elemanları için gerekli JavaScript kodunu <script> etiketleri içinde yaz.
 4. Sadece ve sadece çalışabilir HTML kodunu döndür, markdown işaretleri (\`\`\`html vb.) KULLANMA. Kod <html> ile başlayıp </html> ile bitmeli.`,
           config: {
-            maxOutputTokens: 16000
+            max_tokens: 16000
           }
         })
       });
@@ -234,13 +231,13 @@ Bu fikir için tek sayfalık, son derece modern, estetik, çok hızlı çalışa
       className={`w-full transition-all duration-700 ease-in-out ${showPreview ? 'max-w-5xl' : 'max-w-2xl'} mx-auto flex flex-col md:flex-row gap-6`}
     >
       {/* Left Panel - Input */}
-      <div className="w-full p-6 md:p-14 bg-white/90 backdrop-blur-xl rounded-[32px] shadow-2xl shadow-indigo-500/5 border border-white flex flex-col relative z-10 shrink-0 mx-auto">
-        <h1 className="text-2xl md:text-4xl font-black text-center text-zinc-900 mb-2 tracking-tighter uppercase">{t('mainTitle')}</h1>
-        <h2 className="mb-8 text-base md:text-lg font-medium text-center text-zinc-500 leading-relaxed">{t('subTitle')}</h2>
+      <div className="w-full p-5 md:p-14 bg-white/90 backdrop-blur-xl rounded-[28px] md:rounded-[32px] shadow-2xl shadow-indigo-500/5 border border-white flex flex-col relative z-10 shrink-0 mx-auto">
+        <h1 className="text-xl md:text-4xl font-black text-center text-zinc-900 mb-1.5 md:mb-2 tracking-tighter uppercase">{t('mainTitle')}</h1>
+        <h2 className="mb-6 md:mb-8 text-sm md:text-lg font-medium text-center text-zinc-500 leading-relaxed px-2 md:px-0">{t('subTitle')}</h2>
         <textarea
           value={idea}
           onChange={(e) => setIdea(e.target.value)}
-          className="w-full p-4 md:p-6 mb-6 text-base md:text-lg border-2 border-zinc-100 rounded-[24px] md:rounded-[28px] focus:ring-0 focus:border-indigo-500 outline-none transition-all resize-none bg-zinc-50/50 min-h-[150px] md:min-h-[200px] placeholder:text-zinc-300 font-medium"
+          className="w-full p-4 md:p-6 mb-5 md:mb-6 text-base md:text-lg border-2 border-zinc-100 rounded-[20px] md:rounded-[28px] focus:ring-0 focus:border-indigo-500 outline-none transition-all resize-none bg-zinc-50/50 min-h-[120px] md:min-h-[200px] placeholder:text-zinc-300 font-medium"
           placeholder={t('placeholder')}
           disabled={isGenerating}
         />
@@ -250,7 +247,7 @@ Bu fikir için tek sayfalık, son derece modern, estetik, çok hızlı çalışa
             whileTap={{ scale: 0.98 }}
             onClick={handleStart} 
             disabled={isGenerating || isFetchingQuestions || !idea.trim() || showPreview}
-            className="w-full p-4 md:p-5 text-lg md:text-xl text-white bg-indigo-600 rounded-[20px] md:rounded-[24px] hover:bg-indigo-700 font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-xl shadow-indigo-500/20"
+            className="w-full p-4 md:p-5 text-base md:text-xl text-white bg-indigo-600 rounded-[18px] md:rounded-[24px] hover:bg-indigo-700 font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 md:gap-3 shadow-xl shadow-indigo-500/20"
           >
             {isFetchingQuestions ? (
               <>
@@ -268,18 +265,18 @@ Bu fikir için tek sayfalık, son derece modern, estetik, çok hızlı çalışa
 
         {/* Suggested Ideas */}
         {!showPreview && (
-          <div className="mt-6">
-            <div className="flex items-center gap-2 mb-3 text-zinc-500">
-              <Lightbulb className="w-4 h-4 text-amber-500" />
-              <span className="text-sm font-medium">{language === 'tr' ? 'Fikre mi ihtiyacınız var?' : 'Need an idea?'}</span>
+          <div className="mt-5 md:mt-6">
+            <div className="flex items-center gap-2 mb-2 md:mb-3 text-zinc-500">
+              <Lightbulb className="w-3.5 h-3.5 md:w-4 md:h-4 text-amber-500" />
+              <span className="text-xs md:text-sm font-medium">{language === 'tr' ? 'Fikre mi ihtiyacınız var?' : 'Need an idea?'}</span>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5 md:gap-2">
               {suggestedIdeas.map((suggestedIdea, index) => (
                 <button
                   key={index}
                   onClick={() => setIdea(suggestedIdea)}
                   disabled={isGenerating || isFetchingQuestions}
-                  className="text-xs md:text-sm px-3 py-1.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded-lg transition-colors border border-zinc-200 text-left"
+                  className="text-[10px] md:text-sm px-2.5 py-1.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded-lg transition-colors border border-zinc-200 text-left"
                 >
                   {suggestedIdea}
                 </button>
@@ -297,11 +294,11 @@ Bu fikir için tek sayfalık, son derece modern, estetik, çok hızlı çalışa
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: 20 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="w-full md:w-[400px] bg-zinc-900 rounded-3xl shadow-2xl border border-zinc-800 p-8 flex flex-col text-white relative"
+          className="fixed inset-0 md:relative md:inset-auto z-[60] md:z-0 w-full md:w-[400px] bg-zinc-900 md:rounded-3xl shadow-2xl border-0 md:border md:border-zinc-800 p-6 md:p-8 flex flex-col text-white"
         >
           <button 
             onClick={() => setShowPreview(false)} 
-            className="absolute top-6 right-6 text-zinc-400 hover:text-white transition-colors"
+            className="absolute top-4 right-4 md:top-6 md:right-6 p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-xl transition-colors"
           >
             <X size={20} />
           </button>

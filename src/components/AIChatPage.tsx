@@ -58,7 +58,11 @@ export const AIChatPage = ({ onOpenPremium }: { onOpenPremium: () => void }) => 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           contents: promptTemplate,
-          model: "gemini-3-flash-preview"
+          model: "gemini-3-flash-preview",
+          systemInstruction: "You are a helpful assistant. Provide clear and concise answers. If asked to update code, provide the full updated code block.",
+          config: {
+            max_tokens: 16000
+          }
         })
       });
 

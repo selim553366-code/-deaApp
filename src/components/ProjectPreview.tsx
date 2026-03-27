@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Project, User } from '../types';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-import { Loader2, Globe, RefreshCw, Edit2, Check, Settings, Maximize2, Minimize2, Circle, CheckCircle2, Bot, Send, Paperclip, X, FileText, Image as ImageIcon, File, Wand2, Sparkles, Download } from 'lucide-react';
+import { Loader2, Globe, RefreshCw, Edit2, Check, Settings, Maximize2, Minimize2, Circle, CheckCircle2, Bot, Send, Paperclip, X, FileText, Image as ImageIcon, File, Wand2, Sparkles, Download, ChevronLeft } from 'lucide-react';
 import { ProjectSettingsModal } from './ProjectSettingsModal';
 import { motion, AnimatePresence } from 'motion/react';
 import JSZip from 'jszip';
@@ -12,12 +12,14 @@ export const ProjectPreview = ({
   project, 
   user,
   initialChatPrompt,
-  onClearInitialChatPrompt
+  onClearInitialChatPrompt,
+  onClose
 }: { 
   project: Project, 
   user: User | null,
   initialChatPrompt?: string, 
-  onClearInitialChatPrompt ?: () => void
+  onClearInitialChatPrompt ?: () => void,
+  onClose: () => void
 }) => {
   const [title, setTitle] = useState(project.title || 'İsimsiz Proje');
   const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -168,27 +170,16 @@ export const ProjectPreview = ({
       const lastMsg = contents[contents.length - 1];
       const currentCode = project.code || "";
       
-      const systemInstruction = `Sen bir Kıdemli Yaratıcı Teknoloji Uzmanı ve İleri Düzey Oyun Geliştiricisisin.
-Görevin: Kullanıcının isteğine göre web sitesini veya oyunu güncellemek.
-
-KESİN KURALLAR:
-1. ASLA SORU SORMA.
-2. INCREMENTAL (KADEMELİ) GÜNCELLEME YAP: Tüm kodu yeniden yazma. Sadece kullanıcının istediği değişikliği yap, mevcut kodun geri kalanını olduğu gibi koru.
-3. Eğer "oyun yap" veya "oyunu geliştir" derse: HTML5 Canvas, WebGL, Three.js veya Matter.js kullanarak, mobil uyumlu, akıcı animasyonlara sahip, bağımlılık yapıcı ve modern bir oyun tasarla.
-4. Eğer "Valorant gibi", "3D", "FPS" veya "yüksek mekanikli" oyun istenirse: 
-   - Three.js kütüphanesini CDN üzerinden dahil et.
-   - PointerLock API ile fareyi kilitle, WASD tuşlarıyla akıcı hareket (momentum, sürtünme, yerçekimi) sağla.
-   - Silah mekanikleri (raycasting ile ateş etme, geri tepme/recoil, mermi izleri), parçacık efektleri (kan veya kıvılcım), düşman yapay zekası (basit takip veya devriye) ve skor sistemi ekle.
-   - Gölgelendirme (shadows) ve yüksek kaliteli materyaller kullanarak grafikleri en üst düzeye çıkar. Tarayıcı sınırlarını zorla.
-   - GELİŞMİŞ FİZİK: Eğer "parçalanma", "ragdoll", "gerçekçi fizik" veya "kutu kırma" istenirse, Cannon.js veya Ammo.js kütüphanelerini CDN üzerinden dahil et ve Three.js ile entegre ederek destructible (yıkılabilir) çevreler ve ragdoll fizikli düşmanlar oluştur.
-   - ÇOK OYUNCULU / LİDERLİK TABLOSU: Eğer "multiplayer", "online", "liderlik tablosu" veya "skor tablosu" istenirse, Firebase Realtime Database veya Firestore CDN'lerini kullanarak basit bir eşzamanlı oyuncu desteği veya canlı skor tablosu (leaderboard) ekle.
-5. Eğer web sitesi güncelleme isterse: Glassmorphism, yumuşak gölgeler, canlı gradientler kullanarak premium bir UI oluştur.
-6. ETKİLEŞİM (INTERACTIVITY): Tüm butonlar, oyun mekanikleri ve UI elemanları için gerekli JavaScript kodunu <script> etiketleri içinde HTML'e dahil et.
-7. YANIT FORMATI (ZORUNLU):
-   - Yanıtın SADECE şu iki bölümden oluşmalı:
-   - <message>Yaptığın değişikliği anlatan 1 cümlelik mesaj</message>
-   - <kodu_baslat>GÜNCELLENMİŞ TÜM HTML/CSS/JS KODU</kodu_bitir>
-8. BAŞKA HİÇBİR AÇIKLAMA YAZMA.`;
+      const systemInstruction = `Sen bir Kıdemli Web Geliştiricisisin. Görevin: Kullanıcının isteğine göre web sitesini veya oyunu güncellemek.
+      
+      KESİN KURALLAR:
+      1. ASLA SORU SORMA.
+      2. TÜM KODU YENİDEN YAZ: Kullanıcının istediği değişikliği yap ve tüm HTML/CSS/JS kodunu eksiksiz döndür.
+      3. YANIT FORMATI (ZORUNLU):
+         - Yanıtın SADECE şu iki bölümden oluşmalı:
+         - <message>Yaptığın değişikliği anlatan 1 cümlelik mesaj</message>
+         - <kodu_baslat>GÜNCELLENMİŞ TÜM HTML/CSS/JS KODU</kodu_bitir>
+      4. BAŞKA HİÇBİR AÇIKLAMA VEYA METİN EKLEME.`;
       
       lastMsg.parts[0].text = `Mevcut HTML Kodu:\n\`\`\`html\n${currentCode}\n\`\`\`\n\nKullanıcı Mesajı: ${currentInput}`;
 
@@ -198,7 +189,10 @@ KESİN KURALLAR:
         body: JSON.stringify({ 
           contents: contents,
           systemInstruction: systemInstruction,
-          model: "gemini-3-flash-preview"
+          model: "gemini-3-flash-preview",
+          config: {
+            max_tokens: 16000
+          }
         })
       });
 
@@ -327,98 +321,100 @@ KESİN KURALLAR:
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.4 }}
-      className={`flex flex-col gap-4 ${isFullscreen ? 'fixed inset-0 z-50 bg-zinc-50 p-4 md:p-6 h-screen' : 'h-[calc(100vh-8rem)]'}`}
+      className={`fixed inset-0 bg-zinc-50 z-[100] flex flex-col overflow-hidden ${isFullscreen ? 'p-0' : 'p-0 md:p-4 lg:p-6'}`}
     >
-      <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm">
-        <div className="flex items-center gap-3">
+      <div className={`flex items-center justify-between bg-white border-b border-zinc-200 px-4 py-3 md:px-6 md:py-4 shrink-0 ${isFullscreen ? '' : 'md:rounded-t-3xl md:border-x md:border-t shadow-sm'}`}>
+        <div className="flex items-center gap-3 overflow-hidden">
+          <button onClick={onClose} className="p-2 -ml-2 hover:bg-zinc-100 rounded-xl transition-colors md:hidden">
+            <ChevronLeft className="w-6 h-6 text-zinc-500" />
+          </button>
           {isEditingTitle ? (
             <div className="flex items-center gap-2">
               <input 
                 type="text" 
                 value={title} 
                 onChange={(e) => setTitle(e.target.value)}
-                className="px-3 py-1 border border-indigo-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                autoFocus
                 onBlur={handleSaveTitle}
                 onKeyDown={(e) => e.key === 'Enter' && handleSaveTitle()}
+                autoFocus
+                className="text-lg md:text-xl font-bold text-zinc-800 border-b-2 border-indigo-500 outline-none bg-transparent w-full max-w-[150px] md:max-w-none"
               />
-              <button onClick={handleSaveTitle} className="p-1 text-emerald-600 hover:bg-emerald-50 rounded-md">
-                <Check className="w-5 h-5" />
-              </button>
+              <Check className="w-5 h-5 text-emerald-500 cursor-pointer" onClick={handleSaveTitle} />
             </div>
           ) : (
-            <div className={`flex items-center gap-2 ${(user?.isPremium || project.hasPaidForNameChange) ? 'group cursor-pointer' : ''}`} onClick={() => {
+            <div className={`flex items-center gap-2 overflow-hidden ${(user?.isPremium || project.hasPaidForNameChange) ? 'group cursor-pointer' : ''}`} onClick={() => {
               if (user?.isPremium || project.hasPaidForNameChange) {
                 setIsEditingTitle(true);
               } else {
                 setShowSettings(true); // Open settings to show payment option
               }
             }}>
-              <h2 className="text-xl font-bold text-zinc-800">{title}</h2>
+              <h2 className="text-base md:text-xl font-bold text-zinc-800 truncate">{title}</h2>
               {(user?.isPremium || project.hasPaidForNameChange) && (
-                <Edit2 className="w-4 h-4 text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <Edit2 className="w-3.5 h-3.5 md:w-4 md:h-4 text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
               )}
             </div>
           )}
           {project.isPublished && (
-            <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs font-medium rounded-full">Yayınlandı</span>
+            <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] md:text-xs font-medium rounded-full shrink-0">Yayınlandı</span>
           )}
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5 md:gap-3">
           <motion.button 
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsDesignMode(!isDesignMode)}
-            className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-xl transition-all shadow-sm ${isDesignMode ? 'bg-indigo-600 text-white' : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'}`}
+            className={`p-2 md:px-3 md:py-2 text-sm font-medium rounded-xl transition-all shadow-sm ${isDesignMode ? 'bg-indigo-600 text-white' : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'}`}
             title="Tasarım Laboratuvarı"
           >
             <Wand2 className="w-4 h-4" />
-            <span className="hidden sm:inline">Tasarım Laboratuvarı</span>
+            <span className="hidden lg:inline ml-2">Tasarım Laboratuvarı</span>
           </motion.button>
-          <motion.button 
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setIsFullscreen(!isFullscreen)}
-            className="flex items-center gap-2 px-3 py-2 bg-zinc-100 text-zinc-700 text-sm font-medium rounded-xl hover:bg-zinc-200 transition-all shadow-sm"
-            title={isFullscreen ? "Küçült" : "Tam Ekran"}
-          >
-            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-            <span className="hidden sm:inline">{isFullscreen ? "Küçült" : "Tam Ekran"}</span>
-          </motion.button>
-          <motion.button 
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setShowSettings(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-zinc-100 text-zinc-700 text-sm font-medium rounded-xl hover:bg-zinc-200 transition-all shadow-sm"
-          >
-            <Settings className="w-4 h-4" />
-            <span className="hidden sm:inline">Ayarlar & Analiz</span>
-          </motion.button>
+          
+          <div className="hidden md:flex items-center gap-2">
+            <motion.button 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setIsFullscreen(!isFullscreen)}
+              className="p-2 md:px-3 md:py-2 bg-zinc-100 text-zinc-700 text-sm font-medium rounded-xl hover:bg-zinc-200 transition-all shadow-sm"
+              title={isFullscreen ? "Küçült" : "Tam Ekran"}
+            >
+              {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+              <span className="hidden lg:inline ml-2">{isFullscreen ? "Küçült" : "Tam Ekran"}</span>
+            </motion.button>
+            <motion.button 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowSettings(true)}
+              className="p-2 md:px-4 md:py-2 bg-zinc-100 text-zinc-700 text-sm font-medium rounded-xl hover:bg-zinc-200 transition-all shadow-sm"
+            >
+              <Settings className="w-4 h-4" />
+              <span className="hidden lg:inline ml-2">Ayarlar</span>
+            </motion.button>
+          </div>
+
           <motion.button 
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleExportZip}
-            className="flex items-center gap-2 px-4 py-2 bg-zinc-100 text-zinc-700 text-sm font-medium rounded-xl hover:bg-zinc-200 transition-all shadow-sm"
+            className="p-2 md:px-4 md:py-2 bg-zinc-100 text-zinc-700 text-sm font-medium rounded-xl hover:bg-zinc-200 transition-all shadow-sm"
           >
             <Download className="w-4 h-4" />
-            <span className="hidden sm:inline">İndir (ZIP)</span>
+            <span className="hidden lg:inline ml-2">İndir</span>
           </motion.button>
-          {!project.isPublished && (
-            <motion.button 
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handlePublish}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-sm font-medium rounded-xl hover:from-indigo-600 hover:to-purple-600 transition-all shadow-sm"
-            >
-              <Globe className="w-4 h-4" />
-              <span className="hidden sm:inline">Yayınla</span>
-            </motion.button>
-          )}
+
+          <button onClick={onClose} className="hidden md:flex p-2 hover:bg-zinc-100 rounded-xl transition-colors">
+            <X className="w-5 h-5 text-zinc-500" />
+          </button>
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col md:flex-row gap-4 min-h-0 overflow-y-auto md:overflow-x-auto pb-4">
+      <div className={`flex-1 flex flex-col md:flex-row gap-0 md:gap-4 min-h-0 bg-white md:bg-transparent ${isFullscreen ? '' : 'md:border-x md:border-b md:rounded-b-3xl shadow-sm'}`}>
+        {!project.isPublished && (
+          <div className="hidden"> {/* Placeholder for published state if needed */}
+          </div>
+        )}
         {isDesignMode && (
           <motion.div 
             initial={{ x: -20, opacity: 0 }}
@@ -463,19 +459,29 @@ KESİN KURALLAR:
           </motion.div>
         )}
 
-        <div className={`flex-[3] min-h-[600px] bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden flex flex-col relative ${activeTab === 'chat' ? 'hidden md:flex' : 'flex'}`}>
-          <div className="bg-zinc-100 px-4 py-2 border-b border-zinc-200 flex items-center justify-between">
+        <div className={`flex-[3] min-h-0 bg-white md:rounded-2xl border-x-0 md:border border-zinc-200 shadow-sm overflow-hidden flex flex-col relative ${activeTab === 'chat' ? 'hidden md:flex' : 'flex'}`}>
+          <div className="bg-zinc-50 px-4 py-2 border-b border-zinc-200 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2">
-              <div className="flex gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-red-400"></div>
-                <div className="w-3 h-3 rounded-full bg-amber-400"></div>
-                <div className="w-3 h-3 rounded-full bg-emerald-400"></div>
+              <div className="hidden sm:flex gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-red-400"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-400"></div>
               </div>
-              <div className="ml-4 text-xs text-zinc-500 font-medium">Önizleme (Test Ekranı)</div>
+              <div className="text-[10px] md:text-xs text-zinc-500 font-bold uppercase tracking-widest">Canlı Önizleme</div>
             </div>
-            <div className="md:hidden flex bg-zinc-200 p-0.5 rounded-lg">
-              <button onClick={() => setActiveTab('preview')} className={`px-3 py-1 text-xs font-medium rounded-md ${activeTab === 'preview' ? 'bg-white shadow-sm' : ''}`}>Önizleme</button>
-              <button onClick={() => setActiveTab('chat')} className={`px-3 py-1 text-xs font-medium rounded-md ${activeTab === 'chat' ? 'bg-white shadow-sm' : ''}`}>Chat</button>
+            <div className="md:hidden flex bg-zinc-200/50 p-1 rounded-xl">
+              <button 
+                onClick={() => setActiveTab('preview')} 
+                className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${activeTab === 'preview' ? 'bg-white text-indigo-600 shadow-sm' : 'text-zinc-500'}`}
+              >
+                Önizleme
+              </button>
+              <button 
+                onClick={() => setActiveTab('chat')} 
+                className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${activeTab === 'chat' ? 'bg-white text-indigo-600 shadow-sm' : 'text-zinc-500'}`}
+              >
+                Chat
+              </button>
             </div>
           </div>
           <iframe 
@@ -513,30 +519,40 @@ KESİN KURALLAR:
           </AnimatePresence>
         </div>
 
-        <div className={`flex-1 bg-white rounded-2xl border border-zinc-200 shadow-sm flex flex-col overflow-hidden max-w-md ${activeTab === 'preview' ? 'hidden md:flex' : 'flex'}`}>
-          <div className="p-4 border-b border-zinc-100 bg-zinc-50/50 flex items-center justify-between">
+        <div className={`flex-1 bg-white md:rounded-2xl border-x-0 md:border border-zinc-200 shadow-sm flex flex-col overflow-hidden max-w-none md:max-w-md ${activeTab === 'preview' ? 'hidden md:flex' : 'flex'}`}>
+          <div className="p-3 md:p-4 border-b border-zinc-100 bg-zinc-50/50 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
+              <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
                 <Bot className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="font-semibold text-zinc-800 text-sm">İdea Ai 1.0 ile Güncelle</h3>
-                <p className="text-xs text-zinc-500">Ne değiştirmek istediğinizi yazın.</p>
+                <h3 className="font-bold text-zinc-800 text-xs md:text-sm">İdea Ai 1.0</h3>
+                <p className="text-[10px] text-zinc-500">Projeyi güncellemek için yazın.</p>
               </div>
             </div>
-            <div className="md:hidden flex bg-zinc-100 p-0.5 rounded-lg">
-              <button onClick={() => setActiveTab('preview')} className={`px-3 py-1 text-xs font-medium rounded-md ${activeTab === 'preview' ? 'bg-white shadow-sm' : ''}`}>Önizleme</button>
-              <button onClick={() => setActiveTab('chat')} className={`px-3 py-1 text-xs font-medium rounded-md ${activeTab === 'chat' ? 'bg-white shadow-sm' : ''}`}>Chat</button>
+            <div className="md:hidden flex bg-zinc-200/50 p-1 rounded-xl">
+              <button 
+                onClick={() => setActiveTab('preview')} 
+                className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${activeTab === 'preview' ? 'bg-white text-indigo-600 shadow-sm' : 'text-zinc-500'}`}
+              >
+                Önizleme
+              </button>
+              <button 
+                onClick={() => setActiveTab('chat')} 
+                className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${activeTab === 'chat' ? 'bg-white text-indigo-600 shadow-sm' : 'text-zinc-500'}`}
+              >
+                Chat
+              </button>
             </div>
           </div>
           
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-zinc-50/30">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-zinc-50/30 scrollbar-hide">
             {chatMessages.length === 0 && !isChatLoading && (
               <div className="h-full flex flex-col items-center justify-center text-center p-6 text-zinc-500 space-y-3">
-                <div className="w-12 h-12 bg-zinc-100 rounded-full flex items-center justify-center">
-                  <Bot className="w-6 h-6 text-zinc-400" />
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-zinc-100 rounded-full flex items-center justify-center">
+                  <Bot className="w-5 h-5 md:w-6 md:h-6 text-zinc-400" />
                 </div>
-                <p className="text-sm">Projeyi güncellemek için bana ne yapmak istediğinizi söyleyin. Gerekirse web'de araştırma yapabilirim.</p>
+                <p className="text-xs md:text-sm">Projeyi güncellemek için bana ne yapmak istediğinizi söyleyin.</p>
               </div>
             )}
             
@@ -563,18 +579,18 @@ KESİN KURALLAR:
             <div ref={chatEndRef} />
           </div>
 
-          <div className="p-3 border-t border-zinc-100 bg-white">
+          <div className="p-3 md:p-4 border-t border-zinc-100 bg-white shrink-0">
             {selectedFile && (
-              <div className="mb-3 flex items-center justify-between p-2 bg-indigo-50 border border-indigo-100 rounded-xl animate-in fade-in slide-in-from-bottom-2">
+              <div className="mb-2 md:mb-3 flex items-center justify-between p-2 bg-indigo-50 border border-indigo-100 rounded-xl animate-in fade-in slide-in-from-bottom-2">
                 <div className="flex items-center gap-2 text-indigo-700 overflow-hidden">
-                  {selectedFile.type.startsWith('image/') ? <ImageIcon size={14} /> : <FileText size={14} />}
-                  <span className="text-xs font-medium truncate">{selectedFile.name}</span>
+                  {selectedFile.type.startsWith('image/') ? <ImageIcon size={12} /> : <FileText size={12} />}
+                  <span className="text-[10px] md:text-xs font-medium truncate">{selectedFile.name}</span>
                 </div>
                 <button
                   onClick={() => setSelectedFile(null)}
                   className="p-1 text-indigo-400 hover:text-indigo-600 rounded-full hover:bg-indigo-100"
                 >
-                  <X size={14} />
+                  <X size={12} />
                 </button>
               </div>
             )}
@@ -590,17 +606,17 @@ KESİN KURALLAR:
                     }
                   }}
                   placeholder="Mesajınızı yazın..."
-                  className="w-full max-h-32 min-h-[44px] p-3 pr-10 text-sm border border-zinc-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none resize-none"
+                  className="w-full max-h-24 md:max-h-32 min-h-[40px] md:min-h-[44px] p-2.5 md:p-3 pr-9 md:pr-10 text-xs md:text-sm border border-zinc-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none resize-none"
                   disabled={isChatLoading}
                   rows={1}
                 />
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="absolute right-2 bottom-2 p-1.5 text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                  className="absolute right-2 bottom-1.5 md:bottom-2 p-1.5 text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
                   title="Dosya ekle"
                   disabled={isChatLoading}
                 >
-                  <Paperclip size={18} />
+                  <Paperclip size={16} md:size={18} />
                 </button>
                 <input
                   type="file"
@@ -615,9 +631,9 @@ KESİN KURALLAR:
                 whileTap={{ scale: 0.95 }}
                 onClick={handleSendMessage}
                 disabled={isChatLoading || (!chatInput.trim() && !selectedFile)}
-                className="p-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center justify-center shrink-0"
+                className="p-2.5 md:p-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center justify-center shrink-0 shadow-lg shadow-indigo-500/20"
               >
-                {isChatLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+                {isChatLoading ? <Loader2 className="w-4 h-4 md:w-5 md:h-5 animate-spin" /> : <Send className="w-4 h-4 md:w-5 md:h-5" />}
               </motion.button>
             </div>
           </div>
