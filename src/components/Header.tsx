@@ -93,8 +93,8 @@ export const Header = ({ user, onLogin, onSignup, onHelp, onPremium, onMenuClick
             <div className="hidden sm:flex flex-col items-end">
               <span className="text-sm font-medium text-foreground">{user.email?.split('@')[0]}</span>
               <div className="flex gap-2 text-[10px] text-muted-foreground">
-                <span>{t('siteCredits')}: {user.isPremium ? '∞' : (user.siteCreationCredits || 0)}</span>
-                <span>{t('updateCredits')}: {user.isPremium ? '∞' : (user.updateCredits || 0)}</span>
+                <span>{t('siteCredits')}: {user.isPremium ? '1500+' : (user.siteCreationCredits || 0)}</span>
+                <span>{t('updateCredits')}: {user.isPremium ? '1500+' : (user.updateCredits || 0)}</span>
               </div>
             </div>
             <motion.button 

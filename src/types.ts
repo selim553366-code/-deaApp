@@ -12,10 +12,12 @@ export interface User {
 export interface Project {
   id: string;
   userId: string;
-  title?: string;
+  title: string;
   idea: string;
   code: string;
-  isPublished?: boolean;
+  isPublished: boolean;
+  isPublic: boolean;
+  remixOfId?: string;
   hasPaidForNameChange?: boolean;
   customUrl?: string;
   chatHistory?: { role: 'user' | 'model', text: string }[];

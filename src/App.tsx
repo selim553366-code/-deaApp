@@ -70,19 +70,23 @@ function Builder() {
               await updateDoc(userRef, { 
                 isPremium: true,
                 updateCredits: 999999,
-                siteCreationCredits: 999999
+                siteCreationCredits: 999999,
+                credits: 999999
               });
               userData.isPremium = true;
               userData.updateCredits = 999999;
               userData.siteCreationCredits = 999999;
-            } else if (!isCreatorEmail && !isCreatorName && userData.updateCredits === undefined) {
-              // Migration for existing non-creator users
+              userData.credits = 999999;
+            } else if (!isCreatorEmail && !isCreatorName && (userData.updateCredits < 1500 || userData.credits < 1500)) {
+              // Force update to 1500 if credits are low
               await updateDoc(userRef, { 
-                updateCredits: 500,
-                siteCreationCredits: 50
+                updateCredits: 1500,
+                siteCreationCredits: 1500,
+                credits: 1500
               });
-              userData.updateCredits = 500;
-              userData.siteCreationCredits = 50;
+              userData.updateCredits = 1500;
+              userData.siteCreationCredits = 1500;
+              userData.credits = 1500;
             }
             
             setUser(userData);
@@ -95,9 +99,9 @@ function Builder() {
             const newUser: User = {
               uid: firebaseUser.uid,
               email: firebaseUser.email || "",
-              credits: 10,
-              updateCredits: isCreator ? 999999 : 500,
-              siteCreationCredits: isCreator ? 999999 : 50,
+              credits: 1500,
+              updateCredits: isCreator ? 999999 : 1500,
+              siteCreationCredits: isCreator ? 999999 : 1500,
               isPremium: isCreator,
               createdAt: new Date().toISOString(),
             };

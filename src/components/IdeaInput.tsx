@@ -203,6 +203,7 @@ Bu fikir için tek sayfalık, son derece modern, estetik, çok hızlı çalışa
         idea: finalPrompt,
         code,
         isPublished: false,
+        isPublic: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };

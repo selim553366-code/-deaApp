@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { User, Project } from "../types";
-import { db, auth } from "../firebase";
-import { collection, query, where, orderBy, onSnapshot, doc, setDoc, updateDoc, deleteDoc, getDoc } from "firebase/firestore";
+import { db, auth, handleFirestoreError, OperationType } from "../firebase";
+import { collection, query, where, orderBy, onSnapshot, doc, setDoc, updateDoc, deleteDoc, getDoc, DocumentSnapshot, QuerySnapshot } from "firebase/firestore";
 import { Sidebar } from "./Sidebar";
 import { Preview } from "./Preview";
 import { PremiumModal } from "./PremiumModal";
+import { PublishModal } from "./PublishModal";
 import { AIChatPage } from "./AIChatPage";
 import { Send, Sparkles, LogOut, Code, Loader2, Check, Eye, EyeOff } from "lucide-react";
 import { signOut } from "firebase/auth";
@@ -30,6 +31,21 @@ export function IdeaApp({ user }: { user: User }) {
   const [input, setInput] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
+  const [showPublishModal, setShowPublishModal] = useState(false);
+
+  const handlePublish = async (title: string, publishToWeb: boolean) => {
+    if (!currentProject) return;
+    try {
+      await updateDoc(doc(db, 'projects', currentProject.id), {
+        title,
+        isPublished: publishToWeb
+      });
+      setShowPublishModal(false);
+      alert("Proje yayınlandı!");
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, `projects/${currentProject.id}`);
+    }
+  };
   const [showReviews, setShowReviews] = useState(true);
   const [isPreviewOpen, setIsPreviewOpen] = useState(true);
   const [showAI, setShowAI] = useState(false);
@@ -118,7 +134,7 @@ export function IdeaApp({ user }: { user: User }) {
 
       const cacheKey = hashCode(prompt);
       const cacheRef = doc(db, "cache", cacheKey);
-      const cacheSnap = await getDoc(cacheRef);
+      const cacheSnap = (await getDoc(cacheRef).catch(err => handleFirestoreError(err, OperationType.GET, `cache/${cacheKey}`))) as DocumentSnapshot;
 
       let code = "";
 
@@ -153,7 +169,7 @@ export function IdeaApp({ user }: { user: User }) {
         // Robust cleaning: remove markdown blocks if they exist
         code = code.replace(/```html/g, '').replace(/```/g, '').trim();
         
-        await setDoc(cacheRef, { code, createdAt: new Date().toISOString() });
+        await setDoc(cacheRef, { code, createdAt: new Date().toISOString() }).catch(err => handleFirestoreError(err, OperationType.CREATE, `cache/${cacheKey}`));
       }
 
       if (currentProject && currentProject.id) {
@@ -161,34 +177,39 @@ export function IdeaApp({ user }: { user: User }) {
         await updateDoc(projRef, {
           code,
           updatedAt: new Date().toISOString()
-        });
+        }).catch(err => handleFirestoreError(err, OperationType.UPDATE, `projects/${currentProject.id}`));
       } else {
         const newProjectRef = doc(collection(db, "projects"));
         const newId = newProjectRef.id;
         const newProject: Project = {
           id: newId,
           userId: user.uid,
+          title: "Yeni Proje",
           idea: idea + (answers ? ` (${answers.join(", ")})` : ""),
           code,
+          isPublished: false,
+          isPublic: false,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         };
-        await setDoc(doc(db, "projects", newId), newProject);
+        await setDoc(doc(db, "projects", newId), newProject).catch(err => handleFirestoreError(err, OperationType.CREATE, `projects/${newId}`));
         setCurrentProject(newProject);
 
         if (!user.isPremium) {
           await updateDoc(doc(db, "users", user.uid), {
             credits: user.credits - 10
-          });
+          }).catch(err => handleFirestoreError(err, OperationType.UPDATE, `users/${user.uid}`));
         }
       }
     } catch (error) {
       console.error("Generation failed:", error);
+      let errorMessage = "Üzgünüm, site oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.";
       if (error instanceof Error) {
         console.error("Error message:", error.message);
         console.error("Error stack:", error.stack);
+        errorMessage = error.message;
       }
-      alert("Üzgünüm, site oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.");
+      alert(errorMessage);
     } finally {
       setIsGenerating(false);
       setAnalysisQuestions(null);
@@ -219,7 +240,7 @@ export function IdeaApp({ user }: { user: User }) {
 
   const deleteProject = async (projectId: string) => {
     if (confirm("Bu projeyi silmek istediğinize emin misiniz?")) {
-      await deleteDoc(doc(db, "projects", projectId));
+      await deleteDoc(doc(db, "projects", projectId)).catch(err => handleFirestoreError(err, OperationType.DELETE, `projects/${projectId}`));
       if (currentProject?.id === projectId) {
         setCurrentProject(null);
       }
@@ -271,7 +292,7 @@ export function IdeaApp({ user }: { user: User }) {
             </button>
             <div className="text-sm font-medium bg-zinc-800 px-3 py-1.5 rounded-full flex items-center gap-2">
               <span className="text-zinc-400">Krediler:</span>
-              <span className="text-indigo-400">{user.isPremium ? '∞' : user.credits}</span>
+              <span className="text-indigo-400">{user.isPremium ? '1500+' : user.credits}</span>
             </div>
             {user.isPremium && (
               <div className="text-sm font-medium bg-indigo-500/20 text-indigo-300 px-3 py-1.5 rounded-full border border-indigo-500/30">
@@ -379,6 +400,68 @@ export function IdeaApp({ user }: { user: User }) {
                     {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                   </button>
                 </div>
+                {currentProject && (
+                  <>
+                    <button
+                      onClick={async () => {
+                        setIsGenerating(true);
+                        try {
+                          const response = await fetch("/api/ai/analyze", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ html: currentProject.code })
+                          });
+                          const data = await response.json();
+                          if (!response.ok) throw new Error(data.error || 'Analysis failed');
+                          alert(JSON.stringify(data.analysis, null, 2));
+                        } catch (error: any) {
+                          console.error("Analysis error:", error);
+                          alert(error.message || "Analysis failed.");
+                        } finally {
+                          setIsGenerating(false);
+                        }
+                      }}
+                      disabled={isGenerating}
+                      className="mt-2 w-full p-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg transition-colors text-sm"
+                    >
+                      {isGenerating ? "Analiz ediliyor..." : "SEO ve Erişilebilirlik Analizi"}
+                    </button>
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        onClick={() => setShowPublishModal(true)}
+                        className="flex-1 p-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors text-sm"
+                      >
+                        Yayınla
+                      </button>
+                      <button
+                        onClick={async () => {
+                          setIsGenerating(true);
+                          try {
+                            const response = await fetch("/api/ai/generate", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({
+                                contents: `Remix this website idea: "${currentProject.idea}". Code: ${currentProject.code}. Make it better.`,
+                              })
+                            });
+                            const data = await response.json();
+                            if (!response.ok) throw new Error(data.error || 'Remix failed');
+                            // Handle remix result
+                            alert("Remix oluşturuldu!");
+                          } catch (error: any) {
+                            console.error("Remix error:", error);
+                            alert(error.message || "Remix başarısız.");
+                          } finally {
+                            setIsGenerating(false);
+                          }
+                        }}
+                        className="flex-1 p-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg transition-colors text-sm"
+                      >
+                        Remix
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -395,6 +478,13 @@ export function IdeaApp({ user }: { user: User }) {
         <PremiumModal 
           user={user} 
           onClose={() => setShowPremiumModal(false)} 
+        />
+      )}
+      {showPublishModal && currentProject && (
+        <PublishModal
+          project={currentProject}
+          onClose={() => setShowPublishModal(false)}
+          onPublish={handlePublish}
         />
       )}
     </div>

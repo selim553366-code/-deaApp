@@ -30,7 +30,7 @@ export const AIHelper = ({ user }: { user: User | null }) => {
   const handleAsk = async () => {
     if (!prompt.trim() && !file) return;
     
-    if (user && !user.isPremium && user.credits < 10) {
+    if (user && !user.isPremium && (user.credits || 0) < 10) {
       window.dispatchEvent(new CustomEvent('show-premium-modal'));
       return;
     }

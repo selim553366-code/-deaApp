@@ -19,8 +19,12 @@ service cloud.firestore {
     // Fields:
     //   - id: string (required, immutable)
     //   - userId: string (required, immutable)
+    //   - title: string (required)
     //   - idea: string (required)
     //   - code: string (required)
+    //   - isPublished: boolean (required)
+    //   - isPublic: boolean (required)
+    //   - remixOfId: string (optional)
     //   - createdAt: string (required, immutable)
     //   - updatedAt: string (required)
     //
@@ -69,9 +73,10 @@ service cloud.firestore {
     // Domain Validators
     // ===============================================================
     function isValidUser(data) {
-      return hasOnlyAllowedFields(['uid', 'email', 'credits', 'updateCredits', 'siteCreationCredits', 'isPremium', 'createdAt']) &&
+      return hasOnlyAllowedFields(['uid', 'email', 'name', 'credits', 'updateCredits', 'siteCreationCredits', 'isPremium', 'createdAt']) &&
              data.uid is string && data.uid.size() > 0 &&
-             data.email is string && isValidEmail(data.email) &&
+             data.email is string && (data.email == "" || isValidEmail(data.email)) &&
+             (!('name' in data) || (data.name is string && data.name.size() <= 100)) &&
              data.credits is number && data.credits >= 0 &&
              (!('updateCredits' in data) || (data.updateCredits is number && data.updateCredits >= 0)) &&
              (!('siteCreationCredits' in data) || (data.siteCreationCredits is number && data.siteCreationCredits >= 0)) &&
@@ -80,14 +85,16 @@ service cloud.firestore {
     }
 
     function isValidProject(data) {
-      return hasOnlyAllowedFields(['id', 'userId', 'title', 'idea', 'code', 'isPublished', 'hasPaidForNameChange', 'customUrl', 'createdAt', 'updatedAt', 'chatHistory']) &&
+      return hasOnlyAllowedFields(['id', 'userId', 'title', 'idea', 'code', 'isPublished', 'isPublic', 'remixOfId', 'hasPaidForNameChange', 'customUrl', 'createdAt', 'updatedAt', 'chatHistory']) &&
              data.id is string && data.id.size() > 0 &&
              data.userId is string && data.userId.size() > 0 &&
-             (!('title' in data) || (data.title is string && data.title.size() <= 100)) &&
-             (!('customUrl' in data) || (data.customUrl is string && data.customUrl.size() <= 100 && data.customUrl.matches("^[a-zA-Z0-9-]+$"))) &&
+             data.title is string && data.title.size() <= 100 &&
              data.idea is string && data.idea.size() > 0 && data.idea.size() < 10000 &&
              data.code is string && data.code.size() > 0 && data.code.size() < 1000000 &&
-             (!('isPublished' in data) || data.isPublished is bool) &&
+             data.isPublished is bool &&
+             (!('isPublic' in data) || data.isPublic is bool) &&
+             (!('remixOfId' in data) || data.remixOfId is string) &&
+             (!('customUrl' in data) || (data.customUrl is string && data.customUrl.size() <= 100 && data.customUrl.matches("^[a-zA-Z0-9-]+$"))) &&
              (!('hasPaidForNameChange' in data) || data.hasPaidForNameChange is bool) &&
              (!('chatHistory' in data) || data.chatHistory is list) &&
              data.createdAt is string &&
@@ -114,6 +121,13 @@ service cloud.firestore {
         allow read: if isOwner(get(/databases/$(database)/documents/projects/$(projectId)).data.userId);
         allow create: if true; // Anyone can create a page view
       }
+    }
+
+    match /cache/{cacheId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && hasOnlyAllowedFields(['code', 'createdAt']) && request.resource.data.code is string && request.resource.data.createdAt is string;
+      allow update: if isAuthenticated() && hasOnlyAllowedFields(['code', 'createdAt']) && request.resource.data.code is string && request.resource.data.createdAt is string;
+      allow delete: if false;
     }
   }
 }

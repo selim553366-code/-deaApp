@@ -72,6 +72,7 @@ export const AuthForm = ({ prompt, onProjectCreated }: Props) => {
         idea: prompt,
         code,
         isPublished: false,
+        isPublic: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };

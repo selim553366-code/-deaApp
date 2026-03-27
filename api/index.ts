@@ -85,12 +85,29 @@ app.post("/api/ai/generate", async (req, res) => {
         break; // Success, exit retry loop
       } catch (err: any) {
         const isRateLimit = err.status === 429 || (err.message && err.message.includes("429")) || (err.message && err.message.includes("Quota"));
-        if (isRateLimit && i < retries - 1) {
-          const waitTime = Math.pow(2, i) * 1000; // Exponential backoff: 1s, 2s
-          console.warn(`Rate limit hit (429). Retrying in ${waitTime}ms...`);
-          await new Promise(resolve => setTimeout(resolve, waitTime));
+        
+        if (isRateLimit) {
+          // Try to extract retry time from message
+          const match = err.message?.match(/retry in ([\d.]+)s/);
+          const retrySeconds = match ? parseFloat(match[1]) : 0;
+          
+          if (retrySeconds > 0 && retrySeconds <= 10 && i < retries - 1) {
+            const waitTime = (retrySeconds * 1000) + 500; // Add 500ms buffer
+            console.warn(`Rate limit hit (429). Retrying in ${waitTime}ms...`);
+            await new Promise(resolve => setTimeout(resolve, waitTime));
+            continue;
+          } else if (i < retries - 1 && !match) {
+            const waitTime = Math.pow(2, i) * 1000;
+            console.warn(`Rate limit hit (429). Retrying in ${waitTime}ms...`);
+            await new Promise(resolve => setTimeout(resolve, waitTime));
+            continue;
+          } else {
+            // If we can't retry or the wait is too long, throw a friendly error
+            const waitMsg = retrySeconds > 0 ? ` Lütfen ${Math.ceil(retrySeconds)} saniye bekleyip tekrar deneyin.` : " Lütfen biraz bekleyip tekrar deneyin.";
+            throw new Error(`Google API Günlük Limitine Ulaşıldı (1500 İstek). Hesabınızdaki kredileriniz (1500) hala duruyor, ancak Google'ın ücretsiz katmanı günde en fazla 1500 site oluşturmanıza izin veriyor.${waitMsg}`);
+          }
         } else {
-          throw err; // Re-throw if not 429 or out of retries
+          throw err; // Re-throw if not 429
         }
       }
     }
@@ -98,6 +115,65 @@ app.post("/api/ai/generate", async (req, res) => {
     res.json({ text: response?.text });
   } catch (error: any) {
     console.error("AI Generate error:", error);
+    res.status(500).json({ error: error.message || "Internal server error" });
+  }
+});
+
+app.post("/api/ai/analyze", async (req, res) => {
+  try {
+    const { html, model = "gemini-3-flash-preview" } = req.body;
+    
+    let geminiKey = (process.env.CUSTOM_GEMINI_API_KEY || process.env.API_KEY || process.env.APİ_KEY || process.env.GEMINI_API_KEY)?.trim();
+    if (geminiKey && geminiKey.startsWith('"') && geminiKey.endsWith('"')) geminiKey = geminiKey.slice(1, -1);
+    if (geminiKey && geminiKey.startsWith("'") && geminiKey.endsWith("'")) geminiKey = geminiKey.slice(1, -1);
+    
+    if (!geminiKey) return res.status(500).json({ error: "No GEMINI_API_KEY found." });
+    if (!geminiKey.startsWith("AIzaSy")) return res.status(400).json({ error: "Invalid API Key format." });
+    
+    const ai = new GoogleGenAI({ apiKey: geminiKey });
+    
+    const prompt = `Analyze this HTML code for SEO and Accessibility issues. Provide a list of improvements. Return ONLY JSON in this format: {"seo": ["..."], "accessibility": ["..."]}. HTML: ${html}`;
+    
+    let response;
+    let retries = 3;
+    for (let i = 0; i < retries; i++) {
+      try {
+        response = await ai.models.generateContent({
+          model: model,
+          contents: prompt,
+          config: { responseMimeType: "application/json" }
+        });
+        break;
+      } catch (err: any) {
+        const isRateLimit = err.status === 429 || (err.message && err.message.includes("429")) || (err.message && err.message.includes("Quota"));
+        
+        if (isRateLimit) {
+          const match = err.message?.match(/retry in ([\d.]+)s/);
+          const retrySeconds = match ? parseFloat(match[1]) : 0;
+          
+          if (retrySeconds > 0 && retrySeconds <= 10 && i < retries - 1) {
+            const waitTime = (retrySeconds * 1000) + 500;
+            console.warn(`Rate limit hit (429). Retrying in ${waitTime}ms...`);
+            await new Promise(resolve => setTimeout(resolve, waitTime));
+            continue;
+          } else if (i < retries - 1 && !match) {
+            const waitTime = Math.pow(2, i) * 1000;
+            console.warn(`Rate limit hit (429). Retrying in ${waitTime}ms...`);
+            await new Promise(resolve => setTimeout(resolve, waitTime));
+            continue;
+          } else {
+            const waitMsg = retrySeconds > 0 ? ` Lütfen ${Math.ceil(retrySeconds)} saniye bekleyip tekrar deneyin.` : " Lütfen biraz bekleyip tekrar deneyin.";
+            throw new Error(`Google API Günlük Limitine Ulaşıldı (1500 İstek). Hesabınızdaki kredileriniz (1500) hala duruyor, ancak Google'ın ücretsiz katmanı günde en fazla 1500 analiz yapmanıza izin veriyor.${waitMsg}`);
+          }
+        } else {
+          throw err;
+        }
+      }
+    }
+
+    res.json({ analysis: JSON.parse(response?.text || "{}") });
+  } catch (error: any) {
+    console.error("AI Analyze error:", error);
     res.status(500).json({ error: error.message || "Internal server error" });
   }
 });

@@ -51,6 +51,22 @@
           "type": "string",
           "description": "The generated HTML/CSS/JS code."
         },
+        "title": {
+          "type": "string",
+          "description": "The title of the project."
+        },
+        "isPublished": {
+          "type": "boolean",
+          "description": "Whether the project is published."
+        },
+        "isPublic": {
+          "type": "boolean",
+          "description": "Whether the project is public in the gallery."
+        },
+        "remixOfId": {
+          "type": "string",
+          "description": "The ID of the project this project is a remix of."
+        },
         "createdAt": {
           "type": "string",
           "format": "date-time",
@@ -79,7 +95,7 @@
           }
         }
       },
-      "required": ["id", "userId", "idea", "code", "createdAt", "updatedAt"]
+      "required": ["id", "userId", "idea", "code", "createdAt", "updatedAt", "title", "isPublished", "isPublic"]
     },
     "Settings": {
       "title": "Settings",
